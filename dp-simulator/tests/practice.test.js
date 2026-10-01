@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { PRACTICE, chapterPractices, getPractice, runTrace, validateInput } from '../src/data/practice.js';
-import { assembleSource } from '../src/data/runnerContract.js';
+import { assembleSource, fullStarterCode, toFullCode } from '../src/data/runnerContract.js';
 import { executeSolution, gradeResults, runProcess } from '../runner.js';
 import { createServer } from '../server.js';
 
@@ -62,6 +62,16 @@ test('Python protected harness: correct, incorrect, and unfinished bodies', asyn
   const source = assembleSource(p, 'python', body);
   assert.ok(source.includes('def fib_1(n: int) -> int:'));
   assert.ok(source.includes('if __name__ == "__main__":'));
+
+  // Full-file execution in one editor
+  const fullCode = fullStarterCode(p, 'python').replace('raise NotImplementedError("Complete this function")', 'a, b = 0, 1\n    for _ in range(n):\n        a, b = b, a + b\n    return a');
+  assert.ok(!fullCode.includes('test_cases = [\n'));
+  const multilineDraft = fullCode.replace(/test_cases = .*/, 'test_cases = [\n        {\n            "n": 0,\n            "hops": [\n                1,\n                2\n            ]\n        }\n    ]');
+  const condensed = toFullCode(p, 'python', multilineDraft);
+  assert.ok(!condensed.includes('test_cases = [\n'));
+  assert.ok(condensed.includes(`test_cases = ${JSON.stringify(p.examples)}`));
+  const fullResult = await executeSolution(p, 'python', fullCode);
+  assert.equal(fullResult.passed, true, fullResult.stderr);
 });
 
 test('Rust protected harness handles numeric, boolean, string and nested-array inputs', async () => {
