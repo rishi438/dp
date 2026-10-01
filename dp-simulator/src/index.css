@@ -282,9 +282,13 @@ summary { cursor: pointer; font-weight: 600; }
 .playback input { width: 100%; accent-color: var(--accent); }
 .playback .playback-pace { flex: 0 0 auto; min-width: 0; }
 .event-banner { padding: 14px; background: var(--accent-soft); color: var(--accent); border-left: 3px solid var(--accent); border-radius: 4px; }
-.trace-columns { display: grid; grid-template-columns: minmax(0, 2fr) minmax(160px, 1fr); gap: 15px; margin-top: 15px; }
-.trace-explorer, .staircase-simulator { container: trace-layout / inline-size; }
-.walkthrough-columns { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(250px, 1fr); gap: 16px; margin: 16px 0; align-items: start; }
+.trace-explorer, .staircase-simulator {
+  container: trace-layout / inline-size;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+}
 .walkthrough-columns > * { min-width: 0; }
 .code-playback { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: var(--code); }
 .code-playback header { display: flex; justify-content: space-between; gap: 8px; padding: 12px; background: var(--subtle); font-size: 12px; flex-wrap: wrap; }
@@ -316,6 +320,22 @@ summary { cursor: pointer; font-weight: 600; }
 .legend-cache { color: var(--call-green); }
 .legend-repeat { color: var(--call-red); }
 .legend-waiting { color: var(--call-amber); }
+.trace-graph .tree-legend {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  z-index: 5;
+  margin: 0;
+  padding: 6px 12px;
+  gap: 12px;
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  pointer-events: none;
+}
 .trace-graph { height: 450px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; position: relative; background-color: var(--code); background-image: radial-gradient(circle, color-mix(in srgb, var(--border) 55%, transparent) 1px, transparent 1px); background-size: 24px 24px; }
 .trace-graph .react-flow { background: transparent; }
 .trace-graph .react-flow__pane { cursor: default; }
@@ -428,6 +448,9 @@ summary { cursor: pointer; font-weight: 600; }
   background: var(--surface);
   color: var(--text);
   box-shadow: 0 0 0 8px var(--page);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 22px;
 }
 .expanded-simulation .simulation-topbar {
   position: sticky;
@@ -456,9 +479,9 @@ summary { cursor: pointer; font-weight: 600; }
 
 /* One shared playback dock inside the canvas; code remains alongside it. */
 .trace-inspector, .tree-info { font-size: 12px; color: var(--muted); margin-top: 10px; }
-.trace-inspector > summary, .tree-info > summary { font-weight: 500; }
 .code-playback .event-banner { padding: 10px 12px; font-size: 12px; border-radius: 0; }
-.trace-explorer .walkthrough-columns.simulation-only { grid-template-columns: minmax(0, 1fr); }
+.trace-explorer .walkthrough-columns.simulation-only,
+.staircase-simulator .walkthrough-columns.simulation-only { grid-template-columns: minmax(0, 1fr); }
 .workspace-code-pane { min-width: 0; }
 .workspace-code-switch { margin-bottom: 12px; }
 .has-playback-dock { height: 560px; }
@@ -477,3 +500,18 @@ summary { cursor: pointer; font-weight: 600; }
 @container trace-layout (max-width: 620px) {
   .trace-explorer .walkthrough-columns, .staircase-simulator .walkthrough-columns { grid-template-columns: minmax(0, 1fr); }
 }
+
+.workspace-code-switch-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+.workspace-code-switch-bar .workspace-code-switch { margin-bottom: 0; }
+.code-language-select { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; }
+.code-language-select select { padding: 4px 8px; font-size: 12px; }
+.code-playback header .code-flow-language { display: flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 500; }
+.code-playback header .code-flow-language select { padding: 2px 6px; font-size: 11px; }
+
+.challenge-heading-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.simulation-example-select { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; }
+.simulation-example-select select { padding: 4px 8px; font-size: 12px; }
+
+.trace-explorer > .walkthrough-columns:first-child,
+.staircase-simulator > .walkthrough-columns:first-child { margin-top: 0; }
+.challenge-problem:has(.trace-explorer) .section-heading { margin-bottom: 12px; }

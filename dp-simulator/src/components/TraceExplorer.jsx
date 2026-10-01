@@ -106,9 +106,9 @@ function CallGraph({ trace, event, revealed, eventIndex, smallTree, expanded, on
 
   return <div className="call-tree-view">
     {event.id !== undefined && !ids.has(event.id) && <p role="status">Current call {event.key} is beyond the drawing limit. Follow its code and variables alongside the tree.</p>}
-    <div className="tree-legend" aria-label="Call colors"><span className="legend-current">Current</span><span className="legend-cache">Cached / returned</span><span className="legend-repeat">Repeated work</span><span className="legend-waiting">Waiting</span></div>
     <div ref={graphRef} className={`trace-graph ${playbackControls ? 'has-playback-dock' : ''}`} aria-label="Recursive call tree">
-    <ReactFlow key={scope} onInit={setFlow} nodes={graph.nodes} edges={graph.edges} onNodesChange={onNodesChange}
+      <div className="tree-legend" aria-label="Call colors"><span className="legend-current">Current</span><span className="legend-cache">Cached / returned</span><span className="legend-repeat">Repeated work</span><span className="legend-waiting">Waiting</span></div>
+      <ReactFlow key={scope} onInit={setFlow} nodes={graph.nodes} edges={graph.edges} onNodesChange={onNodesChange}
       fitView fitViewOptions={fitOptions} minZoom={0.05}
       nodesDraggable nodesConnectable={false} elementsSelectable={false}
       panOnDrag={false} panOnScroll={false} panActivationKeyCode={null}
@@ -142,24 +142,26 @@ export default function TraceExplorer({ problem, input, memoized = true, initial
   const [cacheEnabled, setCacheEnabled] = useState(memoized);
   const examples = useMemo(() => treeExamples(problem), [problem]);
   const selectedInput = size === 'input' ? input : examples[size];
-  return <div className="space-y-4">
-    <div className="workspace-toolbar">
-      <div className="segmented-control" aria-label="Cache mode">
-        <button aria-pressed={cacheEnabled} onClick={() => setCacheEnabled(true)}>With cache</button>
-        <button aria-pressed={!cacheEnabled} onClick={() => setCacheEnabled(false)}>Without cache</button>
-      </div>
-      <div className="segmented-control" aria-label="Simulation example size">
-        <button aria-pressed={size === 'small'} onClick={() => setSize('small')}>Small tree</button>
-        <button aria-pressed={size === 'large'} onClick={() => setSize('large')}>Large tree</button>
-        <button aria-pressed={size === 'input'} onClick={() => setSize('input')}>Current inputs</button>
-      </div>
-      <span>{size === 'small' ? 'Small complete example' : size === 'large' ? 'Larger complete example' : 'Your selected example or custom input'}: <code>{JSON.stringify(selectedInput)}</code></span>
+  const toolbar = <div className="workspace-toolbar">
+    <div className="segmented-control" aria-label="Cache mode">
+      <button aria-pressed={cacheEnabled} onClick={() => setCacheEnabled(true)}>With cache</button>
+      <button aria-pressed={!cacheEnabled} onClick={() => setCacheEnabled(false)}>Without cache</button>
     </div>
-    <TracePlayback key={`${problem.id}:${size}:${cacheEnabled}:${JSON.stringify(selectedInput)}`} problem={problem} input={selectedInput} memoized={cacheEnabled} smallTree={size === 'small'} codeTarget={codeTarget} codeVisible={codeVisible} active={active} />
+    <div className="segmented-control" aria-label="Simulation example size">
+      <button aria-pressed={size === 'small'} onClick={() => setSize('small')}>Small tree</button>
+      <button aria-pressed={size === 'large'} onClick={() => setSize('large')}>Large tree</button>
+      <button aria-pressed={size === 'input'} onClick={() => setSize('input')}>Current inputs</button>
+    </div>
+    <span>{size === 'small' ? 'Small complete example' : size === 'large' ? 'Larger complete example' : 'Your selected example or custom input'}: <code>{JSON.stringify(selectedInput)}</code></span>
+  </div>;
+
+  return <div className="space-y-4">
+    {codeTarget === undefined && toolbar}
+    <TracePlayback key={`${problem.id}:${size}:${cacheEnabled}:${JSON.stringify(selectedInput)}`} problem={problem} input={selectedInput} memoized={cacheEnabled} smallTree={size === 'small'} codeTarget={codeTarget} codeVisible={codeVisible} active={active} inlineToolbar={codeTarget !== undefined ? toolbar : null} />
   </div>;
 }
 
-function TracePlayback({ problem, input, memoized, smallTree, codeTarget, codeVisible, active }) {
+function TracePlayback({ problem, input, memoized, smallTree, codeTarget, codeVisible, active, inlineToolbar }) {
   const expansion = useExpandedPanel();
   const trace = useMemo(() => codeStepTrace(problem, runTrace(problem, input, { memoized }), memoized), [problem, input, memoized]);
   const alternate = useMemo(() => runTrace(problem, input, { memoized: !memoized }), [problem, input, memoized]);
@@ -167,7 +169,8 @@ function TracePlayback({ problem, input, memoized, smallTree, codeTarget, codeVi
   const { playing, step, seek } = playback;
   useEffect(() => { if (!active && playing) seek(step); }, [active, playing, step, seek]);
   // Expansion keeps its code inside the dialog and its keyboard focus boundary.
-  const externalCode = codeTarget !== undefined && !expansion.expanded;
+  const isSSR = typeof window === 'undefined';
+  const externalCode = !isSSR && codeTarget !== undefined && !expansion.expanded;
   const [predict, setPredict] = useState(false);
   const [answers, setAnswers] = useState({});
   const [guess, setGuess] = useState('');
@@ -195,7 +198,15 @@ function TracePlayback({ problem, input, memoized, smallTree, codeTarget, codeVi
     <button disabled={needsPrediction || playback.step === trace.events.length - 1} onClick={() => { playback.seek(playback.step + 1); setFeedback(''); }} aria-label="Next step"><ChevronRight size={18} /></button>
   </div> : <Playback compact playback={playback} length={trace.events.length} />;
   const status = <div className="event-banner" aria-live="polite"><strong>{event.message} {event.kind !== 'answer' && event.key}</strong>{event.value !== undefined && <span> → {needsPrediction ? '?' : displayValue(event.value)}</span>}</div>;
-  return <section {...expansion.panelProps} className={`panel trace-explorer ${expansion.expanded ? 'expanded-simulation' : ''}`} aria-label="Simulation and code playback">
+
+  const simulationColumns = <div className={`walkthrough-columns ${externalCode ? 'simulation-only' : ''}`}><div className="simulation-column">
+    {isStaircase && view === 'stairs' ? <FlowVisualizer playbackControls={controls} expanded={expansion.expanded} onExpand={expansion.toggle} problem={{ id: 'stairs', hops: input.hops }} n={input.n} currentStep={event.state[0] ?? input.n} dpResults={stairCells} computedStates={computedStates} terminationIndex={input.n} onSelectStep={i => { if (predict) return; const index = trace.events.findIndex(e => e.state[0] === i); if (index >= 0) playback.seek(index); }} /> : <CallGraph playbackControls={controls} trace={trace} event={event} revealed={!needsPrediction} eventIndex={playback.step} smallTree={smallTree} expanded={expansion.expanded} onExpand={expansion.toggle} />}
+    </div>{externalCode
+      ? codeTarget && createPortal(<TraceCodeViewer status={status} problem={problem} memoized={memoized} event={event} hiddenValue={needsPrediction} visible={codeVisible} />, codeTarget)
+      : <TraceCodeViewer status={status} problem={problem} memoized={memoized} event={event} hiddenValue={needsPrediction} />}
+  </div>;
+
+  const headerControls = <>
     <div className="simulation-topbar">
     <div className="section-heading"><h2>{memoized ? 'Memoized dependency trace' : 'Plain recursion trace'}</h2>
       <label className="check-label"><input type="checkbox" checked={predict} onChange={e => { setPredict(e.target.checked); playback.seek(playback.step); }} /> Predict return values</label>
@@ -218,13 +229,23 @@ function TracePlayback({ problem, input, memoized, smallTree, codeTarget, codeVi
     </form>}
     {feedback && <p role="status">{feedback}</p>}
     {isStaircase && <div className="segmented-control trace-view-switch"><button aria-pressed={view === 'stairs'} onClick={() => setView('stairs')}>Frog staircase</button><button aria-pressed={view === 'tree'} onClick={() => setView('tree')}>Call tree</button></div>}
-    {externalCode && !codeVisible && status}
-    <div className={`walkthrough-columns ${externalCode ? 'simulation-only' : ''}`}><div className="simulation-column">
-      {isStaircase && view === 'stairs' ? <FlowVisualizer playbackControls={controls} expanded={expansion.expanded} onExpand={expansion.toggle} problem={{ id: 'stairs', hops: input.hops }} n={input.n} currentStep={event.state[0] ?? input.n} dpResults={stairCells} computedStates={computedStates} terminationIndex={input.n} onSelectStep={i => { if (predict) return; const index = trace.events.findIndex(e => e.state[0] === i); if (index >= 0) playback.seek(index); }} /> : <CallGraph playbackControls={controls} trace={trace} event={event} revealed={!needsPrediction} eventIndex={playback.step} smallTree={smallTree} expanded={expansion.expanded} onExpand={expansion.toggle} />}
-      </div>{externalCode
-        ? codeTarget && createPortal(<TraceCodeViewer status={status} problem={problem} memoized={memoized} event={event} hiddenValue={needsPrediction} visible={codeVisible} />, codeTarget)
-        : <TraceCodeViewer status={status} problem={problem} memoized={memoized} event={event} hiddenValue={needsPrediction} />}
-    </div>
+  </>;
+
+  return <section {...expansion.panelProps} className={`trace-explorer ${expansion.expanded ? 'expanded-simulation' : ''}`} aria-label="Simulation and code playback">
+    {externalCode ? (
+      <>
+        {simulationColumns}
+        {inlineToolbar}
+        {headerControls}
+      </>
+    ) : (
+      <>
+        {inlineToolbar}
+        {headerControls}
+        {externalCode && !codeVisible && status}
+        {simulationColumns}
+      </>
+    )}
     <div className="trace-details">
       <div className="trace-input-summary" aria-label="Current input"><strong>Input</strong>{Object.entries(input).map(([name, value]) => <code key={name}>{name} = {JSON.stringify(value)}</code>)}</div>
       <details className="memo-details" open>

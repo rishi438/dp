@@ -90,7 +90,10 @@ export function createServer({ reviewer = reviewReasoning } = {}) {
       let content;
       try { content = await readFile(filename); }
       catch (error) { if (error.code !== 'ENOENT' || path.extname(filename)) throw error; content = await readFile(path.join(dist, 'index.html')); }
-      res.writeHead(200, { 'Content-Type': mime[path.extname(filename)] || 'text/html; charset=utf-8' });
+      res.writeHead(200, {
+        'Content-Type': mime[path.extname(filename)] || 'text/html; charset=utf-8',
+        'Cache-Control': !path.extname(filename) || path.extname(filename) === '.html' ? 'no-cache, must-revalidate' : 'public, max-age=31536000, immutable',
+      });
       res.end(req.method === 'HEAD' ? undefined : content);
     } catch { json(res, 404, { error: 'File not found. Run npm run build before npm start.' }); }
   });

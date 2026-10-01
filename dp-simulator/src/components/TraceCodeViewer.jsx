@@ -1,8 +1,11 @@
 import React, { useMemo, useRef, useEffect } from 'react';
+import { useStoredState } from '../hooks/useStoredState';
 import { traceCode } from '../data/traceCode';
 import { displayValue } from '../data/practice';
 
 export function CodePlaybackPanel({ lines, activeLine, children, status, visible = true }) {
+  const [language, setLanguage] = useStoredState('language', 'python');
+  const safeLanguage = language === 'rust' ? 'rust' : 'python';
   const codeRef = useRef(null);
   useEffect(() => {
     const panel = codeRef.current;
@@ -14,7 +17,7 @@ export function CodePlaybackPanel({ lines, activeLine, children, status, visible
     }
   }, [activeLine, visible]);
   return <section className="code-playback" aria-label="Synchronized reference code">
-    <header><strong>Code flow</strong><span>Python · reference algorithm</span></header>
+    <header><strong>Code flow</strong><label className="code-flow-language">Language <select aria-label="Programming language" value={safeLanguage} onChange={e => setLanguage(e.target.value)}><option value="python">Python</option><option value="rust">Rust</option></select></label></header>
     {status}
     <div ref={codeRef} className="playback-code" tabIndex={0} aria-label="Reference Python code">
       {lines.map((line, i) => <div key={i} className={`playback-code-line ${i + 1 === activeLine ? 'active-code-line' : ''}`} aria-current={i + 1 === activeLine ? 'step' : undefined}>

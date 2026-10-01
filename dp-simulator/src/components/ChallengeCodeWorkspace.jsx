@@ -80,13 +80,8 @@ function Editor({ problem, language, onPassed }) {
   </div>;
 }
 
-function CodingPractice({ chapterNum, onPassed }) {
-  const practices = chapterPractices(chapterNum);
-  const [problem, setSelected] = usePracticeSelection(chapterNum, practices);
-  return <>
-    <div className="workspace-toolbar"><label>Exercise <select aria-label="Coding exercise" value={problem.id} onChange={e => setSelected(e.target.value)}>{practices.map(p => <option key={p.id} value={p.id}>{p.title}</option>)}</select></label></div>
-    <ReasoningGate key={problem.id} problem={problem}><CodingExercise problem={problem} chapterNum={chapterNum} onPassed={onPassed} /></ReasoningGate>
-  </>;
+function CodingPractice({ problem, chapterNum, onPassed }) {
+  return <ReasoningGate key={problem.id} problem={problem}><CodingExercise problem={problem} chapterNum={chapterNum} onPassed={onPassed} /></ReasoningGate>;
 }
 
 function CodingExercise({ problem, chapterNum, onPassed }) {
@@ -99,23 +94,31 @@ function CodingExercise({ problem, chapterNum, onPassed }) {
   const [example, setExample] = useState(0);
   const openSimulation = () => { setSimulationOpened(true); setShowSimulation(true); };
   return <>
-    <div className="workspace-toolbar"><label>Language <select aria-label="Programming language" value={safeLanguage} onChange={e => setLanguage(e.target.value)}><option value="python">Python</option><option value="rust">Rust</option></select></label></div>
     <ResizableWorkspace>
       <section className="panel challenge-problem">
-        <div className="section-heading"><h2>{problem.title}</h2><button onClick={() => { if (showSimulation) setShowSimulation(false); else { openSimulation(); setCodeView('flow'); } }}>{showSimulation ? 'Read problem' : 'Explore simulation'}</button></div>
+        <div className="section-heading">
+          <h2>{problem.title}</h2>
+          <div className="challenge-heading-actions">
+            {showSimulation && <label className="simulation-example-select">Simulation example <select aria-label="Simulation example" value={example} onChange={e => setExample(Number(e.target.value))}>{problem.examples.map((_, i) => <option key={i} value={i}>Example {i + 1}</option>)}</select></label>}
+            <button onClick={() => { if (showSimulation) setShowSimulation(false); else { openSimulation(); setCodeView('flow'); } }}>{showSimulation ? 'Read problem' : 'Explore simulation'}</button>
+          </div>
+        </div>
         <div hidden={showSimulation}>
           <p>{problem.prompt}</p><p>Complete <code>{functionName(problem)}</code>. Keep the provided parameters and return type. Helpers can be declared inside the function.</p>
           <h3>Input contract</h3><ul>{problem.args.map(a => <li key={a.name}><code>{a.name}</code> — {a.type}</li>)}</ul>
           <h3>Examples & boundary cases</h3>{problem.examples.map((input, i) => <div className="sample" key={i}><strong>Example {i + 1}</strong><pre>{JSON.stringify(input, null, 2)}</pre><p>Expected: <code>{displayValue(runTrace(problem, input, { maxCalls: 100000 }).result)}</code></p></div>)}
         </div>
         <div hidden={!showSimulation}>
-          {simulationOpened && <><label>Simulation example <select value={example} onChange={e => setExample(Number(e.target.value))}>{problem.examples.map((_, i) => <option key={i} value={i}>Example {i + 1}</option>)}</select></label><TraceExplorer key={`${problem.id}.${example}`} problem={problem} input={problem.examples[example]} memoized={chapterNum !== 1} codeTarget={codeTarget} codeVisible={codeView === 'flow'} active={showSimulation} /></>}
+          {simulationOpened && <TraceExplorer key={`${problem.id}.${example}`} problem={problem} input={problem.examples[example]} memoized={chapterNum !== 1} codeTarget={codeTarget} codeVisible={codeView === 'flow'} active={showSimulation} />}
         </div>
       </section>
       <div className="workspace-code-pane">
-        <div className="segmented-control workspace-code-switch" role="group" aria-label="Code view">
-          <button aria-pressed={codeView === 'solution'} onClick={() => setCodeView('solution')}>Your solution</button>
-          <button aria-pressed={codeView === 'flow'} onClick={() => { setCodeView('flow'); openSimulation(); }}>Code flow</button>
+        <div className="workspace-code-switch-bar">
+          <div className="segmented-control workspace-code-switch" role="group" aria-label="Code view">
+            <button aria-pressed={codeView === 'solution'} onClick={() => setCodeView('solution')}>Your solution</button>
+            <button aria-pressed={codeView === 'flow'} onClick={() => { setCodeView('flow'); openSimulation(); }}>Code flow</button>
+          </div>
+          {codeView === 'solution' && <label className="code-language-select">Language <select aria-label="Programming language" value={safeLanguage} onChange={e => setLanguage(e.target.value)}><option value="python">Python</option><option value="rust">Rust</option></select></label>}
         </div>
         <div hidden={codeView !== 'solution'}><Editor key={`${problem.id}.${safeLanguage}`} problem={problem} language={safeLanguage} onPassed={onPassed} /></div>
         <div className="workspace-reference-code" ref={setCodeTarget} hidden={codeView !== 'flow'} />
@@ -141,7 +144,16 @@ function BookExercises({ selectedChapter }) {
 
 export default function ChallengeCodeWorkspace({ chapterNum, selectedChapter, onPassed }) {
   const [mode, setMode] = useStoredState('challenge.mode', 'coding');
-  return <div className="space-y-4"><div className="segmented-control" aria-label="Practice mode"><button aria-pressed={mode === 'coding'} onClick={() => setMode('coding')}>Coding practice</button><button aria-pressed={mode === 'book'} onClick={() => setMode('book')}>Book exercises & notes</button></div>
-    {mode === 'book' ? <BookExercises key={chapterNum} selectedChapter={selectedChapter} /> : <CodingPractice key={chapterNum} chapterNum={chapterNum} onPassed={onPassed} />}
+  const practices = chapterPractices(chapterNum);
+  const [problem, setSelected] = usePracticeSelection(chapterNum, practices);
+  return <div className="space-y-4">
+    <div className="workspace-toolbar">
+      <div className="segmented-control" aria-label="Practice mode">
+        <button aria-pressed={mode === 'coding'} onClick={() => setMode('coding')}>Coding practice</button>
+        <button aria-pressed={mode === 'book'} onClick={() => setMode('book')}>Book exercises & notes</button>
+      </div>
+      {mode === 'coding' && <label>Exercise <select aria-label="Coding exercise" value={problem.id} onChange={e => setSelected(e.target.value)}>{practices.map(p => <option key={p.id} value={p.id}>{p.title}</option>)}</select></label>}
+    </div>
+    {mode === 'book' ? <BookExercises key={chapterNum} selectedChapter={selectedChapter} /> : <CodingPractice key={`${chapterNum}.${problem.id}`} chapterNum={chapterNum} problem={problem} onPassed={onPassed} />}
   </div>;
 }

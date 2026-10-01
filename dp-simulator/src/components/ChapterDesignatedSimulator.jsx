@@ -4,6 +4,7 @@ import { simulationPractices } from '../data/staircase';
 import { useStoredState } from '../hooks/useStoredState';
 import PracticeInputs from './PracticeInputs';
 import TraceExplorer from './TraceExplorer';
+import ResizableWorkspace from './ResizableWorkspace';
 import { usePracticeSelection } from '../hooks/usePracticeSelection';
 
 const StaircaseVisual = lazy(() => import('./StaircaseSimulator'));
@@ -35,6 +36,7 @@ function Simulator({ problem, compare }) {
   const [mode, setMode] = useState('trace');
   const [treeSize, setTreeSize] = useState('small');
   const [inputVersion, setInputVersion] = useState(0);
+  const [codeTarget, setCodeTarget] = useState(null);
   const applyInput = value => { setInput(value); setTreeSize('input'); setInputVersion(version => version + 1); };
   const memoized = problem.chapter !== 1;
   let Visual = visualizers[problem.id];
@@ -42,17 +44,49 @@ function Simulator({ problem, compare }) {
   // Empty/boundary inputs use the trace, which explicitly explains their return value.
   if ((input.nums && !input.nums.length) || (input.prices && !input.prices.length) || (input.s !== undefined && !input.s.length) || (input.nodes && (!input.nodes.length || input.nodes[0] < 0)) || (input.dist?.length === 1) || (input.hops && problem.chapter !== 0 && JSON.stringify(input.hops) !== '[1,2]')) Visual = null;
   const identity = `${problem.id}:${JSON.stringify(input)}`;
+
+  const isCustomVisual = !compare && Visual && mode === 'visual';
+
+  if (isCustomVisual) {
+    return <div className="space-y-4">
+      <div className="section-heading"><div><h2>{problem.title}</h2><p>{problem.state}</p></div>
+        <div className="segmented-control">
+          <button aria-pressed={true} onClick={() => setMode('visual')}>{isStaircase && problem.chapter === 0 ? 'Frog staircase' : 'Visual walkthrough'}</button>
+          {isStaircase && problem.chapter >= 3 && <button aria-pressed={false} onClick={() => setMode('stairs')}>Frog staircase · full table</button>}
+          <button aria-pressed={false} onClick={() => setMode('trace')}>Code, trace & predict</button>
+        </div>
+      </div>
+      <Suspense fallback={<p>Loading visualization…</p>}><Visual key={identity} input={input} problem={problem} /></Suspense>
+      <PracticeInputs key={identity} problem={problem} input={input} onApply={applyInput} />
+    </div>;
+  }
+
   return <div className="space-y-4">
-    <PracticeInputs key={identity} problem={problem} input={input} onApply={applyInput} />
-    {isStaircase && <div className="workspace-toolbar"><div className="segmented-control">
-      <button aria-pressed={JSON.stringify(input.hops) === '[1,2]'} onClick={() => applyInput({ ...input, hops: [1, 2] })}>Classic frog · 1 or 2 hops</button>
-      <button aria-pressed={JSON.stringify(input.hops) === '[1,2,3]'} onClick={() => applyInput({ ...input, hops: [1, 2, 3] })}>Tribonacci frog · 1, 2 or 3 hops</button>
-    </div><label>Stairs <input aria-label="Number of stairs" type="number" min="0" max="20" value={input.n} onChange={e => { const n = e.target.valueAsNumber; if (Number.isInteger(n) && n >= 0 && n <= 20) applyInput({ ...input, n }); }} /></label></div>}
     <div className="section-heading"><div><h2>{problem.title}</h2><p>{problem.state}</p></div>
-      {!compare && (Visual || (isStaircase && problem.chapter >= 3)) && <div className="segmented-control">{Visual && <button aria-pressed={mode === 'visual'} onClick={() => setMode('visual')}>{isStaircase && problem.chapter === 0 ? 'Frog staircase' : 'Visual walkthrough'}</button>}{isStaircase && problem.chapter >= 3 && <button aria-pressed={mode === 'stairs'} onClick={() => setMode('stairs')}>Frog staircase · full table</button>}<button aria-pressed={mode === 'trace'} onClick={() => setMode('trace')}>Code, trace & predict</button></div>}
+      {!compare && (Visual || (isStaircase && problem.chapter >= 3)) && <div className="segmented-control">
+        {Visual && <button aria-pressed={mode === 'visual'} onClick={() => setMode('visual')}>{isStaircase && problem.chapter === 0 ? 'Frog staircase' : 'Visual walkthrough'}</button>}
+        {isStaircase && problem.chapter >= 3 && <button aria-pressed={mode === 'stairs'} onClick={() => setMode('stairs')}>Frog staircase · full table</button>}
+        <button aria-pressed={mode === 'trace'} onClick={() => setMode('trace')}>Code, trace & predict</button>
+      </div>}
     </div>
     {compare && <p>Switch With cache / Without cache to run the same input. A cache hit reuses a saved answer; without cache, repeated calls calculate it again.</p>}
-    {!compare && isStaircase && mode === 'stairs' ? <Suspense fallback={<p>Loading staircase…</p>}><StaircaseVisual key={identity} input={input} problem={problem} /></Suspense> : !compare && Visual && mode === 'visual' ? <Suspense fallback={<p>Loading visualization…</p>}><Visual key={identity} input={input} problem={problem} /></Suspense> : <TraceExplorer key={`${identity}:${memoized}:${treeSize}:${inputVersion}`} problem={problem} input={input} memoized={memoized} compare={compare} initialSize={treeSize} />}
+    <ResizableWorkspace>
+      <div className="challenge-problem space-y-4">
+        {!compare && isStaircase && mode === 'stairs' ? (
+          <Suspense fallback={<p>Loading staircase…</p>}><StaircaseVisual key={identity} input={input} problem={problem} codeTarget={codeTarget} /></Suspense>
+        ) : (
+          <TraceExplorer key={`${identity}:${memoized}:${treeSize}:${inputVersion}`} problem={problem} input={input} memoized={memoized} compare={compare} initialSize={treeSize} codeTarget={codeTarget} />
+        )}
+        {isStaircase && <div className="workspace-toolbar"><div className="segmented-control">
+          <button aria-pressed={JSON.stringify(input.hops) === '[1,2]'} onClick={() => applyInput({ ...input, hops: [1, 2] })}>Classic frog · 1 or 2 hops</button>
+          <button aria-pressed={JSON.stringify(input.hops) === '[1,2,3]'} onClick={() => applyInput({ ...input, hops: [1, 2, 3] })}>Tribonacci frog · 1, 2 or 3 hops</button>
+        </div><label>Stairs <input aria-label="Number of stairs" type="number" min="0" max="20" value={input.n} onChange={e => { const n = e.target.valueAsNumber; if (Number.isInteger(n) && n >= 0 && n <= 20) applyInput({ ...input, n }); }} /></label></div>}
+        <PracticeInputs key={identity} problem={problem} input={input} onApply={applyInput} />
+      </div>
+      <div className="workspace-code-pane">
+        <div className="workspace-reference-code" ref={setCodeTarget} />
+      </div>
+    </ResizableWorkspace>
   </div>;
 }
 
