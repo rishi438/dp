@@ -4,7 +4,7 @@
 @tailwind components;
 @tailwind utilities;
 
-.reasoning-gate { max-width: 1060px; margin-inline: auto; }
+.reasoning-gate { width: 100%; }
 .reasoning-progress { display: flex; flex-wrap: wrap; gap: 10px 24px; padding: 0 0 18px; margin-bottom: 20px; border-bottom: 1px solid var(--border); list-style: none; color: var(--muted); font-size: 13px; }
 .reasoning-progress [aria-current="step"] { color: var(--accent); font-weight: 700; }
 .reasoning-contract { margin: 16px 0; }
@@ -197,7 +197,7 @@ button, input, select, textarea { font: inherit; }
 button { cursor: pointer; }
 button:disabled { cursor: default; opacity: .55; }
 :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
-.app-shell { max-width: 1500px; margin: auto; padding: 28px 32px; font-size: 14px; }
+.app-shell { width: 100%; max-width: none; box-sizing: border-box; padding: 28px 32px; font-size: 14px; }
 .app-header, .brand, .chapter-bar, .section-heading, .workspace-toolbar, .editor-toolbar, .editor-footer, .learning-footer, .playback { display: flex; align-items: center; gap: 14px; }
 .app-header { justify-content: space-between; padding-bottom: 25px; }
 .brand-mark { background: var(--accent); color: var(--page); padding: 12px; border-radius: 12px; }
@@ -273,7 +273,7 @@ summary { cursor: pointer; font-weight: 600; }
 .error-text { color: var(--error) !important; }
 .reset-prompt { padding: 12px; background: var(--accent-soft); }
 .reset-prompt button { margin: 5px; }
-.book-workspace { max-width: 1000px; margin: auto; }
+.book-workspace { width: 100%; }
 .book-workspace select { display: block; width: 100%; margin: 12px 0; }
 .trace-explorer .recurrence { padding: 12px; background: var(--code); border-radius: 7px; font-family: 'JetBrains Mono', monospace; font-size: 12px; }
 .check-label { display: flex; gap: 8px; align-items: center; font-size: 12px; }
@@ -390,7 +390,7 @@ summary { cursor: pointer; font-weight: 600; }
 .comparison-stats span { padding: 10px; background: var(--subtle); border-radius: 6px; font-size: 12px; }
 .prediction { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
 .prediction input { width: 110px; margin-left: 8px; }
-.quiz-panel { max-width: 950px; margin: auto; }
+.quiz-panel { width: 100%; }
 .quiz-question { font-size: 20px !important; white-space: pre-wrap; }
 .quiz-options { display: grid; gap: 12px; margin: 20px 0; }
 .quiz-number-nav { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 8px; }

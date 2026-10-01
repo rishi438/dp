@@ -12,6 +12,7 @@ export default function CurriculumReader({
   compact = false,
   onSelectChapter,
   onGoToExample,
+  onGoToQuiz,
   onGoToReasoning,
   onGoToStory
 }) {
@@ -49,7 +50,7 @@ export default function CurriculumReader({
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="w-full space-y-6">
       {/* Chapter Top Control Bar */}
       <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
@@ -128,10 +129,10 @@ export default function CurriculumReader({
                   <span>Choose your exercise</span>
                 </button>
                 <button
-                  onClick={onGoToReasoning}
+                  onClick={onGoToQuiz || onGoToReasoning}
                   className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-slate-950 font-black text-xs sm:text-sm rounded-xl shadow-xl shadow-cyan-500/20 transition flex items-center gap-2 transform hover:scale-102"
                 >
-                  <span>Next: 03 — Your reasoning</span>
+                  <span>Next: 03 — Trap drills</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </div>

@@ -5,7 +5,7 @@ import { useStoredState } from '../hooks/useStoredState';
 
 export { chapterOf } from '../data/chapterQuizzes';
 
-function ChapterQuiz({ chapterNum }) {
+function ChapterQuiz({ chapterNum, onGoToReasoning }) {
   const questions = getChapterQuestions(chapterNum);
   const chapter = CHAPTERS.find(c => c.num === chapterNum);
   // Keep existing answer IDs so the earlier question bank retains its saved answers.
@@ -54,12 +54,12 @@ function ChapterQuiz({ chapterNum }) {
         <span>{String.fromCharCode(65 + i)}.</span> {option.text}{answers[question.id] !== undefined && option.correct && ' ✓'}
       </button>)}</div>
       {answers[question.id] !== undefined && <div className="explanation" role="status"><strong>{question.options[answers[question.id]]?.correct ? 'Correct.' : 'Review this reasoning.'}</strong><p>{question.options[answers[question.id]]?.explanation || question.explanation}</p>{!question.options[answers[question.id]]?.correct && <p>{question.options.find(option => option.correct)?.explanation}</p>}</div>}
-      <div className="learning-footer"><button disabled={safeIndex === 0} onClick={() => setIndex(safeIndex - 1)}>← Previous</button><span>{safeIndex + 1} / {filtered.length}{retryIds ? ' in review' : ''}</span><button disabled={safeIndex === filtered.length - 1} onClick={() => setIndex(safeIndex + 1)}>Next →</button></div>
+      <div className="learning-footer"><button disabled={safeIndex === 0} onClick={() => setIndex(safeIndex - 1)}>← Previous</button><span>{safeIndex + 1} / {filtered.length}{retryIds ? ' in review' : ''}</span><button disabled={safeIndex === filtered.length - 1} onClick={() => setIndex(safeIndex + 1)}>Next →</button>{onGoToReasoning && <button className="primary-button" onClick={onGoToReasoning}>Next: 04 — Your reasoning →</button>}</div>
     </>}
   </section>;
 }
 
-export default function QuizModal({ chapterNum = 0 }) {
+export default function QuizModal({ chapterNum = 0, onGoToReasoning }) {
   // A chapter change resets transient review mode and restores that chapter's position.
-  return <ChapterQuiz key={chapterNum} chapterNum={chapterNum} />;
+  return <ChapterQuiz key={chapterNum} chapterNum={chapterNum} onGoToReasoning={onGoToReasoning} />;
 }

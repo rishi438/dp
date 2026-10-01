@@ -9,7 +9,15 @@ const ChallengeCodeWorkspace = lazy(() => import('./components/ChallengeCodeWork
 const ReasoningWorkspace = lazy(() => import('./components/ReasoningWorkspace'));
 const QuizModal = lazy(() => import('./components/QuizModal'));
 
-const tabs = [['story', '01 · Story'], ['worked_example', '02 · Worked example'], ['reasoning', '03 · Your reasoning'], ['flow', '04 · Simulation'], ['tree', '05 · Recursion Tree vs Memo'], ['challenge', '06 · Write code'], ['quiz', '07 · Trap drills']];
+const tabs = [
+  ['story', '01 · Story'],
+  ['worked_example', '02 · Worked example'],
+  ['quiz', '03 · Trap drills'],
+  ['reasoning', '04 · Your reasoning'],
+  ['tree', '05 · Recursion Tree vs Memo'],
+  ['flow', '06 · Simulation'],
+  ['challenge', '07 · Write code']
+];
 
 export default function App() {
   const [chapterNum, setChapterNum] = useStoredState('chapter', 0);
@@ -33,11 +41,11 @@ export default function App() {
     </select></label><span className="chapter-subtitle">{chapter.subtitle}</span><span className="progress-label"><CheckCircle2 size={16} /> {Object.values(completed).filter(Boolean).length}/19 reviewed · {Object.values(solved).filter(Boolean).length}/{PRACTICE.length} exercises passed</span></div>
     <nav className="main-tabs" aria-label="Learning sections">{tabs.map(([id, label]) => <button key={id} aria-current={id === activeTab ? 'page' : undefined} onClick={() => setTab(id)}>{label}</button>)}</nav>
     <main id="learning-content"><Suspense fallback={<div className="panel" role="status">Loading chapter…</div>}>
-      {['story', 'worked_example'].includes(activeTab) && <CurriculumReader mode={activeTab} selectedChapter={chapter} onSelectChapter={selectChapter} onGoToExample={() => setTab('worked_example')} onGoToReasoning={() => setTab('reasoning')} onGoToStory={() => setTab('story')} />}
-      {activeTab === 'reasoning' && <ReasoningWorkspace key={chapter.num} chapterNum={chapter.num} onGoToSimulation={() => setTab('flow')} onGoToCode={() => setTab('challenge')} />}
+      {['story', 'worked_example'].includes(activeTab) && <CurriculumReader mode={activeTab} selectedChapter={chapter} onSelectChapter={selectChapter} onGoToExample={() => setTab('worked_example')} onGoToQuiz={() => setTab('quiz')} onGoToReasoning={() => setTab('reasoning')} onGoToStory={() => setTab('story')} />}
+      {activeTab === 'reasoning' && <ReasoningWorkspace key={chapter.num} chapterNum={chapter.num} onGoToTree={() => setTab('tree')} onGoToSimulation={() => setTab('flow')} onGoToCode={() => setTab('challenge')} />}
       {['flow', 'tree'].includes(activeTab) && <ChapterDesignatedSimulator key={`${chapter.num}.${activeTab}`} chapterNum={chapter.num} compare={activeTab === 'tree'} />}
       {activeTab === 'challenge' && <ChallengeCodeWorkspace chapterNum={chapter.num} selectedChapter={chapter} onPassed={id => setSolved(old => ({ ...old, [id]: true }))} />}
-      {activeTab === 'quiz' && <QuizModal chapterNum={chapter.num} />}
+      {activeTab === 'quiz' && <QuizModal chapterNum={chapter.num} onGoToReasoning={() => setTab('reasoning')} />}
     </Suspense></main>
     <footer className="learning-footer"><button disabled={chapter.num === 0} onClick={() => selectChapter(chapter.num - 1)}>← Previous chapter</button><button aria-pressed={Boolean(completed[chapter.num])} onClick={() => setCompleted(old => ({ ...old, [chapter.num]: !old[chapter.num] }))}><BookOpen size={16} />{completed[chapter.num] ? 'Chapter reviewed ✓' : 'Mark chapter reviewed'}</button><button disabled={chapter.num === 18} onClick={() => selectChapter(chapter.num + 1)}>Next chapter →</button></footer>
   </div>;
