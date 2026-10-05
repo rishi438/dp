@@ -1,6 +1,7 @@
+import Playback from '../Playback';
 import { useAutoplay } from '../../hooks/usePlayback';
 import React, { useState, useMemo, useEffect } from 'react';
-import { Coins, Play, Pause, RotateCcw, ChevronLeft, ChevronRight, CheckCircle2, ArrowDown } from 'lucide-react';
+import { Coins } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 export default function CoinChangeSimulator({ input }) {
@@ -8,7 +9,7 @@ export default function CoinChangeSimulator({ input }) {
   const coins = input?.coins ?? [1, 2, 5];
   const [currentAmount, setCurrentAmount] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [speed, setSpeed] = useState(1200);
+  const [speed, setSpeed] = useState(900);
 
   // Compute DP table for all amounts 0..targetAmount
   const dpData = useMemo(() => {
@@ -55,7 +56,7 @@ export default function CoinChangeSimulator({ input }) {
     return table;
   }, [targetAmount, coins]);
 
-  useAutoplay({ playing: isPlaying, step: currentAmount, last: targetAmount, speed, onStep: setCurrentAmount, onStop: setIsPlaying });
+  const playback = useAutoplay({ playing: isPlaying, step: currentAmount, last: targetAmount, speed, setSpeed, onStep: setCurrentAmount, onStop: setIsPlaying });
 
   const activeItem = dpData[currentAmount] || dpData[0];
 
@@ -105,52 +106,7 @@ export default function CoinChangeSimulator({ input }) {
         </div>
 
         {/* Stepper Buttons */}
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => {
-              setCurrentAmount(0);
-              setIsPlaying(false);
-            }}
-            className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold rounded-lg border border-slate-700 transition"
-          >
-            Reset
-          </button>
-          <button
-            onClick={() => {
-              setIsPlaying(false);
-              setCurrentAmount(p => Math.max(0, p - 1));
-            }}
-            disabled={currentAmount === 0}
-            className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-slate-300 text-xs font-bold rounded-lg border border-slate-700 transition"
-          >
-            Prev
-          </button>
-          <button
-            onClick={() => {
-              if (currentAmount >= targetAmount) {
-                setCurrentAmount(0);
-                setIsPlaying(true);
-              } else {
-                setIsPlaying(!isPlaying);
-              }
-            }}
-            className={`px-4 py-1 text-xs font-black rounded-lg transition shadow ${
-              isPlaying ? 'bg-amber-500 text-slate-950' : 'bg-emerald-500 text-slate-950'
-            }`}
-          >
-            {isPlaying ? 'Pause' : (currentAmount >= targetAmount ? 'Replay' : 'Step Through')}
-          </button>
-          <button
-            onClick={() => {
-              setIsPlaying(false);
-              setCurrentAmount(p => Math.min(targetAmount, p + 1));
-            }}
-            disabled={currentAmount === targetAmount}
-            className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-slate-300 text-xs font-bold rounded-lg border border-slate-700 transition"
-          >
-            Next
-          </button>
-        </div>
+        <Playback compact playback={playback} length={targetAmount + 1} />
       </div>
 
       {/* Main Grid: Left = Amount Array & Doors, Right = Synchronized Code */}

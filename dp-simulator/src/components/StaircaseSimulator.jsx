@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import FlowVisualizer from './FlowVisualizer';
 import PhysicalPathsProof from './PhysicalPathsProof';
 import { CodePlaybackPanel } from './TraceCodeViewer';
-import { Playback } from './TraceExplorer';
+import Playback from './Playback';
 import { staircaseData, staircaseCode } from '../data/staircase';
 import { generateAllPaths } from '../data/problems';
 import { usePlayback } from '../hooks/usePlayback';

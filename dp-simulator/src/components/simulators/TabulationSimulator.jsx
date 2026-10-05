@@ -1,13 +1,14 @@
+import Playback from '../Playback';
 import { useAutoplay } from '../../hooks/usePlayback';
 import React, { useState, useEffect } from 'react';
-import { Layers, Play, Pause, RotateCcw, ChevronLeft, ChevronRight, Zap, CheckCircle2 } from 'lucide-react';
+import { Layers } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 export default function TabulationSimulator({ input }) {
   const [n, setN] = useState(input?.n ?? 7);
   const [currentStep, setCurrentStep] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const speed = 1000;
+  const [speed, setSpeed] = useState(900);
 
   // Tabulation array computation
   const dp = n === 0 ? [1] : [1, 1];
@@ -15,7 +16,7 @@ export default function TabulationSimulator({ input }) {
     dp[i] = dp[i - 1] + dp[i - 2];
   }
 
-  useAutoplay({ playing: isPlaying, step: currentStep, last: n, speed, onStep: setCurrentStep, onStop: setIsPlaying });
+  const playback = useAutoplay({ playing: isPlaying, step: currentStep, last: n, speed, setSpeed, onStep: setCurrentStep, onStop: setIsPlaying });
 
   return (
     <div className="space-y-4">
@@ -37,36 +38,7 @@ export default function TabulationSimulator({ input }) {
 
         {/* Stepper Controls */}
         <div className="flex items-center gap-1.5 flex-wrap">
-          <div className="flex items-center bg-slate-950 border border-slate-800 rounded-xl p-1 gap-1">
-            <button
-              onClick={() => { setCurrentStep(0); setIsPlaying(false); }}
-              className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded-lg transition"
-              title="Reset"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={() => { setCurrentStep(p => Math.max(0, p - 1)); setIsPlaying(false); }}
-              disabled={currentStep === 0}
-              className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded-lg transition disabled:opacity-30"
-            >
-              <ChevronLeft className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={() => setIsPlaying(!isPlaying)}
-              className="px-2.5 py-1 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-lg transition flex items-center gap-1 text-[11px]"
-            >
-              {isPlaying ? <Pause className="w-3 h-3 fill-current" /> : <Play className="w-3 h-3 fill-current" />}
-              <span>{isPlaying ? 'Pause' : 'Play'}</span>
-            </button>
-            <button
-              onClick={() => { setCurrentStep(p => Math.min(n, p + 1)); setIsPlaying(false); }}
-              disabled={currentStep >= n}
-              className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded-lg transition disabled:opacity-30"
-            >
-              <ChevronRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
+          <Playback compact playback={playback} length={n + 1} />
 
           <div className="flex items-center gap-1 bg-slate-950 px-2 py-1 rounded-xl border border-slate-800 text-[11px]">
             <span className="text-slate-400 font-mono">N:</span>

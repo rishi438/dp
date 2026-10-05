@@ -1,6 +1,7 @@
+import Playback from '../Playback';
 import { useAutoplay } from '../../hooks/usePlayback';
 import React, { useState, useMemo, useEffect } from 'react';
-import { Dices, Play, Pause, RotateCcw, ChevronLeft, ChevronRight, CheckCircle2, Shield } from 'lucide-react';
+import { Dices, Shield } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 export default function ProbabilityDPSimulator({ input }) {
@@ -10,7 +11,7 @@ export default function ProbabilityDPSimulator({ input }) {
   const startCol = input?.col ?? 2;
   const [currentK, setCurrentK] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [speed, setSpeed] = useState(1300);
+  const [speed, setSpeed] = useState(900);
   const [activeLang, setActiveLang] = useState('python');
 
   // Knight 8 directions
@@ -77,7 +78,7 @@ export default function ProbabilityDPSimulator({ input }) {
 
   const active = distributions[currentK] || distributions[0];
 
-  useAutoplay({ playing: isPlaying, step: currentK, last: maxK, speed, onStep: setCurrentK, onStop: setIsPlaying });
+  const playback = useAutoplay({ playing: isPlaying, step: currentK, last: maxK, speed, setSpeed, onStep: setCurrentK, onStop: setIsPlaying });
 
   const pythonCode = [
     { num: 1, text: "def knight_probability(n: int, k: int, row: int, col: int) -> float:" },
@@ -144,48 +145,8 @@ export default function ProbabilityDPSimulator({ input }) {
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
-          <div className="flex items-center bg-slate-950 border border-slate-800 rounded-xl p-1 gap-1">
-            <button
-              onClick={() => { setCurrentK(0); setIsPlaying(false); }}
-              className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded-lg transition-colors"
-              title="Reset"
-            >
-              <RotateCcw className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => { setCurrentK(p => Math.max(0, p - 1)); setIsPlaying(false); }}
-              disabled={currentK === 0}
-              className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded-lg transition-colors disabled:opacity-30"
-              title="Step Backward"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setIsPlaying(!isPlaying)}
-              className="px-3 py-1.5 bg-sky-600 hover:bg-sky-500 text-white font-bold rounded-lg transition-all flex items-center gap-1.5 text-xs shadow-md shadow-sky-900/40"
-            >
-              {isPlaying ? <Pause className="w-3.5 h-3.5 fill-current" /> : <Play className="w-3.5 h-3.5 fill-current" />}
-              <span>{isPlaying ? 'Pause' : 'Play'}</span>
-            </button>
-            <button
-              onClick={() => { setCurrentK(p => Math.min(maxK, p + 1)); setIsPlaying(false); }}
-              disabled={currentK === maxK}
-              className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded-lg transition-colors disabled:opacity-30"
-              title="Step Forward"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
+          <Playback compact playback={playback} length={maxK + 1} />
 
-          <select
-            value={speed}
-            onChange={(e) => setSpeed(Number(e.target.value))}
-            className="bg-slate-950 border border-slate-800 text-slate-300 rounded-xl px-2 py-1.5 text-xs font-mono"
-          >
-            <option value={2000}>0.5x Slow</option>
-            <option value={1300}>1.0x Normal</option>
-            <option value={600}>2.0x Fast</option>
-          </select>
         </div>
       </div>
 

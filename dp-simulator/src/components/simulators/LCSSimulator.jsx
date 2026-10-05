@@ -1,6 +1,7 @@
+import Playback from '../Playback';
 import { usePlayback } from '../../hooks/usePlayback';
 import React, { useState, useMemo, useEffect } from 'react';
-import { Scroll, Play, Pause, RotateCcw, ArrowDownRight, ArrowDown, ArrowRight } from 'lucide-react';
+import { Scroll } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 export default function LCSSimulator({ input }) {
@@ -12,7 +13,6 @@ export default function LCSSimulator({ input }) {
   const playback = usePlayback((m + 1) * (n + 1));
   const currentI = Math.floor(playback.step / (n + 1));
   const currentJ = playback.step % (n + 1);
-  const isPlaying = playback.playing;
 
   // Precompute full 2D table
   const lcsMatrix = useMemo(() => {
@@ -65,24 +65,7 @@ export default function LCSSimulator({ input }) {
         </div>
 
         {/* Playback */}
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => {
-              playback.seek(0);
-            }}
-            className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold rounded-lg border border-slate-700"
-          >
-            Reset
-          </button>
-          <button
-            onClick={playback.toggle}
-            className={`px-4 py-1 text-xs font-black rounded-lg shadow ${
-              isPlaying ? 'bg-amber-500 text-slate-950' : 'bg-emerald-500 text-slate-950'
-            }`}
-          >
-            {isPlaying ? 'Pause' : 'Step Through'}
-          </button>
-        </div>
+        <Playback compact playback={playback} length={(m + 1) * (n + 1)} />
       </div>
 
       {/* 2D Matrix Table */}

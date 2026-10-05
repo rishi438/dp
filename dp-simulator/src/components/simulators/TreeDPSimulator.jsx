@@ -1,12 +1,13 @@
+import Playback from '../Playback';
 import { useAutoplay } from '../../hooks/usePlayback';
 import React, { useState, useMemo, useEffect } from 'react';
-import { Trees, Play, Pause, RotateCcw, ChevronLeft, ChevronRight, CheckCircle2, ShieldAlert } from 'lucide-react';
+import { Trees } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 export default function TreeDPSimulator({ input }) {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [speed, setSpeed] = useState(1300);
+  const [speed, setSpeed] = useState(900);
   const [activeLang, setActiveLang] = useState('python');
 
   // Define binary tree layout:
@@ -82,7 +83,7 @@ export default function TreeDPSimulator({ input }) {
 
   const activeStep = steps[currentStepIndex] || steps[0];
 
-  useAutoplay({ playing: isPlaying, step: currentStepIndex, last: steps.length - 1, speed, onStep: setCurrentStepIndex, onStop: setIsPlaying });
+  const playback = useAutoplay({ playing: isPlaying, step: currentStepIndex, last: steps.length - 1, speed, setSpeed, onStep: setCurrentStepIndex, onStop: setIsPlaying });
 
   // Which nodes are robbed in the optimal choice?
   // Optimal choices: Root (1): rob = 3 + 4 + 1 = 8? Let's check root:
@@ -159,48 +160,8 @@ export default function TreeDPSimulator({ input }) {
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
-          <div className="flex items-center bg-slate-950 border border-slate-800 rounded-xl p-1 gap-1">
-            <button
-              onClick={() => { setCurrentStepIndex(0); setIsPlaying(false); }}
-              className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded-lg transition-colors"
-              title="Reset"
-            >
-              <RotateCcw className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => { setCurrentStepIndex(p => Math.max(0, p - 1)); setIsPlaying(false); }}
-              disabled={currentStepIndex === 0}
-              className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded-lg transition-colors disabled:opacity-30"
-              title="Step Backward"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setIsPlaying(!isPlaying)}
-              className="px-3 py-1.5 bg-lime-600 hover:bg-lime-500 text-slate-950 font-bold rounded-lg transition-all flex items-center gap-1.5 text-xs shadow-md shadow-lime-900/40"
-            >
-              {isPlaying ? <Pause className="w-3.5 h-3.5 fill-current" /> : <Play className="w-3.5 h-3.5 fill-current" />}
-              <span>{isPlaying ? 'Pause' : 'Play'}</span>
-            </button>
-            <button
-              onClick={() => { setCurrentStepIndex(p => Math.min(steps.length - 1, p + 1)); setIsPlaying(false); }}
-              disabled={currentStepIndex === steps.length - 1}
-              className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded-lg transition-colors disabled:opacity-30"
-              title="Step Forward"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
+          <Playback compact playback={playback} length={steps.length} />
 
-          <select
-            value={speed}
-            onChange={(e) => setSpeed(Number(e.target.value))}
-            className="bg-slate-950 border border-slate-800 text-slate-300 rounded-xl px-2 py-1.5 text-xs font-mono"
-          >
-            <option value={2000}>0.5x Slow</option>
-            <option value={1300}>1.0x Normal</option>
-            <option value={600}>2.0x Fast</option>
-          </select>
         </div>
       </div>
 

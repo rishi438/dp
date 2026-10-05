@@ -1,13 +1,14 @@
+import Playback from '../Playback';
 import { useAutoplay } from '../../hooks/usePlayback';
 import React, { useState, useMemo, useEffect } from 'react';
-import { Flame, Play, Pause, RotateCcw, Trophy, Zap, TrendingUp } from 'lucide-react';
+import { Flame, Trophy } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 export default function KadaneSimulator({ input }) {
   const nums = input?.nums ?? [-2, 1, -3, 4, -1, 2, 1, -5, 4];
   const [currentIdx, setCurrentIdx] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [speed, setSpeed] = useState(1200);
+  const [speed, setSpeed] = useState(900);
 
   // Compute Kadane DP table
   const kadaneData = useMemo(() => {
@@ -63,7 +64,7 @@ export default function KadaneSimulator({ input }) {
     return { table, maxOverall, maxEndIdx, bestStart };
   }, [nums]);
 
-  useAutoplay({ playing: isPlaying, step: currentIdx, last: nums.length - 1, speed, onStep: setCurrentIdx, onStop: setIsPlaying });
+  const playback = useAutoplay({ playing: isPlaying, step: currentIdx, last: nums.length - 1, speed, setSpeed, onStep: setCurrentIdx, onStop: setIsPlaying });
 
   const activeItem = kadaneData.table[currentIdx] || kadaneData.table[0];
 
@@ -98,52 +99,7 @@ export default function KadaneSimulator({ input }) {
         </div>
 
         {/* Playback */}
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => {
-              setCurrentIdx(0);
-              setIsPlaying(false);
-            }}
-            className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold rounded-lg border border-slate-700"
-          >
-            Reset
-          </button>
-          <button
-            onClick={() => {
-              setIsPlaying(false);
-              setCurrentIdx(p => Math.max(0, p - 1));
-            }}
-            disabled={currentIdx === 0}
-            className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-slate-300 text-xs font-bold rounded-lg border border-slate-700"
-          >
-            Prev
-          </button>
-          <button
-            onClick={() => {
-              if (currentIdx >= nums.length - 1) {
-                setCurrentIdx(0);
-                setIsPlaying(true);
-              } else {
-                setIsPlaying(!isPlaying);
-              }
-            }}
-            className={`px-4 py-1 text-xs font-black rounded-lg shadow ${
-              isPlaying ? 'bg-amber-500 text-slate-950' : 'bg-emerald-500 text-slate-950'
-            }`}
-          >
-            {isPlaying ? 'Pause' : (currentIdx >= nums.length - 1 ? 'Replay' : 'Step Through')}
-          </button>
-          <button
-            onClick={() => {
-              setIsPlaying(false);
-              setCurrentIdx(p => Math.min(nums.length - 1, p + 1));
-            }}
-            disabled={currentIdx === nums.length - 1}
-            className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-slate-300 text-xs font-bold rounded-lg border border-slate-700"
-          >
-            Next
-          </button>
-        </div>
+        <Playback compact playback={playback} length={nums.length} />
       </div>
 
       {/* Main Grid: Array Cards + The 2 Doors */}

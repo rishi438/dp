@@ -170,6 +170,181 @@ const drills = {
   ],
 };
 
+// Append new rows after the original drills so saved question/option IDs stay stable.
+const additionalDrills = {
+  0: [
+    ['Two histories reach the same step, but one has already used its single allowed long jump. Is the step alone a sufficient state?', 'No; also track whether the long jump was used', 'Yes; the position always determines every future choice', 'Yes; keep only the history with fewer moves', 'The remaining legal moves differ. A state must retain the information that affects future choices.'],
+    ['If the question asks whether ANY legal route exists, how should alternative predecessor answers be combined?', 'Logical OR', 'Addition of route costs', 'Logical AND', 'One reachable predecessor is enough. AND would require every alternative to be reachable.'],
+    ['A counting transition adds two branches that both include the same complete solution. What goes wrong?', 'That solution is counted twice', 'The solution is automatically deduplicated', 'The answer becomes a minimum cost', 'Summing branches counts correctly only when each solution belongs to exactly one branch, or overlap is corrected.'],
+    ['A minimum-cost DP has a valid route costing 0 and an unreachable state. May both be represented by 0?', 'No; use a distinct unreachable marker such as infinity', 'Yes; zero always means unreachable', 'Yes; min can distinguish their histories', 'The transition must distinguish a free route from no route at all.'],
+    ['A grid DP has R*C states and checks at most two predecessors per state. What is its time complexity?', 'O(R*C)', 'O(R+C)', 'O(2^(R*C))', 'There is constant work per state, so total work scales with the number of cells.'],
+    ['A recurrence is correct but reads an unfinished dependency. Which part needs repair?', 'The evaluation order', 'Only the variable names', 'Only the final return statement', 'Even a correct formula produces wrong answers when its required values are not ready.'],
+    ['A shortest-route problem gains a rule allowing at most two toll roads. What should you reconsider first?', 'Whether the state tracks toll roads already used', 'Whether every min should become max', 'Whether to sort the road costs', 'A new constraint can distinguish histories previously treated as the same state.'],
+  ],
+  1: [
+    ['Plain fib evaluates fib(n-1) before fib(n-2). With bases 0 and 1, which base is reached first from fib(4)?', 'fib(1)', 'fib(0)', 'fib(2)', 'The first chain is fib(4), fib(3), fib(2), fib(1).'],
+    ['For plain Fibonacci with T(0)=T(1)=1 call, which formula counts calls for n>=2?', 'T(n)=1+T(n-1)+T(n-2)', 'T(n)=T(n-1)+T(n-2)', 'T(n)=1+max(T(n-1),T(n-2))', 'Count the current invocation as well as both child subtrees. Maximum would measure a path, not total calls.'],
+    ['With F(0)=0 and F(1)=1, what does F(2) return?', '1', '2', '0', 'F(2)=F(1)+F(0)=1+0. The argument is not the result.'],
+    ['One child of a recursive call reaches a base case. What happens to an unevaluated sibling needed by the parent?', 'It must still be evaluated', 'It disappears because one branch stopped', 'It automatically has the same answer', 'A base case returns from that invocation; it does not finish every branch of the parent.'],
+    ['If recursive Fibonacci evaluates the n-2 child first, what changes for valid n?', 'The visit order changes, but the returned Fibonacci number does not', 'The result doubles', 'Repeated subproblems disappear', 'Addition gives the same result in either child order. Both subtrees are still evaluated.'],
+    ['A naive recursive function branches but never revisits the same state. Will memoization necessarily remove much work?', 'No; there may be little repeated work to reuse', 'Yes; it always changes exponential time to linear', 'Yes; it removes all first visits', 'Caching helps when identical subproblems recur; it does not avoid computing distinct states.'],
+    ['A staircase counter allows hops 2 and 3. What should a branch with negative remaining steps return?', '0 ways', '1 way', 'The negative remaining distance', 'Overshooting the destination is not a valid completion. Remaining zero, by contrast, contributes one completion.'],
+  ],
+  2: [
+    ['A memo dictionary is recreated inside every recursive invocation. What is lost?', 'Reuse of answers between calls', 'The ability to call the function', 'All base cases', 'The cache must be shared across calls belonging to the same problem instance.'],
+    ['There are n distinct states, but each checks n possible choices. What is the memoized time bound?', 'O(n^2)', 'O(n)', 'O(log n)', 'Computing each state once still requires processing all its choices.'],
+    ['Does caching only base cases eliminate repeated expansion of non-base Fibonacci states?', 'No; the larger repeated states are still recomputed', 'Yes; bases are the only repeated calls', 'Yes; every caller is implicitly cached', 'A cache entry applies to its own key, not automatically to callers that depend on it.'],
+    ['State A recursively asks for B, which asks for A before either finishes. Does ordinary completed-answer memoization alone fix this cycle?', 'No; neither answer is cached yet', 'Yes; the second A is already a completed cache hit', 'Yes; all cycles have answer zero', 'A dependency cycle needs appropriate cycle handling or another formulation; a completed-answer cache is not enough.'],
+    ['Only 20 of 1000 possible states are reachable from the requested start. Which states does top-down DP normally evaluate?', 'The reachable states it needs', 'All 1000 regardless of reachability', 'Exactly one state', 'Top-down evaluation follows dependencies from the requested state instead of scanning the whole state space.'],
+    ['A cached subset-sum state returns false. What should a later lookup of that exact state do?', 'Reuse false without recomputing', 'Delete it because false is not an answer', 'Replace it with true', 'An impossible subproblem is still a completed result worth caching.'],
+    ['A cached function reads an array that is later modified. Is its old cache necessarily valid?', 'No; changing the array can change the answers for the same keys', 'Yes; cached values adapt automatically', 'Yes; array length is the only relevant property', 'Clear or version the cache when external input affecting the recurrence changes.'],
+  ],
+  3: [
+    ['A suffix recurrence reads dp[i+1], with dp[n] known. Which simple fill order works?', 'i from n-1 down to 0', 'i from 0 up to n-1', 'Any order because dp[n] is known', 'Each suffix must be ready before the state immediately before it is computed.'],
+    ['With F(0)=0 and F(1)=1, a table loop uses i<n instead of i<=n. For n>=2, which needed cell is omitted?', 'dp[n]', 'dp[0]', 'dp[1]', 'The loop stops before the requested index, leaving the final Fibonacci value uncomputed.'],
+    ['A counting recurrence sums three legal predecessors. Why must its accumulator be reset for each new state?', 'Otherwise totals from a different state leak into this one', 'To erase the base cases', 'To force the answer to be zero', 'Each state represents its own set of completions and needs a fresh sum.'],
+    ['Ways to climb using only hops 2 or 3 start with ways(0)=1. What is ways(1)?', '0', '1', '2', 'Neither permitted hop can land on step 1 from a nonnegative predecessor.'],
+    ['A minimum-cost table initializes every non-base cell to zero although all legal path costs are positive. What can happen?', 'Impossible zero-cost paths can win the minimum', 'Every answer becomes too large', 'Nothing; initialization never affects min', 'Use infinity for unreachable states so only actual paths produce finite candidates.'],
+    ['Two states depend only on completed bases and not on each other. Must one particular state be filled first?', 'No; either order respects their dependencies', 'Yes; the smaller answer must come first', 'Yes; only left-to-right is legal', 'A dependency order can have several valid schedules when states are independent.'],
+    ['For Fibonacci tabulation, what invariant should hold after completing loop index i?', 'dp[0] through dp[i] contain their correct Fibonacci values', 'Every later cell is already correct', 'All table values equal dp[i]', 'Correct bases establish the invariant, and each transition extends it by one cell.'],
+  ],
+  4: [
+    ['In a one-row right/down grid DP scanned left to right, what does dp[c] hold just BEFORE updating column c?', 'The value from the previous row at column c', 'The current row value from column c-1', 'The final answer for every row', 'The current slot still represents above, while dp[c-1] has already become the current-row left value.'],
+    ['Rolling LCS into one row needs the old diagonal. When should it be saved?', 'Before overwriting the old dp[j]', 'After the entire row is overwritten', 'Only when the characters differ', 'Save the previous-row value before replacement so the next column can read its diagonal.'],
+    ['For recurrence d[i]=d[i-1]+d[i-3], a ring has three slots. When can slot i%3 be overwritten?', 'After its old value d[i-3] has been read for this transition', 'Before reading any dependency', 'It can never be reused', 'The reused slot still holds a needed predecessor until the new value has been computed.'],
+    ['Two variables named previousRow and currentRow refer to the same mutable array. Does swapping their names isolate DP generations?', 'No; both still refer to the same array', 'Yes; different names guarantee different storage', 'Yes; swapping copies every cell', 'Separate generations need separate buffers or a carefully derived in-place update order.'],
+    ['A rolling DP needs only the last two values, but the task asks for every prefix answer. Can two numbers alone store all requested outputs?', 'No; the outputs themselves require additional storage or streaming', 'Yes; rolling variables retain every overwritten value', 'Yes; return the last value for all prefixes', 'Auxiliary recurrence storage and storage for the requested output are different requirements.'],
+    ['A 0/1 subset-sum update has one item of weight 2 and target 4. What mistake can an ascending one-row scan make?', 'Mark 4 reachable by using the same item twice', 'Mark target 0 unreachable', 'Require a negative item', 'The update at 4 can read the newly updated entry at 2, reusing the current item.'],
+    ['A rolled two-term recurrence starts prev2=0 and prev1=1. If n=0, which value is the answer?', 'prev2, or a direct base-case return of 0', 'prev1 because it is always the result', 'prev1+prev2', 'The usual final prev1 return applies only after accounting for the n=0 boundary.'],
+  ],
+  5: [
+    ['Using unlimited coins [1,3,4], what is the minimum number needed for amount 6?', '2', '3', '6', 'Use 3+3. Greedily taking 4 first leads to 4+1+1, which uses more coins.'],
+    ['Using unlimited coins [2,4], can amount 7 be formed?', 'No', 'Yes, using two coins', 'Yes, using seven coins', 'Any sum of even coin values is even, so 7 is unreachable.'],
+    ['Counting ORDERED sequences of coins [1,2] summing to 3 gives how many?', '3', '2', '1', 'The sequences are [1,1,1], [1,2], and [2,1]. Here order distinguishes solutions.'],
+    ['A denomination list [1,1,2] describes coin VALUES, not distinct coin types. What should a combination counter do first?', 'Deduplicate equal denominations', 'Treat both 1 entries as different types', 'Discard denomination 2', 'Duplicate values otherwise count the same value-based combination through multiple type choices.'],
+    ['Why must an unlimited-coin recursion reject denomination zero?', 'Taking it leaves the remaining amount unchanged', 'Zero always makes the answer negative', 'Zero removes all other denominations', 'A zero-valued choice prevents progress and can create infinitely many representations in counting variants.'],
+    ['For Word Break on catsand with dictionary {cat, cats, and}, is choosing the first matching prefix always safe?', 'No; cat leaves sand, while cats leaves the valid word and', 'Yes; the shortest prefix is always optimal', 'Yes; matching any prefix proves the whole string works', 'Try alternative split points. A valid first word does not guarantee that the remaining suffix is segmentable.'],
+    ['In Word Break, s[j:i] is in the dictionary but can[j] is false. Can that split establish can[i]?', 'No; the prefix before the word must also be segmentable', 'Yes; any dictionary substring is sufficient', 'Yes; set every shorter prefix to true', 'A valid final word must attach to an already valid prefix.'],
+  ],
+  6: [
+    ['For [5,-2,3,-10,4], what is the maximum nonempty subarray sum?', '6', '12', '4', 'The best run is [5,-2,3], whose sum is 6. Separate positive runs cannot be joined freely.'],
+    ['After processing [4,-6,3], what are the ending-here sum and the best-so-far sum?', '3 and 4', '4 and 4', '3 and 3', 'Ending sums are 4, -2, 3; the earlier global maximum of 4 remains best.'],
+    ['For a nonempty maximum-subarray task on the single element [-7], how should the initial best be set?', '-7', '0', '7', 'Initializing to zero would admit an empty run, which this task forbids.'],
+    ['An optimal subarray ends before the final index. Does standard Kadane still find it?', 'Yes; the global best is retained separately', 'No; it always returns a suffix', 'Only if all numbers are positive', 'The ending-here state changes at each index, while the global maximum preserves earlier candidates.'],
+    ['If the previous ending sum is exactly zero, how do restarting and extending compare numerically?', 'They give the same new sum', 'Extending is always larger', 'Restarting is always larger', 'Both produce nums[i]. A requested tie-break on boundaries would need an explicit rule.'],
+    ['For maximum PRODUCT subarray, why is keeping only the maximum ending product insufficient?', 'A negative number can turn a minimum negative product into the maximum', 'Products never depend on signs', 'The maximum product is always a single element', 'Track both extremes because multiplication by a negative value reverses their order.'],
+    ['For a minimum-sum nonempty contiguous run, what is the ending-here recurrence?', 'min(nums[i], previousEnding+nums[i])', 'max(nums[i], previousEnding+nums[i])', 'min over all unrelated positive elements', 'The same extend-or-restart choices apply, but the objective chooses the smaller sum.'],
+  ],
+  7: [
+    ['What is the LCS length of AB and BA?', '1', '2', '0', 'Either A or B can be kept, but their opposite order prevents a common subsequence of length two.'],
+    ['In longest COMMON SUBSTRING DP, what happens at a character mismatch?', 'The matching suffix length at that cell becomes 0', 'Take the maximum of the upper and left cells', 'Add one to the diagonal', 'A substring must stay contiguous, so a mismatch breaks the common suffix at these endpoints.'],
+    ['With unit insert/delete/replace costs, what is the edit distance from cat to cut?', '1', '2', '3', 'Replacing a with u completes the transformation in one edit.'],
+    ['What is the unit-cost edit distance from abcd to the empty string?', '4', '0', '1', 'Each of the four characters must be deleted.'],
+    ['What is the LCS length of AAA and AA?', '2', '3', '6', 'Each selected position is used once, so the shorter string limits the common subsequence length to two.'],
+    ['A longest-common-substring DP has all its cells. Where is its answer?', 'The maximum over all cells', 'Always the bottom-right cell', 'The sum of its diagonal', 'The best common substring can end at any pair of positions, not necessarily at both string ends.'],
+    ['A standard LCS table has string lengths m and n and constant work per cell. What is its time complexity?', 'O(m*n)', 'O(m+n)', 'O(2^(m+n))', 'Each pair of prefix lengths gives one state, with constant transition work.'],
+  ],
+  8: [
+    ['In right/down path counting, the starting cell is blocked. What is the answer?', '0', '1', 'The number of columns', 'There is no legal starting path; initializing the blocked start to one would create false routes.'],
+    ['For grid [[1,2],[3,4]], what is the minimum right/down path sum including both endpoints?', '7', '8', '5', 'Right then down costs 1+2+4=7; down then right costs 1+3+4=8.'],
+    ['A 3x3 grid has its center blocked and no other obstacles. How many right/down paths connect opposite corners?', '2', '6', '0', 'Only the routes along the top/right boundary and the left/bottom boundary avoid the center.'],
+    ['In a one-row path counter, what must happen when the current cell is blocked?', 'Set its entry to 0', 'Leave the previous-row count unchanged', 'Set its entry to 1', 'Leaving the old entry would allow paths from above to pass through the blocked cell.'],
+    ['Do negative cell costs invalidate right/down minimum-path DP?', 'No; right/down dependencies are still acyclic', 'Yes; every negative value creates a cycle', 'Yes; costs must be sorted first', 'Movement restrictions prevent revisiting a cell, so negative values do not create dependency cycles.'],
+    ['A right/down grid gains a legal diagonal down-right move. Which extra incoming dependency is needed?', 'dp[r-1][c-1]', 'dp[r+1][c+1]', 'dp[r][c]', 'Undoing the diagonal final move reaches the upper-left predecessor.'],
+    ['A single-cell grid contains cost 9. What is its minimum path sum?', '9', '0', '18', 'Start and destination are the same cell, and its cost is counted once.'],
+  ],
+  9: [
+    ['For nonnegative weights, why can an odd total sum never be split into two equal-sum subsets?', 'Each half would need a noninteger sum', 'Odd numbers cannot appear in subsets', 'Every subset must have even size', 'Equal integer sums add to an even total. This check can reject the instance before DP.'],
+    ['In EXACT-fill maximum-value knapsack, how should positive capacities initially be represented before any items?', 'Unreachable, such as negative infinity', 'Zero, as in an at-most-capacity variant', 'The capacity itself', 'With no items only exact weight zero is reachable; empty selections cannot fill positive capacity.'],
+    ['With two distinct items of weights [2,2], can 0/1 subset sum reach target 4?', 'Yes; take each item once', 'No; equal weights count as one item', 'Yes; reuse the first item twice', 'The restriction applies to item identities. Distinct items may have equal weights.'],
+    ['For weights [2,3], values [4,5], and capacity 3, what is the 0/1 optimum?', '5', '9', '8', 'Only one item fits at a time. Taking the weight-3 item yields value 5.'],
+    ['A nonnegative subset-sum problem has items [2,5] and target 3. What is the result?', 'False', 'True because 5-2=3', 'True because one item exceeds 3', 'Subset sum only adds selected items; subtracting one item from another is not a legal choice.'],
+    ['When counting index-distinct subsets, what does adding one zero-valued item do to the count for each reachable sum?', 'Doubles it', 'Leaves it unchanged', 'Makes it zero', 'For every previous subset, excluding or including this distinct zero item gives two subsets with the same sum.'],
+    ['Knapsack costs O(n*W). If W is written in binary, why is this called pseudopolynomial?', 'Runtime depends on the numeric capacity, not just the bits used to encode it', 'It always runs in O(log W)', 'It solves fractional knapsack only', 'A capacity needing b bits can be nearly 2^b, so an O(W) loop is not polynomial in b.'],
+  ],
+  10: [
+    ['What is the strictly increasing LIS length of [5,4,3,2]?', '1', '4', '0', 'Any singleton works, but no earlier element can precede a later smaller value in an increasing sequence.'],
+    ['What is the strictly increasing LIS length of [1,3,2,4]?', '3', '4', '2', 'Both [1,3,4] and [1,2,4] have length three. The dip from 3 to 2 prevents using all four.'],
+    ['What should LIS return for an empty input?', '0', '1', '-1', 'There is no element from which to form even a singleton subsequence.'],
+    ['In tails for STRICTLY increasing LIS, where should a new value x replace an entry?', 'At the first tail >= x', 'At the first tail > x', 'Always after every equal value', 'Replacing an equal tail prevents duplicates from incorrectly extending the strict subsequence length.'],
+    ['For the LONGEST NONDECREASING subsequence, which comparison allows a predecessor j<i?', 'nums[j] <= nums[i]', 'nums[j] < nums[i]', 'nums[j] > nums[i]', 'Nondecreasing allows equality, unlike strictly increasing LIS.'],
+    ['When a predecessor produces a strictly longer LIS ending at i, what should the count of best sequences ending at i become?', 'The count from that predecessor', 'The old count plus the predecessor count', 'Always 1', 'Shorter candidates are no longer optimal. Add counts only when another predecessor ties the best length.'],
+    ['For [1,3,5,4,7], how many index-distinct longest increasing subsequences exist?', '2', '1', '5', 'The length-four sequences are [1,3,5,7] and [1,3,4,7].'],
+  ],
+  11: [
+    ['After selling on day d with a one-day cooldown, what is the earliest day you may buy again?', 'd+2', 'd+1', 'd+3', 'Day d+1 is the mandatory rest day; buying resumes on d+2.'],
+    ['With cooldown and prices [1,2], what is the maximum completed profit?', '1', '0', '2', 'Buy on day zero and sell on day one. No later buy is needed, so cooldown does not reduce this profit.'],
+    ['Why may the final answer include the just-sold state?', 'It holds cash and no stock, even if cooldown would restrict a later buy', 'It still holds a share', 'It requires an extra sale', 'Cooldown limits future actions, not the validity of a completed sale on the last day.'],
+    ['Using previous-day states, which transition creates soldToday?', 'holdYesterday + priceToday', 'restYesterday + priceToday', 'soldYesterday - priceToday', 'A sale requires a share already held; a resting state cannot sell a share it does not own.'],
+    ['A transaction fee f is charged once per completed trade, on sale. Which sale transition is correct?', 'soldToday = holdYesterday + priceToday - f', 'soldToday = holdYesterday + priceToday + f', 'soldToday = holdYesterday + priceToday - 2*f', 'Charging the fee on sale subtracts it exactly once for that transaction.'],
+    ['A stock problem now allows at most k completed trades. What additional state is generally needed?', 'The number of trades used or remaining', 'Only the highest historical price', 'Only the day parity', 'Two histories with the same holding status may have different future choices if their trade budgets differ.'],
+    ['A stock DP handles a single day and requires selling after buying. With trades optional, what is the best profit?', '0', 'The price on that day', 'The negative of that price', 'No completed buy-then-later-sell trade fits within one day, so choose no transaction.'],
+  ],
+  12: [
+    ['For matrices A:10x30, B:30x5, C:5x60, what is the cheapest total multiplication cost?', '4500', '27000', '3000', '(AB)C costs 10*30*5 + 10*5*60 = 4500. A(BC) costs 30*5*60 + 10*30*60 = 27000.'],
+    ['For inclusive matrix interval [l,r] split into [l,k] and [k+1,r], which k values are legal?', 'l through r-1', 'l through r', 'Only k=r', 'Each side must contain a matrix. Splitting at r would leave the right side empty.'],
+    ['A chain contains n matrices. How many dimensions are in its usual dimension array?', 'n+1', 'n', '2^n', 'Matrix i has shape dims[i] by dims[i+1], with adjacent matrices sharing a dimension.'],
+    ['In open-interval Burst Balloons DP, choosing k last adds which local reward?', 'values[l]*values[k]*values[r]', 'values[k-1]*values[k]*values[k+1] from the original array', 'values[l]+values[k]+values[r]', 'All other balloons inside the interval are gone, so the surviving neighbors are the boundary balloons l and r.'],
+    ['With one balloon of value 5 and padded boundary values 1, what is the maximum reward?', '5', '0', '25', 'The single burst earns 1*5*1=5.'],
+    ['Why is choosing the locally cheapest matrix-pair multiplication not a general proof of an optimal chain order?', 'It can change the dimensions and costs of later multiplications', 'All parenthesizations cost the same', 'The final matrix dimensions depend on the parenthesization', 'Intermediate products affect subsequent costs, although the final product shape stays fixed. Compare complete split costs.'],
+    ['An interval DP minimizes over every legal split k. How are the two subinterval costs combined for a fixed k?', 'Add both costs and the local merge cost', 'Take only the smaller subinterval cost', 'Multiply the two subinterval costs', 'Both subproblems must be performed for that split; only the choice between splits uses min.'],
+  ],
+  13: [
+    ['What is the longest palindromic SUBSEQUENCE length of abca?', '3', '4', '1', 'Keep aba or aca by skipping one interior character. The full string is not a palindrome.'],
+    ['What is the longest palindromic SUBSTRING length of abca?', '1', '3', '4', 'No adjacent pair matches and neither length-three window is a palindrome. Skipping interior characters is forbidden.'],
+    ['For the two-character string aa, what is the longest palindromic subsequence length?', '2', '1', '0', 'The matching endpoints contribute two characters around an empty interval of length zero.'],
+    ['For the string abc, what is the longest palindromic subsequence length?', '1', '2', '3', 'All characters differ, so any one character is optimal.'],
+    ['In the usual interval LPS recurrence, which dependencies must be ready before [i,j]?', 'The needed shorter intervals inside [i,j]', 'Only intervals longer than [i,j]', 'Only [0,n-1]', 'Dropping endpoints or enclosing the inner interval requires results on strictly shorter intervals.'],
+    ['What is the minimum number of cuts needed to partition aab into palindromic substrings?', '1', '2', '0', 'The partition aa|b uses one cut. Counting the two pieces as two cuts is an off-by-one error.'],
+    ['Using only insertions, how many characters must be inserted at minimum to make a length-n string palindromic, if its LPS length is L?', 'n-L', 'L', 'n+L', 'The longest palindromic subsequence is already matched; the other n-L characters can be supplied with partners through insertions.'],
+  ],
+  14: [
+    ['For tree robbery, a root has value 10 and two leaf children have values 1 and 2. What is the optimum?', '10', '13', '3', 'Taking the root excludes both children but beats their combined value of 3.'],
+    ['A tree is a chain with values 4 -> 1 -> 5. What is the maximum nonadjacent-node sum?', '9', '10', '5', 'Take the root and grandchild. The exclusion applies to direct parent-child edges, not every ancestor pair.'],
+    ['Two sibling nodes have the same value but different descendants. Is caching solely by node value safe?', 'No; the nodes can have different subtree answers', 'Yes; equal values imply equal subtrees', 'Yes; sibling answers must always match', 'Node identity or an equivalent complete subtree state is needed; the node value alone loses structure.'],
+    ['For a tree node with many children, how is its take value computed?', 'node.value + sum(skip(child))', 'node.value + max(skip(child))', 'node.value + sum(take(child))', 'Every child must be skipped, and all independent child subtrees contribute to the total.'],
+    ['A recursive tree DP has n nodes arranged in a chain. What can its stack depth be?', 'O(n)', 'Always O(log n)', 'O(1)', 'A tree need not be balanced. In a chain, recursive depth grows with the node count.'],
+    ['Why can summing child-subtree optima double-count work if the same routine is applied to a graph with shared descendants?', 'The apparent child subtrees may overlap', 'Graphs cannot contain leaf nodes', 'The root value becomes negative', 'The tree recurrence relies on disjoint child subtrees; shared descendants break that independence.'],
+    ['Tree robbery allows selecting no nodes, and every node value is negative. What is the best result?', '0', 'The sum of all values', 'The least negative node must be taken', 'Skipping every node is legal and better than any negative total.'],
+  ],
+  15: [
+    ['Cities are numbered from 0. Which cities are in mask 0101 in binary?', 'Cities 0 and 2', 'Cities 1 and 3', 'Only city 5', 'The least significant bit represents city 0; the set bits are positions 0 and 2.'],
+    ['For a tour fixed to start at city 0, which visited mask is used initially?', '1 << 0', '0', '(1 << n)-1', 'The starting city is already visited, so bit zero must be set.'],
+    ['What happens if mask XOR (1<<j) is used when bit j is already set?', 'It clears bit j', 'It leaves bit j set', 'It sets every lower bit', 'XOR toggles. Use OR when the operation must preserve an already visited city.'],
+    ['Three cities have symmetric distances d(0,1)=2, d(1,2)=3, d(0,2)=4. What is the cheapest tour starting and ending at 0?', '9', '5', '6', 'Either tour uses all three edges, costing 2+3+4=9. Stopping at the last new city omits the return edge.'],
+    ['There are n tasks and a mask records which are assigned. How many different masks exist?', '2^n', 'n^2', 'n!', 'Each task independently has an unset or set bit. Assignment orders are not encoded by the mask.'],
+    ['An assignment DP always assigns workers in order. If mask marks assigned jobs, which worker is next?', 'The worker indexed by the number of set bits in mask', 'The worker indexed by the numeric mask value', 'Always worker 0', 'Exactly one job is assigned per processed worker, so popcount(mask) gives the number of completed workers.'],
+    ['A minimum-tour DP represents an absent edge. What cost should that edge contribute?', 'Infinity, or the transition should be skipped', '0', '-1 as a cheap valid edge', 'A missing edge is impossible, not a free or discounted connection.'],
+  ],
+  16: [
+    ['The bound is 325 and tight is true after choosing prefix 3. Which second digits are allowed?', '0 through 2', '0 through 9', 'Only 2', 'Choosing a smaller digit is allowed and makes the prefix loose; exceeding 2 would exceed the bound.'],
+    ['The bound is 325, but the first chosen digit is 2. What is the largest allowed second digit?', '9', '2', '5', 'The prefix is already smaller than 3, so later digits are unrestricted by the bound.'],
+    ['What is the usual next-tight formula after choosing digit d at position pos?', 'tight && (d == bound[pos])', 'd == bound[pos]', 'tight || (d < bound[pos])', 'Matching the current bound digit preserves tightness only if all earlier digits also matched.'],
+    ['How many integers in [0,10] contain no digit 4?', '10', '9', '11', 'There are eleven integers from 0 through 10; only 4 is excluded.'],
+    ['While processing padded digits 0,0,7 for the number 7, should the padding pair 0,0 violate a no-adjacent-equal rule?', 'No; leading padding is not part of the represented number', 'Yes; every padded zero is a real digit', 'Yes; all one-digit numbers are invalid', 'The started flag distinguishes padding from actual digits before applying adjacency rules.'],
+    ['To count numbers whose digit sum is divisible by 3, what compact running state is sufficient for the sum condition?', 'The digit sum modulo 3', 'Only the previous digit', 'The number of trailing zeros', 'Update remainder to (remainder+d)%3; the acceptance condition needs only this remainder.'],
+    ['A digit DP excludes zero and finishes with started=false. How many valid numbers does that terminal state contribute?', '0', '1', '10', 'No nonzero digit was chosen, so the walk represents zero, which the stated problem excludes.'],
+  ],
+  17: [
+    ['A knight starts in a corner of a 3x3 board. What is its survival probability after one random move among all eight directions?', '1/4', '1/2', '1', 'Exactly two of the eight moves stay on the board, giving 2/8=1/4.'],
+    ['A knight starts at the center of a 3x3 board. What is its survival probability after one move?', '0', '1', '1/2', 'Every knight move changes one coordinate by two, leaving this board from its center.'],
+    ['A cell currently has probability 0.4. One particular knight direction receives what probability mass?', '0.05', '0.4', '0.2', 'Each of eight equally likely directions receives 0.4/8=0.05, whether or not its destination is legal.'],
+    ['Two distinct paths end at the same cell at the same time. How should their probabilities combine?', 'Add them', 'Take the larger one', 'Keep only the first path', 'The cell event includes both disjoint path histories, so their masses add.'],
+    ['Why does a recursive knight-survival state need movesRemaining as well as row and column?', 'The survival probability can change with the time horizon', 'Coordinates never affect the result', 'Moves remaining is only needed to label the UI', 'Being at the same square with one move left is a different subproblem from being there with five moves left.'],
+    ['What is the time complexity of k probability steps on an n-by-n board with eight fixed moves per cell?', 'O(k*n^2)', 'O(8^k)', 'O(k*n)', 'Each step visits n^2 cells and checks a constant eight moves.'],
+    ['Starting inside the board, survival after k moves is p and failure is absorbing. What is the probability of having left by then?', '1-p', 'p/8', '1+p', 'Survival and having left are complementary events under this process.'],
+  ],
+  18: [
+    ['In Jump Game VI with k=1, which path is forced?', 'Visit every index in order', 'Jump directly to the end', 'Visit only positive values', 'Every jump advances at most one position, so none of the intermediate indices can be skipped.'],
+    ['For nums=[-2,-3,-1] and k=2, what is the best score when both endpoints must be visited?', '-3', '0', '-1', 'Jump directly from index 0 to 2, yielding -2 + -1 = -3. The starting value cannot be omitted.'],
+    ['At index i=5 with k=2, which predecessor indices are legal?', '3 and 4', '2, 3, and 4', '4 and 5', 'A predecessor j must satisfy 1 <= i-j <= 2. The current index cannot precede itself.'],
+    ['Must a negative DP score always be removed from the deque?', 'No; it can be the best legal predecessor', 'Yes; only positive scores can form a path', 'Yes; replace it with zero', 'A forced path can have negative intermediate scores. Removing all such states may destroy valid paths.'],
+    ['Two deque candidates have equal DP scores. Why is retaining only the newer one safe?', 'It provides the same score and remains in future windows at least as long', 'Its input value must be larger', 'Equal scores prove the older index was illegal', 'The newer equal-score candidate dominates the older one by expiration time.'],
+    ['Before evaluating dp[i], should index i already be inserted as a possible predecessor?', 'No; compute dp[i] from earlier legal indices first', 'Yes; every state may choose itself', 'Yes; initialize its score to infinity', 'Inserting the current state too early creates an invalid self-dependency.'],
+    ['If a transition adds a cost depending on the jump distance i-j, is a deque ordered only by dp[j] automatically valid?', 'No; dominance must be proved for the new transition', 'Yes; every bounded-window recurrence has the same deque optimization', 'Yes; ignore the distance cost', 'The best predecessor may depend on both its score and its distance. The old dominance argument may no longer apply.'],
+  ],
+};
+
 const stateQuestions = Array.from({ length: 19 }, (_, chapter) => {
   const problem = chapterPractices(chapter)[0];
   const choices = [problem.state, 'The answer for the whole input, regardless of the indices', 'The number of loops already executed', 'The best answer using future states that are not yet solved'];
@@ -177,11 +352,14 @@ const stateQuestions = Array.from({ length: 19 }, (_, chapter) => {
   return { id: `state-${chapter}`, category: `Ch ${chapter} · State design`, question: `For ${problem.title}, which state definition matches the recurrence?`, options: choices.map((text, i) => ({ text, correct: i === 0 })).map((_, i, all) => all[(i + shift) % 4]), explanation: `${problem.state}. ${problem.recurrence}` };
 });
 
-const chapterDrills = Object.entries(drills).flatMap(([chapter, rows]) => rows.map(([question, answer, trap1, trap2, explanation], index) => {
-  const choices = [answer, trap1, trap2].map((text, i) => ({ text, correct: i === 0 }));
-  const shift = (Number(chapter) + index) % choices.length;
-  return { id: `chapter-${chapter}-trap-${index + 1}`, category: `Ch ${chapter} · Trap drill`, question, explanation, options: choices.map((_, i) => choices[(i + shift) % choices.length]) };
-}));
+const chapterDrills = Array.from({ length: 19 }, (_, chapter) => {
+  const rows = [...(drills[chapter] ?? []), ...additionalDrills[chapter]];
+  return rows.map(([question, answer, trap1, trap2, explanation], index) => {
+    const choices = [answer, trap1, trap2].map((text, i) => ({ text, correct: i === 0 }));
+    const shift = (chapter + index) % choices.length;
+    return { id: `chapter-${chapter}-trap-${index + 1}`, category: `Ch ${chapter} · Trap drill`, question, explanation, options: choices.map((_, i) => choices[(i + shift) % choices.length]) };
+  });
+}).flat();
 
 export const CHAPTER_QUIZZES = Object.fromEntries(Array.from({ length: 19 }, (_, chapter) => [chapter,
   [...QUIZ_QUESTIONS, ...stateQuestions, ...chapterDrills].filter(question => chapterOf(question) === chapter),

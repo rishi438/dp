@@ -1,13 +1,14 @@
+import Playback from '../Playback';
 import { useAutoplay } from '../../hooks/usePlayback';
 import React, { useState, useMemo, useEffect } from 'react';
-import { Activity, Play, Pause, RotateCcw, ArrowRight, ShieldAlert, DollarSign } from 'lucide-react';
+import { Activity, DollarSign } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 export default function StateMachineSimulator({ input }) {
   const prices = input?.prices ?? [1, 2, 3, 0, 2];
   const [day, setDay] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [speed, setSpeed] = useState(1200);
+  const [speed, setSpeed] = useState(900);
 
   // Compute state machine DP table
   const smData = useMemo(() => {
@@ -54,7 +55,7 @@ export default function StateMachineSimulator({ input }) {
     return table;
   }, [prices]);
 
-  useAutoplay({ playing: isPlaying, step: day, last: prices.length - 1, speed, onStep: setDay, onStop: setIsPlaying });
+  const playback = useAutoplay({ playing: isPlaying, step: day, last: prices.length - 1, speed, setSpeed, onStep: setDay, onStop: setIsPlaying });
 
   const curDayData = smData[day] || smData[0];
   const maxProfit = Math.max(curDayData.rest, curDayData.sold === -Infinity ? 0 : curDayData.sold);
@@ -90,52 +91,7 @@ export default function StateMachineSimulator({ input }) {
         </div>
 
         {/* Playback */}
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => {
-              setDay(0);
-              setIsPlaying(false);
-            }}
-            className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold rounded-lg border border-slate-700"
-          >
-            Reset
-          </button>
-          <button
-            onClick={() => {
-              setIsPlaying(false);
-              setDay(p => Math.max(0, p - 1));
-            }}
-            disabled={day === 0}
-            className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-slate-300 text-xs font-bold rounded-lg border border-slate-700"
-          >
-            Prev
-          </button>
-          <button
-            onClick={() => {
-              if (day >= prices.length - 1) {
-                setDay(0);
-                setIsPlaying(true);
-              } else {
-                setIsPlaying(!isPlaying);
-              }
-            }}
-            className={`px-4 py-1 text-xs font-black rounded-lg shadow ${
-              isPlaying ? 'bg-amber-500 text-slate-950' : 'bg-emerald-500 text-slate-950'
-            }`}
-          >
-            {isPlaying ? 'Pause' : (day >= prices.length - 1 ? 'Replay' : 'Step Through')}
-          </button>
-          <button
-            onClick={() => {
-              setIsPlaying(false);
-              setDay(p => Math.min(prices.length - 1, p + 1));
-            }}
-            disabled={day === prices.length - 1}
-            className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-slate-300 text-xs font-bold rounded-lg border border-slate-700"
-          >
-            Next
-          </button>
-        </div>
+        <Playback compact playback={playback} length={prices.length} />
       </div>
 
       {/* Main Grid: 3 States Graph + Price Timeline */}

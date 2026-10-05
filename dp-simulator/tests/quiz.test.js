@@ -10,7 +10,7 @@ test('every chapter has its own substantial bank and all original questions rema
   const ids = new Set();
   for (let chapter = 0; chapter < 19; chapter++) {
     const questions = getChapterQuestions(chapter);
-    assert.ok(questions.length >= 8, `Chapter ${chapter} needs at least eight questions`);
+    assert.ok(questions.length >= 15 && questions.length <= 20, `Chapter ${chapter} needs 15-20 questions; got ${questions.length}`);
     assert.equal(new Set(questions.map(q => q.question)).size, questions.length);
     for (const question of questions) {
       assert.equal(chapterOf(question), chapter);
