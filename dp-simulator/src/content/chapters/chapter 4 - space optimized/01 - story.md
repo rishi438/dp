@@ -1,3 +1,46 @@
+# Chapter 4: Keep only answers you still need
+
+**Space optimization means storing fewer answers while keeping the same calculation.** First check which earlier answers future steps actually use.
+
+For Fibonacci:
+
+`dp[i] = dp[i-1] + dp[i-2]`
+
+To calculate the next position, we need only the previous two numbers. Once we move forward, older ones are no longer needed for this task.
+
+## Replace the table with two variables
+
+- **Stored meaning:** `older` is the number two positions back; `previous` is the number one position back.
+- **Calculation:** `current = older + previous`.
+- **Starting answers:** `older = 1` and `previous = 1`, representing positions 1 and 2.
+- **Update:** move `previous` into `older`, then move `current` into `previous`.
+- **Final answer:** `previous`, after reaching the requested position.
+
+```text
+Before position 3: older=1, previous=1 -> current=2
+Before position 4: older=1, previous=2 -> current=3
+Before position 5: older=2, previous=3 -> current=5
+```
+
+This is often called **rolling DP**: the variable meanings move forward together.
+
+## Why update order matters
+
+Calculate `current` before overwriting either input. Otherwise, you might add a new value where the old one was needed.
+
+In Python, `older, previous = previous, current` safely reads both right-hand values before changing either variable.
+
+**Common mistake:** assuming every DP table can become two variables. If a calculation needs many older cells, those cells must remain available or be replaced by another sufficient summary.
+
+You also lose the full table for inspection. Recovering the actual route or selected items may require extra records or another method.
+
+For Fibonacci, the number of calculation steps stays the same. The storage becomes a fixed number of variables, though the integers themselves grow as Fibonacci numbers grow.
+
+---
+
+<details>
+<summary>More detail and extra examples (optional)</summary>
+
 # Chapter 4 · 01 — Story: The Cloth (Space-Optimized DP)
 
 > Tabby chalked a million squares to store two numbers. This chapter is about
@@ -244,3 +287,6 @@ Next: **Chapter 5 — Corin the Coinsmith**, and the beginning of the second
 half of the book: the fifteen **patterns**.
 
 > Continue to `02 - worked example.md`.
+
+
+</details>

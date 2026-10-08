@@ -1,3 +1,78 @@
+# Chapter 5 example: Make 11 with the fewest coins
+
+You have unlimited coins of values `[1, 2, 5]`. Make exactly 11 using the smallest number of coins. Return `-1` if the amount cannot be made.
+
+**Answer: 3**, using `5 + 5 + 1`.
+
+Assume coin values are positive integers and the target amount is a nonnegative integer.
+
+## 1. Choices and stored meaning
+
+Try each possible final coin.
+
+`dp[x]` means "the fewest coins needed to make exactly x."
+
+If the final coin is `c`, the earlier coins must make `x-c`. So this choice costs `dp[x-c] + 1` coins. The extra 1 counts the final coin.
+
+For amount 11, compare:
+
+```text
+Last coin 1: dp[10] + 1
+Last coin 2: dp[9]  + 1
+Last coin 5: dp[6]  + 1
+```
+
+Keep the smallest result because the question asks for **fewest**.
+
+## 2. Starting values
+
+`dp[0] = 0`: no coins are needed for amount zero.
+
+Use `amount + 1` as a marker for "impossible." Any valid solution uses at most `amount` coins because each coin is worth at least 1. Thus the marker cannot be a valid answer.
+
+## 3. Fill smaller amounts first
+
+| Amount | Best coin count | One way to make it |
+|---|---|---|
+| 0 | 0 | No coins |
+| 1 | 1 | 1 |
+| 2 | 1 | 2 |
+| 5 | 1 | 5 |
+| 6 | 2 | 5 + 1 |
+| 9 | 3 | 5 + 2 + 2 |
+| 10 | 2 | 5 + 5 |
+| 11 | min(2 + 1, 3 + 1, 2 + 1) = 3 | 5 + 5 + 1 |
+
+The program fills every amount; this table shows selected rows. Positive coin values ensure that `x-c` is smaller than `x` and has already been processed.
+
+## 4. Code and final answer
+
+```python
+def coin_change(coins, amount):
+    impossible = amount + 1
+    dp = [impossible] * (amount + 1)
+    dp[0] = 0
+    for x in range(1, amount + 1):
+        for coin in coins:
+            if coin <= x:
+                dp[x] = min(dp[x], dp[x - coin] + 1)
+    return -1 if dp[amount] == impossible else dp[amount]
+
+print(coin_change([1, 2, 5], 11))  # 3
+print(coin_change([2], 3))         # -1
+print(coin_change([1, 3, 4], 6))  # 2
+print(coin_change([2], 0))         # 0
+```
+
+**Common mistake:** leaving out `coin <= x`. A coin larger than the amount cannot be used, and Python would interpret a negative index as a position near the end of the table.
+
+With `m` coin types, the work is `O(amount * m)`; table storage is `O(amount)`.
+
+---
+
+<details>
+<summary>More detail and extra examples (optional)</summary>
+
 # Chapter 5 · 02 — Worked Example: Coin Change (Fewest Coins)
 
 > The APPROACH half of the book is behind you. From here every worked example
@@ -33,7 +108,7 @@
 
 ## Slot 0 — FULCRUM
 
-> ### "What was the LAST coin I dropped on the counter?"
+> **Ask yourself:** "What was the LAST coin I dropped on the counter?"
 
 Standing at a pile worth **11**, one instant ago I was at:
 
@@ -225,3 +300,6 @@ Space  O(amount)                dp[x-c] can reach far back, so no rolling here
 
 > Your turn: `03 - your challenge.md`. Two of the six punish you for copying a
 > base case. Derive them.
+
+
+</details>

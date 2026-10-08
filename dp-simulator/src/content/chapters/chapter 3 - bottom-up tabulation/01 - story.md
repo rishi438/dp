@@ -1,3 +1,43 @@
+# Chapter 3: Fill the small answers first
+
+**Bottom-up DP means writing known small answers into a table, then using them to calculate larger answers.** "Tabulation" is another name for this table-filling approach.
+
+For Fibonacci, positions 1 and 2 both contain 1. Each later position adds the previous two.
+
+```text
+Position:  1  2  3  4  5  6
+Answer:    1  1  2  3  5  8
+```
+
+## What goes in the table?
+
+`dp[i]` means "the Fibonacci number at position i."
+
+- **Smaller answers needed:** `dp[i-1]` and `dp[i-2]`.
+- **Calculation:** `dp[i] = dp[i-1] + dp[i-2]`.
+- **Starting answers:** `dp[1] = dp[2] = 1`.
+- **Fill order:** positions 3, 4, 5, and so on.
+- **Final answer:** `dp[n]`.
+
+For position 5, positions 3 and 4 are already ready. We read 2 and 3, add them, and write 5. No function has to pause while another recursive call works.
+
+## The one question that determines loop order
+
+**"Have I already calculated every answer this cell reads?"**
+
+Here, the needed positions are smaller, so fill left to right. Other DP problems may need another order; choose it from the calculation, not from habit.
+
+A **loop invariant** is a statement that remains true before every loop step. Here it is: "All earlier Fibonacci positions are correct." The starting values make it true. Adding the two correct earlier answers makes the next answer correct too.
+
+**Common mistake:** filling from the end backward. When calculating position 6, positions 4 and 5 would still be empty.
+
+Compared with memoization, the small-answer formula is unchanged. The table and loop replace the recursive calls. This avoids recursion-depth errors and makes it easy to inspect intermediate answers.
+
+---
+
+<details>
+<summary>More detail and extra examples (optional)</summary>
+
 # Chapter 3 · 01 — Story: Tabby and the Bottom-Up Table
 
 > Reco can fall *down* into a problem. Tabby teaches him to **build up** out of
@@ -218,3 +258,6 @@ Next: **Chapter 4 — Space-Optimized.** Throw away the table. Keep two numbers.
 And learn the one question that decides whether you're allowed to.
 
 > Continue to `02 - worked example.md`.
+
+
+</details>

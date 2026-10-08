@@ -1,3 +1,42 @@
+# Chapter 17: Track the chance of each outcome
+
+**Probability DP saves the chance of being in each situation, then spreads that chance to the possible next situations.** A probability of `1` means certain; `0` means impossible; `0.25` means a 25% chance.
+
+## Our example
+
+A chess knight starts at the top-left corner of a `3 x 3` board. Each move is chosen randomly from all eight knight moves. A knight moves two squares in one direction and one sideways.
+
+If it leaves the board, it is out permanently. What is the chance it remains on the board after two moves?
+
+## What do we store?
+
+`dp[row][col]` is **the chance that the knight is on that square after the moves made so far**. `row` and `col` identify a square, counting from zero.
+
+Before any move, the starting square has probability `1`; every other square has `0`.
+
+## How does one move work?
+
+If a square has probability `0.4`, each of its eight possible moves receives `0.4 / 8 = 0.05`.
+
+Add each share to its destination if that destination is on the board. Shares going outside are lost. If several starting squares can reach the same destination, add their contributions.
+
+Use a fresh table for the next move, so we do not accidentally move the knight twice in one step.
+
+## The answer for this board
+
+From the corner, only two of eight moves stay on the board. After one move, the total remaining chance is `2 / 8 = 0.25`.
+
+From either surviving square, again only two of eight moves stay. After two moves, the chance is `0.25 * 2 / 8 = 0.0625`, or **6.25%**.
+
+The final answer is the sum of all probabilities still on the board.
+
+**Common mistake:** dividing by the number of safe moves. Always divide by `8`, because the random choice includes moves that leave the board.
+
+---
+
+<details>
+<summary>More detail and extra examples (optional)</summary>
+
 # Chapter 17 · 01 — Story: Fortuna, the Dice-Walker
 
 > Family: **Probability / Expected-Value DP.**
@@ -238,3 +277,6 @@ Next: **Swift the Deque Ronin**, and the day the transition itself got
 optimised.
 
 > Continue to `02 - worked example.md`.
+
+
+</details>

@@ -1,3 +1,78 @@
+# Chapter 10: Build an increasing sequence one ending at a time
+
+**Question:** Find the length of the longest strictly increasing subsequence in:
+
+```text
+[10, 9, 2, 5, 3, 7, 101, 18]
+```
+
+You may skip numbers, but must preserve their order. One answer is `[2, 3, 7, 18]`, with length **4**.
+
+## 1. Say what one saved answer means
+
+`dp[i]` = length of the longest increasing sequence ending **exactly at** `nums[i]`.
+
+For example, the entry at `7` must describe a sequence that includes `7` as its last number. This lets us check whether a later number can be attached: it must be larger than `7`.
+
+## 2. Start each answer at 1
+
+Each number alone forms a valid sequence of length 1. So use `dp = [1] * len(nums)`.
+
+This also covers numbers that are smaller than everything before them: they can start a new sequence even when they cannot extend an earlier one.
+
+## 3. Try each earlier, smaller number
+
+When processing index `i`, check every earlier index `j`:
+
+```text
+If nums[j] < nums[i]:
+    attach nums[i] to the best sequence ending at j
+    candidate length = dp[j] + 1
+    keep the larger of this candidate and dp[i]
+```
+
+The `+ 1` counts the new number. We compare lengths instead of adding different candidate sequences together.
+
+## 4. Follow a few entries
+
+```text
+At 2: no earlier smaller number.                  dp = 1
+At 5: extend [2].                                 dp = 2
+At 3: extend [2]; cannot extend a sequence at 5.   dp = 2
+At 7: extend [2, 5] or [2, 3].                    dp = 3
+At 18: extend a sequence ending at 7.             dp = 4
+```
+
+The full saved array is `[1, 1, 1, 2, 2, 3, 4, 4]`. Both `101` and `18` can end a sequence of length 4.
+
+## 5. Run it
+
+```python
+def lis_length(nums):
+    if not nums:
+        return 0
+    dp = [1] * len(nums)
+    for i in range(len(nums)):
+        for j in range(i):
+            if nums[j] < nums[i]:
+                dp[i] = max(dp[i], dp[j] + 1)
+    return max(dp)
+
+print(lis_length([10, 9, 2, 5, 3, 7, 101, 18]))  # 4
+print(lis_length([1, 2, 3, 0]))                  # 3
+print(lis_length([2, 2, 3]))                     # 2
+```
+
+Processing from left to right means every earlier `dp[j]` is ready when we use it. The result is `max(dp)` because the best sequence may end before the last number.
+
+**Common mistakes:** using `<=` allows equal neighbours, changing the problem. Sorting the input also changes the problem because it loses the original order. Keep the list as given and use `<`.
+
+
+---
+
+<details>
+<summary>More detail and extra examples (optional)</summary>
+
 # Chapter 10 · 02 — Worked Example: Longest Increasing Subsequence
 
 > Five slots, then the Invariant Lens. New this chapter: the fulcrum's answer
@@ -17,7 +92,7 @@
 
 ## Slot 0 — FULCRUM
 
-> ### "My chain ends at index `i`. Which index came just BEFORE it?"
+> **Ask yourself:** "My chain ends at index `i`. Which index came just BEFORE it?"
 
 Answer it honestly and count the doors:
 
@@ -448,3 +523,6 @@ print(max_sum_increasing([10, 5, 4, 3]))               # expected: 10
 
 > Your turn: `03 - your challenge.md`. Challenge 3 hands you an input where
 > `dp[-1]` is right by luck and asks you to break it yourself.
+
+
+</details>

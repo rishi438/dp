@@ -1,3 +1,41 @@
+# Chapter 18: Make repeated DP calculations faster
+
+**After finding a correct DP rule, look for work that you repeat at neighbouring positions. Keep useful results so you do not scan them again.**
+
+Our example: start at the first number, jump forward at most `k` positions each time, and reach the last number. Add the numbers you land on, including the start. Find the largest total.
+
+For `[1, -1, -2, 4, -7, 3]` with `k = 2`, the best route is `1 -> -1 -> 4 -> 3`, giving **7**.
+
+## First, the ordinary DP
+
+`dp[i]` means **the best total for a route ending at position `i`**. Positions count from zero.
+
+Start with `dp[0] = nums[0]`, where `nums` is the input list. To reach a later position, choose the largest saved total among the previous `k` positions, then add the current number.
+
+```text
+At position 3: look at positions 1 and 2
+At position 4: look at positions 2 and 3
+```
+
+The group we inspect moves forward by one. This is a **sliding window**. Scanning it again every time works, but can be slow when `k` is large.
+
+## Keep only useful candidates
+
+Use a **deque**, a list that allows quick removal from either end. Store candidate positions with their DP scores in decreasing order, so the front gives the largest score.
+
+Remove a position when it is too far behind to jump from. Also remove an older candidate when a newer candidate has an equal or larger score: the newer one scores at least as much and stays within reach longer.
+
+For each new position: remove expired candidates, read the best score at the front, calculate the new total, then add the new position after removing weaker candidates.
+
+Each position enters once and can be removed only once. We avoid scanning the entire window at every step.
+
+**Common mistake:** returning the largest total seen anywhere. We must reach the last position, so return its saved total, even if it is lower than an earlier one.
+
+---
+
+<details>
+<summary>More detail and extra examples (optional)</summary>
+
 # Chapter 18 · 01 — Story: Swift, the Deque Ronin
 
 > Family: **Optimized DP — transition acceleration.**
@@ -345,3 +383,6 @@ Only `03 - your challenge.md`, and then the challenges in Chapters 0 through 17
 that you have not answered yet.
 
 > Continue to `02 - worked example.md`.
+
+
+</details>

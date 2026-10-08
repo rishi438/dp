@@ -1,3 +1,80 @@
+# Chapter 6 example: Largest sum without skipping numbers
+
+For `[-2, 1, -3, 4, -1, 2, 1, -5, 4]`, find the largest sum of a **nonempty unbroken stretch**.
+
+**Answer: 6**, from `[4, -1, 2, 1]`.
+
+We must include the `-1` between 4 and 2. Skipping it would break the rule that the chosen numbers are neighbors.
+
+## 1. Decide what each saved answer means
+
+`dp[i]` = the best sum of a stretch **ending exactly at i**.
+
+That final phrase matters. A stretch ending at the previous position can be extended without leaving a gap. A stretch that ended somewhere earlier cannot necessarily be extended.
+
+## 2. Compare the two choices
+
+At number `nums[i]`:
+
+- **Start here:** the sum is just `nums[i]`.
+- **Extend:** the sum is `dp[i-1] + nums[i]`.
+
+Keep the larger sum:
+
+`dp[i] = max(nums[i], dp[i-1] + nums[i])`
+
+Start with `dp[0] = nums[0]`. The selected stretch must contain at least one number, so zero is not an automatic option.
+
+## 3. Follow the example
+
+| Number | Best ending here | Why |
+|---|---|---|
+| -2 | -2 | First number |
+| 1 | 1 | Start again |
+| -3 | -2 | Extend 1 |
+| 4 | 4 | Start again |
+| -1 | 3 | Extend |
+| 2 | 5 | Extend |
+| 1 | 6 | Extend |
+| -5 | 1 | Extend |
+| 4 | 5 | Extend |
+
+The largest saved value is 6, even though the last value is 5.
+
+## 4. Keep only the values we need
+
+`best_here` replaces the previous `dp` entry. `best_anywhere` remembers the largest result seen so far.
+
+```python
+def max_subarray(nums):
+    best_here = nums[0]
+    best_anywhere = nums[0]
+    for i in range(1, len(nums)):
+        value = nums[i]
+        best_here = max(value, best_here + value)
+        best_anywhere = max(best_anywhere, best_here)
+    return best_anywhere
+
+print(max_subarray([-2, 1, -3, 4, -1, 2, 1, -5, 4]))  # 6
+print(max_subarray([5, -100, 2]))                      # 5
+print(max_subarray([-3, -1, -2]))                      # -1
+```
+
+This function expects a nonempty array.
+
+## 5. Check the common mistake
+
+For all-negative input, return the largest single number. With `[-3, -1, -2]`, the answer is `-1`. Starting `best_anywhere` at zero would incorrectly allow an empty stretch.
+
+Also return `best_anywhere`, not `best_here`: the winning stretch may have ended before the final element.
+
+Each number is processed once, so time is `O(n)`. Only two saved totals are needed, so extra storage is `O(1)`.
+
+---
+
+<details>
+<summary>More detail and extra examples (optional)</summary>
+
 # Chapter 6 · 02 — Worked Example: Maximum Subarray (Kadane)
 
 > Five slots, then the Invariant Lens. Watch **slot 4** especially — it is the
@@ -19,7 +96,7 @@ Two phrases do all the work:
 
 ## Slot 0 — FULCRUM
 
-> ### "Does the streak ending at ME extend the previous streak, or start fresh?"
+> **Ask yourself:** "Does the streak ending at ME extend the previous streak, or start fresh?"
 
 ```
   EXTEND  →  dp[i-1] + nums[i]      (best run ending at i-1, plus me)
@@ -259,3 +336,6 @@ print(max_product([-2, 3, -4]))        # expected: 24   (all three: -2*3*-4)
 
 > Your turn: `03 - your challenge.md`. Challenge 5 hands you a *wrong* state
 > and asks you to explain exactly why it cannot work. That is the skill.
+
+
+</details>

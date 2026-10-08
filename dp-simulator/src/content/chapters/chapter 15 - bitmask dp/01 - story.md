@@ -1,3 +1,48 @@
+# Chapter 15: Remember which places you already visited
+
+**When future choices depend on which items you used, DP must remember that set of items.** Remembering only your current position is not enough.
+
+Our problem: start at town `0`, visit every other town once, then return to `0`. Find the shortest total distance.
+
+## Why the visited towns matter
+
+Imagine two routes that both end at town `2`:
+
+```text
+Route A: 0 -> 2        town 1 is still available
+Route B: 0 -> 1 -> 2   town 1 has already been visited
+```
+
+Both routes have the same current town but different possible next moves. We therefore remember **the visited set and the current town**.
+
+## What is a bitmask?
+
+A **bitmask** is just a compact yes/no list written as a binary number. Each town gets one position: `1` means visited, `0` means not visited.
+
+```text
+Town:       3 2 1 0
+Visited:    0 1 0 1    -> towns 0 and 2
+```
+
+This binary number is `5`, so `mask = 5` means the set `{0, 2}`. The word "mask" does not add a new rule; it is how we store the set.
+
+## What does DP store?
+
+`dp[mask][town]` is **the cheapest distance so far, starting at town 0, visiting exactly that set, and ending at that town**.
+
+Start with only town `0` visited and cost `0`. Other situations start at infinity, meaning "not reached yet."
+
+From each reached situation, try every unvisited town. Add the road distance, mark the new town visited, and keep the cheaper cost if several routes reach the same situation.
+
+After all towns are visited, add the road back to town `0`. For the four-town example, route `0 -> 1 -> 3 -> 2 -> 0` costs `10 + 25 + 30 + 15 = 80`.
+
+**Common mistake:** forgetting the return trip. Visiting every town completes the visits, but the question also requires coming home.
+
+---
+
+<details>
+<summary>More detail and extra examples (optional)</summary>
+
 # Chapter 15 · 01 — Story: Maska, the Bit-Witch
 
 > Family: **Bitmask DP / Travelling Salesman.**
@@ -263,3 +308,6 @@ man in spectacles runs his finger down an enormous ledger without looking up.
 Next: **Digitus the Ledger Keeper**, and the flag called `tight`.
 
 > Continue to `02 - worked example.md`.
+
+
+</details>

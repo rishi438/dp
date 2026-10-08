@@ -1,3 +1,82 @@
+# Chapter 0 example: Count the frog's routes
+
+A frog starts on the **ground, step 0**, and jumps 1 or 2 steps at a time. Find the number of different jump sequences that reach step 4 exactly.
+
+**Answer: 5.** Here are all five:
+
+```text
+1 + 1 + 1 + 1
+1 + 1 + 2
+1 + 2 + 1
+2 + 1 + 1
+2 + 2
+```
+
+The order matters: `1 + 2` and `2 + 1` describe different routes.
+
+## 1. List the choices
+
+The last jump into step 4 was either:
+
+- A 1-step jump from step 3.
+- A 2-step jump from step 2.
+
+Every valid route belongs to exactly one group. We can count the two groups separately and add them. We do not multiply: each complete route uses one of these last jumps.
+
+## 2. Say what we store
+
+`dp[i]` = the number of routes from step 0 to step `i`.
+
+For example, `dp[3]` is a **count**, not a step number or the minimum number of jumps. This meaning is the state definition.
+
+## 3. Write the calculation
+
+`dp[i] = dp[i-1] + dp[i-2]`
+
+Take every route to either earlier step and append the matching final jump. This calculation is called the transition.
+
+## 4. Set the starting answers
+
+`dp[0] = 1`: one empty route, with no jumps. This lets a direct jump count as one valid route.
+
+`dp[1] = 1`: only a single 1-step jump.
+
+Now fill the table in increasing order:
+
+| Step | Calculation | Ways |
+|---|---|---|
+| 0 | Make no jumps | 1 |
+| 1 | One 1-step jump | 1 |
+| 2 | 1 + 1 | 2 |
+| 3 | 2 + 1 | 3 |
+| 4 | 3 + 2 | 5 |
+
+## 5. Return the requested answer
+
+The destination is step 4, so read `dp[4]`. The following function accepts any nonnegative integer `n`.
+
+```python
+def frog_ways(n):
+    dp = [0] * (n + 1)
+    dp[0] = 1
+    if n >= 1:
+        dp[1] = 1
+    for i in range(2, n + 1):
+        dp[i] = dp[i - 1] + dp[i - 2]
+    return dp[n]
+
+print(frog_ways(4))  # 5
+print(frog_ways(5))  # 8
+print(frog_ways(0))  # 1
+```
+
+**Common mistake:** mixing up the starting position. These counts assume the frog starts at **0**. A frog already standing on step 1 has fewer steps left, so it is a different question.
+
+---
+
+<details>
+<summary>More detail and extra examples (optional)</summary>
+
 # Chapter 0 · 02 — Worked Example: Cracking a Problem With the Five Slots
 
 > I solve ONE problem completely, out loud, so you see the THINKING — not just
@@ -16,7 +95,7 @@ I will NOT jump to code. I will walk the **five slots** in order.
 
 ## Slot 0 — FULCRUM
 
-> "What was the LAST move that landed the frog on step `n`?"
+> **Ask yourself:** "What was the LAST move that landed the frog on step `n`?"
 
 Only two possibilities exist:
 - It hopped **1 step**, so it was on step `n-1` just before.
@@ -133,3 +212,6 @@ The thinking was the real work. That's the whole game.
 
 > Now it's your turn. Open `03 - your challenge.md`.
 > Same method. I watch how you apply it, and I find where you wobble.
+
+
+</details>

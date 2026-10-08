@@ -1,3 +1,84 @@
+# Chapter 3 example: Build a table for House Robber
+
+Houses contain `[2, 7, 9, 3, 1]` coins. You may choose houses, but **you cannot choose two neighbors**. Find the largest total. You may skip every house; the amounts here are nonnegative.
+
+**Answer: 12**, by choosing amounts `2 + 9 + 1`.
+
+## 1. The choices at each house
+
+When considering a house, either:
+
+- **Skip it:** keep the best result from the houses before it.
+- **Take it:** add its amount to the best result that excludes its immediate neighbor.
+
+These cover every valid plan: the current house is either chosen or skipped.
+
+## 2. What dp stores
+
+`dp[i]` = the largest total using the first `i` houses.
+
+Here `i` is a **count of houses**. The newest house's array index is `i-1`, so its amount is `nums[i-1]`.
+
+## 3. Starting answers and calculation
+
+`dp[0] = 0`: no houses means no coins.
+
+`dp[1] = nums[0]`: with one nonnegative amount, choose that house.
+
+For each later house:
+
+```text
+skip = dp[i-1]
+take = dp[i-2] + nums[i-1]
+dp[i] = max(skip, take)
+```
+
+`max` chooses the better complete plan. The addition happens only inside the "take" option because skipping the house gives us none of its coins.
+
+## 4. Fill from left to right
+
+| Houses considered | Skip | Take | Best total |
+|---|---|---|---|
+| None | ? | ? | 0 |
+| 2 | ? | ? | 2 |
+| 2, 7 | 2 | 0 + 7 | 7 |
+| 2, 7, 9 | 7 | 2 + 9 | 11 |
+| 2, 7, 9, 3 | 11 | 7 + 3 | 11 |
+| All five | 11 | 11 + 1 | 12 |
+
+Every calculation reads earlier cells. That is why this fill order works.
+
+```python
+def rob(nums):
+    n = len(nums)
+    if n == 0:
+        return 0
+    dp = [0] * (n + 1)
+    dp[1] = nums[0]
+    for i in range(2, n + 1):
+        skip = dp[i - 1]
+        take = dp[i - 2] + nums[i - 1]
+        dp[i] = max(skip, take)
+    return dp[n]
+
+print(rob([2, 7, 9, 3, 1]))  # 12
+print(rob([2, 1, 1, 2]))     # 4
+print(rob([]))                # 0
+```
+
+## 5. Read the final answer
+
+`dp[n]` considers all houses. It already includes the option to skip the last one.
+
+**Common mistake:** using `dp[i-1] + nums[i-1]` for "take." That earlier plan may include the neighboring house. Reading `dp[i-2]` leaves that neighbor out.
+
+The loop visits each house once: `O(n)` time and `O(n)` table space.
+
+---
+
+<details>
+<summary>More detail and extra examples (optional)</summary>
+
 # Chapter 3 · 02 — Worked Example: Flipping Top-Down Into Bottom-Up
 
 > I flip one problem you know, then one you don't, and **prove both with the
@@ -265,3 +346,6 @@ And you gained a proof:
 > Your turn: `03 - your challenge.md`. Challenge 5 hands you a loop that
 > compiles, runs, returns a number — and is wrong. The Lens will find it in
 > one line.
+
+
+</details>

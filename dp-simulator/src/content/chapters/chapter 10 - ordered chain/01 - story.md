@@ -1,3 +1,48 @@
+# Chapter 10: Find the longest increasing sequence
+
+**Keep as many numbers as possible, in their original order, so each kept number is larger than the previous one. Skipping is allowed.**
+
+```text
+Input:  10, 9, 2, 5, 3, 7, 101, 18
+Keep:          2,    3, 7,      18
+Length: 4
+```
+
+A **subsequence** is a selection that keeps the original order. **Strictly increasing** means each next number must be larger; equal numbers do not count as an increase.
+
+## What are the choices?
+
+For each number, ask: **what is the longest valid sequence that ends with this number?**
+
+You can start a new sequence containing just that number. Or you can add it after any earlier, smaller number.
+
+For `7`, earlier smaller numbers include `2`, `5`, and `3`. A sequence ending at `3` already has length 2: `[2, 3]`. Adding `7` gives length **3**.
+
+## What do we save?
+
+`dp[i]` = longest increasing sequence that **ends at index `i`**, including `nums[i]`.
+
+The ending number matters: a sequence ending with `101` cannot be extended with `18`, but one ending with `7` can.
+
+Start every entry at **1**, because each number alone is a valid sequence. Check every earlier index `j`. When `nums[j] < nums[i]`, the candidate length is `dp[j] + 1`. Keep the largest candidate.
+
+For this input:
+
+```text
+nums: 10  9  2  5  3  7  101  18
+dp:    1  1  1  2  2  3    4   4
+```
+
+The answer is the largest number in `dp`: **4**. The best sequence may end anywhere in the input.
+
+**Common mistake:** returning only the last entry. For `[1, 2, 3, 0]`, the last entry is 1, but the longest sequence `[1, 2, 3]` has length 3. Return `max(dp)`.
+
+
+---
+
+<details>
+<summary>More detail and extra examples (optional)</summary>
+
 # Chapter 10 · 01 — Story: Lissa, the Chainbuilder
 
 > Family: **Ordered chain / Longest Increasing Subsequence.**
@@ -213,3 +258,6 @@ Next: **Modus the Mask-Wearer**, and the day `dp[i]` stopped being one number
 and became *one number per mode you could be wearing*.
 
 > Continue to `02 - worked example.md`.
+
+
+</details>

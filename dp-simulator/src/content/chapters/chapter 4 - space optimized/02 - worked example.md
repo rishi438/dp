@@ -1,3 +1,75 @@
+# Chapter 4 example: House Robber with two saved answers
+
+For houses `[2, 7, 9, 3, 1]`, find the largest total without choosing neighboring houses. The answer is **12**, from `2 + 9 + 1`.
+
+The table solution checks two options at each house:
+
+```text
+Skip this house -> best total before it.
+Take this house -> its amount + best total before its neighbor.
+```
+
+We only need those two earlier totals. The rest of the table is no longer read when computing future totals.
+
+## Give the two variables precise meanings
+
+Before processing house `i`:
+
+- `previous` = the best total from houses before `i`.
+- `older` = the best total from houses before `i-1`.
+
+For the first house, both are 0: there are no earlier houses to choose.
+
+Calculate `current = max(previous, older + amount)`. Then move the two saved totals forward by one house.
+
+## Watch the variables move
+
+The middle columns show values **before** processing that house.
+
+| Amount | older | previous | current |
+|---|---|---|---|
+| 2 | 0 | 0 | max(0, 0 + 2) = 2 |
+| 7 | 0 | 2 | max(2, 0 + 7) = 7 |
+| 9 | 2 | 7 | max(7, 2 + 9) = 11 |
+| 3 | 7 | 11 | max(11, 7 + 3) = 11 |
+| 1 | 11 | 11 | max(11, 11 + 1) = 12 |
+
+The result of the current house becomes `previous` for the next house. The old `previous` becomes `older`.
+
+## Runnable Python
+
+```python
+def rob_rolled(nums):
+    older = 0
+    previous = 0
+    for amount in nums:
+        current = max(previous, older + amount)
+        older, previous = previous, current
+    return previous
+
+print(rob_rolled([2, 7, 9, 3, 1]))  # 12
+print(rob_rolled([2, 1, 1, 2]))     # 4
+print(rob_rolled([5]))              # 5
+print(rob_rolled([]))               # 0
+```
+
+The final answer is `previous`: after the loop, it represents the best total using all houses. Returning `older` would ignore the last processing step.
+
+## The update mistake to avoid
+
+If you set `older = previous` **before** calculating `current`, you lose the total that excludes the neighbor. The "take" option might then include adjacent houses.
+
+Calculate first, move the values afterward. Python's paired assignment makes that movement clear.
+
+We still visit each house once, so time is `O(n)`. Extra storage is `O(1)`: a fixed number of totals instead of an array that grows with the input.
+
+For a rolled grid or knapsack table, check whether each read needs an **old** or **new** cell value. That decides loop direction; the safe direction is not the same for every problem.
+
+---
+
+<details>
+<summary>More detail and extra examples (optional)</summary>
+
 # Chapter 4 · 02 — Worked Example: Rolling the Table Away
 
 > Three rolls of increasing danger: a 1D window, a 2D row-roll, and the
@@ -309,3 +381,6 @@ THE RULE          bottom-up FIRST. You cannot roll a notebook.
 > Your turn: `03 - your challenge.md`. Challenge 4 gives you two programs that
 > differ by one character and asks which problem each one solves.
 > Then **Chapter 5** begins the fifteen patterns.
+
+
+</details>

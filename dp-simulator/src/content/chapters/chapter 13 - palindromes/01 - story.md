@@ -1,3 +1,45 @@
+# Chapter 13: Find the longest palindrome
+
+**Keep as many letters as possible so they read the same forwards and backwards.** You may skip letters, but you cannot rearrange them.
+
+A word like `"bab"` is a **palindrome**. A **subsequence** is what remains after skipping some letters without changing their order.
+
+## A small example
+
+```text
+Original: b b b a b
+Skip a:   b b b   b
+Result:   b b b b   -> length 4
+```
+
+## What do we decide?
+
+Look at the first and last letters of the part we are solving.
+
+- **They match:** keep both, then solve the letters between them. They add `2` to the length.
+- **They differ:** they cannot both be the ends of a palindrome. Try skipping the left letter; also try skipping the right letter. Keep the longer result.
+
+For `"bba"`, the ends differ. Skipping the first `b` leaves `"ba"`, whose best length is `1`. Skipping `a` leaves `"bb"`, whose best length is `2`. So the answer for `"bba"` is `2`.
+
+## What does DP remember?
+
+Let `left` and `right` be positions in the original string, counting from zero.
+
+**`dp[left][right]` stores the longest palindrome length using letters between those positions, including both ends.** It stores a length, not the letters themselves.
+
+Start with the easy answers: one letter has length `1`; an empty part has length `0`. Solve shorter parts before longer ones.
+
+For the whole `"bbbab"`, the outside `b` letters match. The inside is `"bba"`, whose answer is `2`. Therefore the final answer is `2 + 2 = 4`.
+
+## One common mix-up
+
+**Subsequence allows skipping; substring does not.** For `"bbbab"`, the longest palindromic subsequence is `"bbbb"` (length `4`). The longest palindromic substring is `"bbb"` (length `3`). This lesson solves the subsequence problem.
+
+---
+
+<details>
+<summary>More detail and extra examples (optional)</summary>
+
 # Chapter 13 · 01 — Story: Mirra, the Mirror-Twin
 
 > Family: **Palindromes / Longest Palindromic Subsequence & Substring.**
@@ -191,3 +233,6 @@ An old voice comes from the trunk:
 Next: **Root the Elder Tree**, and the day your table stopped being an array.
 
 > Continue to `02 - worked example.md`.
+
+
+</details>

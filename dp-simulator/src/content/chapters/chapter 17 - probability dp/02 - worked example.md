@@ -1,3 +1,78 @@
+# Chapter 17: A knight survives two random moves
+
+**Question:** A knight starts at square `(0, 0)` on a `3 x 3` board. What is the chance it stays on the board for two moves?
+
+Each move is chosen from all eight knight moves with equal chance, including moves that leave the board. Once outside, the knight cannot return.
+
+## What the table stores
+
+`dp[row][col]` is **the probability of being on that square after the moves already made**. Rows and columns start at zero.
+
+Initially, `dp[0][0] = 1.0` because the knight definitely starts there. All other cells are `0.0`.
+
+For every square, divide its probability by `8` and send that share to each possible destination. Record only destinations still inside the board. Add shares when different routes reach the same square.
+
+## Trace the two moves
+
+After the first move, only two destinations survive:
+
+```text
+Square (1, 2): probability 1/8
+Square (2, 1): probability 1/8
+Total:                    2/8 = 0.25
+```
+
+From `(1, 2)`, the safe destinations are `(0, 0)` and `(2, 0)`. From `(2, 1)`, they are `(0, 0)` and `(0, 2)`.
+
+Each of these four routes has probability `1/8 * 1/8 = 1/64`:
+
+| Final square | Contributions | Probability |
+|---|---|---:|
+| `(0, 0)` | Two different routes | `2/64` |
+| `(2, 0)` | One route | `1/64` |
+| `(0, 2)` | One route | `1/64` |
+
+Add them: `4/64 = 0.0625`. The answer is **6.25%**.
+
+## Runnable Python
+
+`size` is the board width and height. `moves` is how many moves to make. `start_row` and `start_col` identify the starting square. Each pair in `offsets` says how a move changes the row and column.
+
+```python
+def knight_probability(size, moves, start_row, start_col):
+    offsets = [(1, 2), (2, 1), (2, -1), (1, -2),
+               (-1, -2), (-2, -1), (-2, 1), (-1, 2)]
+    dp = [[0.0] * size for _ in range(size)]
+    dp[start_row][start_col] = 1.0
+
+    for _ in range(moves):
+        next_dp = [[0.0] * size for _ in range(size)]
+        for row in range(size):
+            for col in range(size):
+                for row_change, col_change in offsets:
+                    next_row = row + row_change
+                    next_col = col + col_change
+                    if 0 <= next_row < size and 0 <= next_col < size:
+                        next_dp[next_row][next_col] += dp[row][col] / 8
+        dp = next_dp
+
+    return sum(sum(row) for row in dp)
+
+
+print(knight_probability(3, 2, 0, 0))  # 0.0625
+```
+
+`next_dp` starts empty for each move. We finish spreading all probabilities before replacing `dp`. With zero moves, the starting probability stays `1`.
+
+The final sum includes every surviving square because finishing anywhere on the board is allowed.
+
+**Common mistake:** dividing by two at the starting corner because only two moves are safe. All eight are possible random outcomes, so each safe move still receives only one eighth.
+
+---
+
+<details>
+<summary>More detail and extra examples (optional)</summary>
+
 # Chapter 17 · 02 — Worked Example: Knight Probability in Chessboard
 
 > Five slots, then the Invariant Lens. New this chapter: the cell holds a
@@ -19,7 +94,7 @@
 
 ## Slot 0 — FULCRUM
 
-> ### "The horse is on `(r, c)`. Where does it land next?"
+> **Ask yourself:** "The horse is on `(r, c)`. Where does it land next?"
 
 Eight doors. **All of them, simultaneously, each carrying `1/8` of the
 probability.**
@@ -484,3 +559,6 @@ two elements. `O(n · maxPts)` where `O(n)` is sitting right there.
 The swordsman at the end of the hall is holding a rope knotted at both ends.
 
 > Continue to `03 - your challenge.md`.
+
+
+</details>

@@ -1,3 +1,95 @@
+# Chapter 8: Calculate the cheapest path
+
+**Question:** What is the smallest total cost from the top-left to the bottom-right, moving only right or down?
+
+```text
+grid:
+1  3  1
+1  5  1
+4  2  1
+```
+
+Include the starting and finishing cells in the total. The answer is **7**.
+
+## 1. Say what one table entry means
+
+`dp[r][c]` = cheapest total cost to reach cell `(r, c)`, including that cell's cost.
+
+The `dp` table has exactly the same shape as the grid. For example, `dp[1][1]` describes the middle cell, whose cost is `5`.
+
+## 2. Fill the starting cell and edges
+
+The starting answer is `dp[0][0] = 1`: we must pay for the first cell.
+
+On the top row there is only one route, moving right:
+
+```text
+1, then 1 + 3 = 4, then 4 + 1 = 5
+```
+
+On the left edge there is also only one route, moving down:
+
+```text
+1, then 1 + 1 = 2, then 2 + 4 = 6
+```
+
+These edge calculations let the code avoid looking outside the grid.
+
+## 3. Fill the remaining cells
+
+For every other cell, compare arriving from above with arriving from the left:
+
+```text
+dp[r][c] = grid[r][c] + min(dp[r - 1][c], dp[r][c - 1])
+```
+
+For the middle cell: `5 + min(4, 2) = 7`. We choose one incoming route and then pay `5` for stepping onto this cell.
+
+The completed table is:
+
+```text
+1  4  5
+2  7  6
+6  8  7
+```
+
+At the finish, arriving from above costs `6`, while arriving from the left costs `8`. Add the finish cell's cost: `1 + min(6, 8) = 7`.
+
+## 4. Run it
+
+This version expects a non-empty rectangular grid, like the example.
+
+```python
+def min_path_sum(grid):
+    rows, cols = len(grid), len(grid[0])
+    dp = [[0] * cols for _ in range(rows)]
+    dp[0][0] = grid[0][0]
+
+    for c in range(1, cols):
+        dp[0][c] = dp[0][c - 1] + grid[0][c]
+    for r in range(1, rows):
+        dp[r][0] = dp[r - 1][0] + grid[r][0]
+
+    for r in range(1, rows):
+        for c in range(1, cols):
+            dp[r][c] = grid[r][c] + min(
+                dp[r - 1][c], dp[r][c - 1]
+            )
+    return dp[rows - 1][cols - 1]
+
+print(min_path_sum([[1, 3, 1], [1, 5, 1], [4, 2, 1]]))  # 7
+```
+
+Return the bottom-right entry because the route must finish there. The path across the top and down the right gives `1 + 3 + 1 + 1 + 1 = 7`.
+
+**Common mistake:** starting with a cost of `0`, which forgets the first cell. Also, don't add the costs of both incoming routes: we follow only one of them.
+
+
+---
+
+<details>
+<summary>More detail and extra examples (optional)</summary>
+
 # Chapter 8 · 02 — Worked Example: Minimum Path Sum
 
 > Five slots, then the Invariant Lens. New this chapter: **non-existent doors**
@@ -19,7 +111,7 @@
 
 ## Slot 0 — FULCRUM
 
-> ### "Which tile did I step FROM to land HERE?"
+> **Ask yourself:** "Which tile did I step FROM to land HERE?"
 
 Do **not** ask "where do I go next" — forward branching is exponential.
 Ask backwards, and the movement rule hands you the doors:
@@ -302,3 +394,6 @@ Space  O(R × C) → O(C)     roll to a single row
 
 > Your turn: `03 - your challenge.md`. Challenge 4 changes the allowed moves
 > and dares you to keep the same loop order.
+
+
+</details>

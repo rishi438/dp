@@ -1,3 +1,79 @@
+# Chapter 13: Solve "bbbab" step by step
+
+**Question:** After skipping any letters in `"bbbab"`, what is the longest length that reads the same in both directions?
+
+The answer is **4**: skip `a` and keep `"bbbb"`. We will calculate that answer from smaller parts of the string.
+
+## What the table means
+
+Call the string `text`, and its length `size`. Positions start at zero. `left` is the start of a part; `right` is its end.
+
+`dp[left][right]` means **the best palindrome length we can keep inside that part**. The kept letters do not have to use either end.
+
+A single letter already forms a palindrome, so `dp[left][left] = 1`. An empty part contributes `0`.
+
+## How to calculate a larger answer
+
+When the two end letters match, put both around the best palindrome from the inside:
+
+```text
+answer = 2 + best answer between the two ends
+```
+
+When they differ, compare two smaller questions:
+
+```text
+answer = larger of:
+         best answer after skipping the left letter
+         best answer after skipping the right letter
+```
+
+Here are the useful steps for our input:
+
+| Part | Calculation | Best length |
+|---|---|---:|
+| `"b"` or `"a"` | One letter | 1 |
+| `"bb"` | Matching ends, empty inside: `2 + 0` | 2 |
+| `"ba"` | Skip either end: `max(1, 1)` | 1 |
+| `"bba"` | Skip left or right: `max(1, 2)` | 2 |
+| `"bbbab"` | Matching ends, `"bba"` inside: `2 + 2` | 4 |
+
+## Runnable Python
+
+```python
+def longest_palindrome_length(text):
+    size = len(text)
+    if size == 0:
+        return 0
+
+    dp = [[0] * size for _ in range(size)]
+    for left in range(size - 1, -1, -1):
+        dp[left][left] = 1
+        for right in range(left + 1, size):
+            if text[left] == text[right]:
+                dp[left][right] = 2 + dp[left + 1][right - 1]
+            else:
+                dp[left][right] = max(
+                    dp[left + 1][right],
+                    dp[left][right - 1],
+                )
+
+    return dp[0][size - 1]
+
+print(longest_palindrome_length("bbbab"))  # 4
+```
+
+The outer loop moves `left` backwards so answers starting at `left + 1` are ready. The inner loop moves `right` forwards so answers ending at `right - 1` are ready. Zero-filled cells below the diagonal represent empty parts.
+
+The final cell covers position `0` through `size - 1`: the whole string.
+
+**Common mistake:** filling `left` from start to end. That reads smaller answers before they have been calculated. Keep the loop order above, or fill parts by increasing length.
+
+---
+
+<details>
+<summary>More detail and extra examples (optional)</summary>
+
 # Chapter 13 · 02 — Worked Example: Longest Palindromic Subsequence
 
 > Five slots, then the Invariant Lens. New this chapter: the same `dp[l][r]`
@@ -18,7 +94,7 @@
 
 ## Slot 0 — FULCRUM
 
-> ### "Does `s[l]` equal `s[r]`?"
+> **Ask yourself:** "Does `s[l]` equal `s[r]`?"
 
 Two branches. Not a loop.
 
@@ -464,3 +540,6 @@ print(min_insertions(""))          # expected: 0
 > nothing, a derived one is a second weapon.
 
 > Continue to `03 - your challenge.md`.
+
+
+</details>

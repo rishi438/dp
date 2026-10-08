@@ -522,3 +522,18 @@ summary { cursor: pointer; font-weight: 600; }
 .trace-explorer > .walkthrough-columns:first-child,
 .staircase-simulator > .walkthrough-columns:first-child { margin-top: 0; }
 .challenge-problem:has(.trace-explorer) .section-heading { margin-bottom: 12px; }
+
+/* Keep optional chapter depth separate from the first explanation. */
+.markdown-content > details {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-top: 24px;
+}
+.markdown-content > details > summary {
+  color: var(--text);
+  line-height: 1.6;
+}
+.markdown-content > details[open] > summary {
+  margin-bottom: 24px;
+}

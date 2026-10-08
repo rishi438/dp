@@ -1,3 +1,97 @@
+# Chapter 15: Find the shortest round trip
+
+**Start at town 0, visit towns 1, 2, and 3 once each, then return to 0.** These are the road distances:
+
+| From / to | 0 | 1 | 2 | 3 |
+|---|---:|---:|---:|---:|
+| 0 | 0 | 10 | 15 | 20 |
+| 1 | 10 | 0 | 35 | 25 |
+| 2 | 15 | 35 | 0 | 30 |
+| 3 | 20 | 25 | 30 | 0 |
+
+## Remember a visited set and an endpoint
+
+Let `size` be the number of towns. `dist[town][next_town]` is the road distance between two towns.
+
+`dp[mask][town]` stores the cheapest route **starting at 0, visiting exactly the towns in `mask`, and ending at `town`**.
+
+Each binary digit in `mask` marks a visited town. The rightmost digit is town `0`. For four towns, `0001` means only town `0`; `1111` means all towns.
+
+The code uses three operations:
+
+| Code | Plain meaning |
+|---|---|
+| `1 << next_town` | Make a marker for that town: towns 0, 1, 2, 3 use 1, 2, 4, 8 |
+| `mask & marker` | Nonzero if that town is already visited |
+| `mask \| marker` | Mark that town visited |
+
+## Starting answers and calculation
+
+`dp[1][0] = 0`: we have visited only town `0` and travelled nowhere. Everything else starts at infinity, meaning no route has reached it yet.
+
+For each reached situation, try every unvisited town. The new cost is the current cost plus that road's distance. Keep the smallest cost for the new visited set and endpoint.
+
+One route develops like this:
+
+```text
+Visited       End town    Cost
+{0}              0         0
+{0, 1}           1         0 + 10 = 10
+{0, 1, 3}        3        10 + 25 = 35
+{0, 1, 2, 3}     2        35 + 30 = 65
+Return to 0               65 + 15 = 80
+```
+
+The algorithm also checks the other routes. The cheapest complete round trip costs **80**.
+
+## Runnable Python
+
+```python
+def shortest_tour(dist):
+    size = len(dist)
+    if size <= 1:
+        return 0
+
+    mask_count = 1 << size  # 2 to the power of size
+    dp = [[float("inf")] * size for _ in range(mask_count)]
+    dp[1][0] = 0
+
+    for mask in range(mask_count):
+        for town in range(size):
+            cost = dp[mask][town]
+            if cost == float("inf"):
+                continue
+            for next_town in range(size):
+                marker = 1 << next_town
+                if mask & marker:
+                    continue
+                next_mask = mask | marker
+                new_cost = cost + dist[town][next_town]
+                dp[next_mask][next_town] = min(
+                    dp[next_mask][next_town], new_cost
+                )
+
+    full_mask = mask_count - 1
+    return min(dp[full_mask][town] + dist[town][0]
+               for town in range(1, size))
+
+
+dist = [[0, 10, 15, 20],
+        [10, 0, 35, 25],
+        [15, 35, 0, 30],
+        [20, 25, 30, 0]]
+print(shortest_tour(dist))  # 80
+```
+
+Adding a new town makes the mask's number larger. Processing masks in increasing order therefore reaches smaller visited sets first.
+
+**Common mistake:** returning the cheapest value in the final row without adding the road home. That gives a route that can stop at another town.
+
+---
+
+<details>
+<summary>More detail and extra examples (optional)</summary>
+
 # Chapter 15 · 02 — Worked Example: Travelling Salesman (Held–Karp)
 
 > Five slots, then the Invariant Lens. New this chapter: a state indexed by a
@@ -23,7 +117,7 @@
 
 ## Slot 0 — FULCRUM
 
-> ### "I have visited exactly the set `S` and I am standing at town `i`. Which town did I come from?"
+> **Ask yourself:** "I have visited exactly the set `S` and I am standing at town `i`. Which town did I come from?"
 
 ```
 doors = every j in S, j ≠ i
@@ -500,3 +594,6 @@ print(assignment([[10, 4, 6], [8, 9, 3], [7, 5, 2]]))  # expected: 14
 > enough to be a set?** If `n ≤ 20`, the answer is usually yes.
 
 > Continue to `03 - your challenge.md`.
+
+
+</details>

@@ -10,7 +10,7 @@ const ReasoningWorkspace = lazy(() => import('./components/ReasoningWorkspace'))
 const QuizModal = lazy(() => import('./components/QuizModal'));
 
 const tabs = [
-  ['story', '01 · Story'],
+  ['story', '01 · Simple explanation'],
   ['worked_example', '02 · Worked example'],
   ['quiz', '03 · Trap drills'],
   ['reasoning', '04 · Your reasoning'],

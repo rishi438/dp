@@ -1,3 +1,80 @@
+# Chapter 14: House Robber on a tree
+
+**Find the most money you can take without taking both a house and its direct child.** Use this tree:
+
+```text
+        3       top house
+       / \
+      2   3
+       \   \
+        3   1
+```
+
+We can take the top `3` and both bottom houses: `3 + 3 + 1 = 7`.
+
+## The two saved answers
+
+For each house, `solve` returns `(take, skip)`. Both totals cover that house and everything below it:
+
+- `take` requires taking this house's money.
+- `skip` requires skipping this house, but can still take its descendants.
+
+A missing house returns `(0, 0)`. This lets a real house use the same calculation whether it has zero, one, or two children.
+
+## Calculate children before parents
+
+| House | If we take it | If we skip it | Returned pair |
+|---|---:|---:|---|
+| Bottom `3` | 3 | 0 | `(3, 0)` |
+| Bottom `1` | 1 | 0 | `(1, 0)` |
+| Left `2` | `2 + 0` | `max(3, 0)` | `(2, 3)` |
+| Right `3` | `3 + 0` | `max(1, 0)` | `(3, 1)` |
+| Top `3` | `3 + 3 + 1 = 7` | `max(2, 3) + max(3, 1) = 6` | `(7, 6)` |
+
+The final answer is `max(7, 6) = 7`. Notice that taking the top house uses each child's **skip** answer, not zero. Those answers include money from the grandchildren.
+
+## Runnable Python
+
+A `Node` represents one house. `value` is its money; `left` and `right` are its children. `None` means no house exists there.
+
+```python
+class Node:
+    def __init__(self, value, left=None, right=None):
+        self.value = value
+        self.left = left
+        self.right = right
+
+
+def rob_tree(root):
+    def solve(node):
+        if node is None:
+            return 0, 0
+
+        left_take, left_skip = solve(node.left)
+        right_take, right_skip = solve(node.right)
+
+        take = node.value + left_skip + right_skip
+        skip = max(left_take, left_skip) + max(right_take, right_skip)
+        return take, skip
+
+    return max(solve(root))
+
+
+root = Node(3,
+            Node(2, right=Node(3)),
+            Node(3, right=Node(1)))
+print(rob_tree(root))  # 7
+```
+
+The recursive calls finish both children's pairs before calculating the parent's pair. Each house is processed once; no array is needed to store the answers.
+
+**Common mistake:** when skipping a parent, forcing both children to make the same choice. Each branch chooses independently. In this example, skipping the top house means skipping the left `2` but taking the right `3`.
+
+---
+
+<details>
+<summary>More detail and extra examples (optional)</summary>
+
 # Chapter 14 · 02 — Worked Example: House Robber III
 
 > Five slots, then the Invariant Lens. New this chapter: the table is a
@@ -23,7 +100,7 @@
 
 ## Slot 0 — FULCRUM
 
-> ### "At this node: rob it, or skip it?"
+> **Ask yourself:** "At this node: rob it, or skip it?"
 
 ```
 ROB v    → both children are FORBIDDEN.
@@ -450,3 +527,6 @@ print(max_path_sum(build([2, -1])))                   # expected: 2
 > its parent, so the parent never has to look down twice?**
 
 > Continue to `03 - your challenge.md`.
+
+
+</details>

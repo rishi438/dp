@@ -1,3 +1,50 @@
+# Chapter 12: Choose which multiplication happens last
+
+**Multiply a chain of matrices with the least work. Keep their order, but choose where to put the brackets.**
+
+A matrix is a rectangular table of numbers. Multiplying a `p x q` matrix by a `q x r` matrix produces a `p x r` matrix and takes `p * q * r` basic multiplications.
+
+For three matrices:
+
+```text
+A: 10 x 30    B: 30 x 5    C: 5 x 60
+
+(A B) C: 10*30*5 + 10*5*60  =  4,500
+A (B C): 30*5*60 + 10*30*60 = 27,000
+```
+
+The result is the same, but doing A with B first takes much less work.
+
+## What are the choices?
+
+Ask: **which two completed groups will we multiply in the final step?**
+
+For A, B, C, there are two choices: `A | BC` or `AB | C`. First calculate the cheapest way to finish each group. Then add the cost of multiplying those two results.
+
+```text
+one choice's cost = left group's cost + right group's cost + final multiplication
+```
+
+Try every possible split and keep the smallest total.
+
+## What do we save?
+
+`dp[l][r]` = cheapest cost to multiply matrices from index `l` through index `r`, including both ends.
+
+A consecutive section like this is called an **interval**. We save answers for short intervals so longer ones can reuse them.
+
+One matrix alone needs no multiplication: `dp[i][i] = 0`. Next solve every group of two matrices, then every group of three, and so on. For the example, AB costs 1,500 and BC costs 9,000. Those answers let us compare both choices for ABC.
+
+Return the answer for the entire chain: `dp[0][n - 1]`. Here it is **4,500**.
+
+**Common mistake:** computing a long group before its smaller groups are ready. Fill by group length, starting with the shortest.
+
+
+---
+
+<details>
+<summary>More detail and extra examples (optional)</summary>
+
 # Chapter 12 · 01 — Story: Vale, the Splitter
 
 > Family: **Interval DP / Matrix Chain, Burst Balloons.**
@@ -240,3 +287,6 @@ its edge with her reflection facing her, mouthing his words back at him.
 Next: **Mirra the Mirror-Twin**, and the interval that reads only its own edges.
 
 > Continue to `02 - worked example.md`.
+
+
+</details>

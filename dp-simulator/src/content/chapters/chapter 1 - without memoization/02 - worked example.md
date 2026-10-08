@@ -1,3 +1,68 @@
+# Chapter 1 example: Follow fib(6) one call at a time
+
+We want the sixth Fibonacci number. Using `fib(1) = fib(2) = 1`, the sequence is `1, 1, 2, 3, 5, 8`, so the answer should be **8**.
+
+## Define the smaller question
+
+`fib(n)` means "the number at position n." To answer it, ask for the previous two numbers and add them:
+
+`fib(n) = fib(n-1) + fib(n-2)`
+
+The starting answers are positions 1 and 2. Returning those known values stops the recursion. We only use positive integer positions in this example.
+
+## Follow the first part of execution
+
+Python evaluates the left call first:
+
+```text
+fib(6) waits for fib(5).
+  fib(5) waits for fib(4).
+    fib(4) waits for fib(3).
+      fib(3) asks for fib(2) = 1 and fib(1) = 1.
+      fib(3) returns 2.
+    fib(4) still needs fib(2) = 1, then returns 3.
+```
+
+Now `fib(5)` asks for `fib(3)` again. The earlier result was not saved, so its two smaller calls run again. Eventually `fib(5)` returns 5. Then `fib(6)` separately calculates `fib(4)` again and returns `5 + 3 = 8`.
+
+**A returned answer finishes one call. It does not create a saved answer for future calls.**
+
+## Run it and count the work
+
+The function below returns two values: the Fibonacci answer and how many times the inner function was called.
+
+```python
+def counted_fib(n):
+    calls = 0
+
+    def fib(i):
+        nonlocal calls
+        calls += 1
+        if i <= 2:
+            return 1
+        return fib(i - 1) + fib(i - 2)
+
+    answer = fib(n)
+    return answer, calls
+
+print(counted_fib(5))   # (5, 9)
+print(counted_fib(6))   # (8, 15)
+print(counted_fib(10))  # (55, 109)
+```
+
+`nonlocal calls` lets the inner function update the counter in the surrounding function. It is only measuring execution; it does not help Fibonacci avoid repeated work.
+
+## What should you notice?
+
+For position 6, there are only six distinct position questions, but the function runs **15 times**. Several calls ask the same question. As the target grows, those repeated calls grow much faster than the number of positions.
+
+**Common mistake:** replacing the two calls with a loop over positions without deciding where answers will be stored. First understand the calculation; then either cache recursive results or build a table. Both are ways to reuse the same smaller answers.
+
+---
+
+<details>
+<summary>More detail and extra examples (optional)</summary>
+
 # Chapter 1 · 02 — Worked Example: Watching Plain Recursion Explode
 
 > I take one plain recursion, draw its waste, and MEASURE the pain.
@@ -131,3 +196,6 @@ The fix (Ch 2):   remember each answer the first time. O(2ⁿ) → O(n).
 
 > Your turn: `03 - your challenge.md`. You'll measure the pain yourself and
 > extract structure from a NEW problem.
+
+
+</details>

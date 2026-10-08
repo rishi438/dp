@@ -1,3 +1,43 @@
+# Chapter 2: Save an answer before solving it again
+
+**Memoization means remembering a function's result and reusing it when the same question appears again.** A cache or memo is simply the place where those results are stored.
+
+For Fibonacci, `fib(5)` needs `fib(4)` and `fib(3)`. Calculating `fib(4)` already calculates `fib(3)`. When it is needed again, we can read the saved answer **2** instead of repeating its work.
+
+## The same calculation, with memory
+
+- **Smaller questions:** the numbers at positions `n-1` and `n-2`.
+- **Stored meaning:** `memo[i]` is the Fibonacci number at position `i`.
+- **Calculation:** `memo[i] = fib(i-1) + fib(i-2)`.
+- **Starting answers:** positions 1 and 2 both contain 1.
+- **Final answer:** return the result of `fib(n)`.
+
+Every call follows this order:
+
+```text
+Already saved? -> Return the saved answer.
+Not saved?    -> Solve the smaller questions.
+              -> Save their combined result.
+              -> Return it.
+```
+
+The formula does not change. Only repeated work disappears.
+
+## Why the word "top-down"?
+
+You begin with the large question you want answered, such as position 6, and ask smaller questions until you reach known answers. That direction is called **top-down**.
+
+There are only `n` possible Fibonacci positions from 1 through `n`. Each missing position is calculated once. Later visits are lookups, though those visits still count as function calls.
+
+**Common mistake:** creating a new empty cache inside every recursive call. The calls must share the cache during one solution. Usually, start a fresh cache when beginning a new problem input.
+
+Memoization saves repeated calculations, but still uses recursion. A very deep chain of calls can reach Python's recursion limit; Chapter 3 uses a loop instead.
+
+---
+
+<details>
+<summary>More detail and extra examples (optional)</summary>
+
 # Chapter 2 · 01 — Story: The Wizard and the Magic Notebook
 
 > The cure arrives. Chapter 1 left Reco drowning in 40 billion calls.
@@ -261,3 +301,6 @@ no stack at all.
 Next: **Chapter 3 — Bottom-Up (Tabulation).** No recursion. No stack. No limit.
 
 > Continue to `02 - worked example.md`.
+
+
+</details>

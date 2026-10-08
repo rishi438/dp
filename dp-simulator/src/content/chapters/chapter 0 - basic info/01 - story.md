@@ -1,3 +1,39 @@
+# Chapter 0: What dynamic programming means
+
+**Dynamic programming (DP) means solving smaller questions and keeping their answers so you can build the answer you need.**
+
+Imagine a frog at the ground, step 0. It can jump 1 or 2 steps. How many different jump sequences reach step 3?
+
+```text
+1 + 1 + 1
+1 + 2
+2 + 1
+Answer: 3 ways
+```
+
+Instead of listing every route to a large step, ask a smaller question: **where could the final jump have started?**
+
+## Five questions to answer
+
+1. **Choices:** To reach step 3, the final jump comes from step 2 or step 1.
+2. **What we store:** `dp[i]` means "the number of ways to reach step i." A stored question and its answer are called a **state**.
+3. **How we calculate it:** Add the ways from those two earlier steps: `dp[i] = dp[i-1] + dp[i-2]`. This rule is the **transition**.
+4. **Starting answers:** `dp[0] = 1`: there is one way to stay at the start, by making no jumps. `dp[1] = 1`: take one 1-step jump. These are **base cases**.
+5. **Final answer:** For a target of 3, return `dp[3]`.
+
+The older lessons call the choice question the "fulcrum" and the options "doors." They simply mean **the decision you split into separate cases**.
+
+## Why keeping answers helps
+
+Calculating a larger answer may ask for the same smaller answer several times. Saving it avoids repeated work. You can either ask recursively and save answers (**memoization**), or fill a table from small answers to large ones (**tabulation**).
+
+**Common mistake:** using a formula before deciding what `dp[i]` means. Start with the sentence. For counting distinct routes, add their counts; for the cheapest route, compare costs and keep the smallest.
+
+---
+
+<details>
+<summary>More detail and extra examples (optional)</summary>
+
 # Chapter 0 · 01 — Story: The Ground Rules
 
 > The gentle entry. No hard code. Just the world, the villain, and the rules.
@@ -68,20 +104,47 @@ Every DP problem — forever — is cracked by the same five slots, **in this
 order**. Each one *produces* the next:
 
 ```
-0. FULCRUM       "What was the LAST decision that landed me here?"
-                 → the hinge. Produces your list of DOORS.
-                        ↓
-1. STATE         What does dp[i] MEAN in plain English?
-                 → names what sits behind each door.
-                        ↓
-2. TRANSITION    If a genie solved all SMALLER dp's, how do I build dp[i]?
-                 → the fulcrum, rewritten in symbols.
-                        ↓
-3. BASE CASE     Smallest answer I know WITHOUT thinking?
-                 → where it bottoms out.
-                        ↓
-4. TERMINATION   WHERE does the finished answer actually live?
-                 → dp[n]? max(dp)? dp[0][n-1]? Do NOT guess.
+Forget the formula for a second. Picture standing at the edge of something —
+a cliff, an event horizon, step n of a staircase. You don't need to know the
+whole history of how you got there. You only need to know the ONE thing that
+happened an instant before "now".
+
+0. FULCRUM       Freeze time one tick before you arrived. Ask only:
+                 "What was the last thing that happened?"
+                 That's it. You're not solving the problem — you're just
+                 listing the handful of ways "now" could have just happened.
+                 Standing on step n: you got here by a 1-hop, or a 2-hop.
+                 That's not a clue to the answer — IT IS the answer's shape.
+                        ↓ (you now have a short list — give it a label)
+1. STATE         Whatever sits one tick before "now", give it one short name
+                 so you stop re-describing it in full sentences.
+                 dp[i] = a label, nothing more — "the answer, as it stood
+                 right before this last moment."
+                        ↓ (swap the label back into the moment you froze)
+2. TRANSITION    Take the sentence from slot 0 and replace the words with
+                 the label from slot 1. You're not inventing anything new —
+                 you're just writing the SAME idea in shorthand.
+                 "got here from n-1, or from n-2" → dp[i] = dp[i-1] + dp[i-2]
+                        ↓ (every "before" needs its own "before" — until one doesn't)
+3. BASE CASE     Keep rewinding and eventually you hit a moment so small there's
+                 nothing before it to explain — you just KNOW the answer by
+                 looking at it. That's the floor. Without it, the chain of
+                 "ask the moment before" never stops; it free-falls forever.
+                        ↓ (the whole chain now computes — but WHERE do you look?)
+4. TERMINATION   You've built an answer for every single moment. Only one
+                 question is left: which of those moments is the one the
+                 world actually asked you about?
+                 The last one? The best one anywhere? Don't assume —
+                 the question itself always tells you where to look.
+```
+
+**Summary — a "slot" is just one numbered question in this fixed checklist:**
+```
+Slot 0 = FULCRUM     → "what was the last thing that happened?"
+Slot 1 = STATE       → "what does dp[i] mean in plain English?"
+Slot 2 = TRANSITION  → "how do I build dp[i] from smaller dp's?"
+Slot 3 = BASE CASE   → "smallest answer I know without thinking?"
+Slot 4 = TERMINATION → "where does the finished answer actually live?"
 ```
 
 > Most courses teach only slots 1–3 and call them "the three questions."
@@ -96,7 +159,7 @@ order**. Each one *produces* the next:
 A fulcrum is the fixed point a lever pivots on. This question is the pivot
 between "the whole problem" and "a smaller copy of the same problem":
 
-> **"What was the LAST decision/move that got me here?"**
+> **Ask yourself:** "What was the LAST decision/move that got me here?"
 
 Not the *first* move — the **last** one. The last decision is the only one that
 leaves a smaller version of the same problem behind it.
@@ -236,3 +299,6 @@ in **Chapter 1: Without Memoization.**
 
 > First, prove the story landed. Open `02 - worked example.md`,
 > then face `03 - your challenge.md`.
+
+
+</details>

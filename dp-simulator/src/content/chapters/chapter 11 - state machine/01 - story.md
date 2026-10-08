@@ -1,3 +1,55 @@
+# Chapter 11: Remember whether you can buy today
+
+**Buy and sell a stock to make the most profit. Hold at most one share. After selling, wait one full day before buying again.**
+
+For prices `[1, 2, 3, 0, 2]`, a best plan is:
+
+```text
+Day:     0       1       2       3       4
+Price:   1       2       3       0       2
+Action:  buy    sell    wait    buy    sell
+Profit:       2 - 1 = 1               2 - 0 = 2
+Total: 3
+```
+
+Selling at price 3 on day 2 would force you to wait on day 3, so you could not buy at price 0 that day.
+
+## Why save more than one number?
+
+A single "best profit so far" does not say whether you own a share or whether you just sold. Those facts decide what you can do next.
+
+Save three answers at the **end of each day**:
+
+- `hold`: best cash balance while owning one share. Buying subtracts its price.
+- `sold`: best cash balance after selling **today**. Tomorrow must be a waiting day.
+- `rest`: best cash balance with no share and no sale today. Buying tomorrow is allowed.
+
+This is called **state machine DP**: save separate answers for situations with different allowed next actions.
+
+## How do the answers change?
+
+Using yesterday's values and today's price:
+
+```text
+new hold = max(hold, rest - price)  # keep share or buy
+new sold = hold + price            # sell yesterday's share
+new rest = max(rest, sold)         # keep waiting or finish cooldown
+```
+
+There is no direct step from yesterday's `sold` to today's `hold`. That enforces the waiting day.
+
+On day 0, `hold = -1`, `rest = 0`, and `sold` is impossible. Mark it with `-inf`, a value smaller than any real cash balance.
+
+At the end, return `max(sold, rest)`: **3**. These are the situations where no share remains unsold.
+
+**Common mistake:** updating one variable and using its new value for another. Calculate all three new answers from yesterday's values first.
+
+
+---
+
+<details>
+<summary>More detail and extra examples (optional)</summary>
+
 # Chapter 11 · 01 — Story: Modus, the Mask-Wearer
 
 > Family: **State machine DP / Stock with Cooldown.**
@@ -210,3 +262,6 @@ a single stone slab, and a woman is scoring it with a chisel.
 Next: **Vale the Splitter**, and the day `dp[i]` became `dp[l][r]`.
 
 > Continue to `02 - worked example.md`.
+
+
+</details>

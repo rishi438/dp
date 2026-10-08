@@ -1,3 +1,85 @@
+# Chapter 12: Work through matrix multiplication order
+
+**Question:** Multiply A (`10 x 30`), B (`30 x 5`), and C (`5 x 60`) using the fewest basic multiplications. The order A, B, C must stay the same; only the brackets can change.
+
+Multiplying shapes `p x q` and `q x r` costs `p * q * r` and produces shape `p x r`. We need only the dimensions to calculate the cost, not the numbers inside the matrices.
+
+## 1. Say what one table entry means
+
+`dp[l][r]` = cheapest cost to multiply matrices `l` through `r` into one matrix, **including both endpoints**.
+
+For this input, `dp[0][1]` is the cost for AB, and `dp[0][2]` is the cost for ABC.
+
+We store the dimensions as `dims = [10, 30, 5, 60]`. Matrix `i` has shape `dims[i] x dims[i + 1]`. Four dimensions therefore describe three matrices.
+
+## 2. Start with one matrix
+
+A single matrix is already finished. No multiplication is needed, so `dp[i][i] = 0`.
+
+## 3. Compare the final splits
+
+A split after index `k` gives two groups:
+
+```text
+left:  l through k
+right: k + 1 through r
+```
+
+The left result has shape `dims[l] x dims[k + 1]`. The right result has shape `dims[k + 1] x dims[r + 1]`. Their final multiplication therefore costs:
+
+```text
+dims[l] * dims[k + 1] * dims[r + 1]
+```
+
+Add this to the two groups' saved costs. Try every split and keep the smallest total.
+
+## 4. Calculate smaller groups first
+
+```text
+One matrix:  A = 0, B = 0, C = 0
+Two matrices:
+  AB = 10*30*5 = 1,500
+  BC = 30*5*60 = 9,000
+Three matrices:
+  A | BC: 0 + 9,000 + 10*30*60 = 27,000
+  AB | C: 1,500 + 0 + 10*5*60 =  4,500
+```
+
+Choose **4,500**, which means multiply AB first, then multiply that result by C.
+
+## 5. Run it
+
+```python
+def matrix_chain(dims):
+    n = len(dims) - 1
+    if n <= 1:
+        return 0
+    dp = [[0] * n for _ in range(n)]
+
+    for length in range(2, n + 1):
+        for l in range(n - length + 1):
+            r = l + length - 1
+            dp[l][r] = float('inf')
+            for k in range(l, r):
+                merge = dims[l] * dims[k + 1] * dims[r + 1]
+                cost = dp[l][k] + dp[k + 1][r] + merge
+                dp[l][r] = min(dp[l][r], cost)
+
+    return dp[0][n - 1]
+
+print(matrix_chain([10, 30, 5, 60]))  # 4500
+```
+
+`float('inf')` starts an unfinished answer above every real cost, so the first candidate replaces it. The outer loop handles shorter groups first, making both saved costs ready before we use them.
+
+**Common mistake:** writing the right group as `k` through `r`. That repeats matrix `k` in both groups. Since `k` belongs to the left group, the right group begins at `k + 1`.
+
+
+---
+
+<details>
+<summary>More detail and extra examples (optional)</summary>
+
 # Chapter 12 · 02 — Worked Example: Matrix Chain Multiplication
 
 > Five slots, then the Invariant Lens. New this chapter: a state with **two
@@ -17,7 +99,7 @@
 
 ## Slot 0 — FULCRUM
 
-> ### "Inside interval `[l, r]`, where was the **LAST** cut `k`?"
+> **Ask yourself:** "Inside interval `[l, r]`, where was the **LAST** cut `k`?"
 
 ```
         l ──────── k │ k+1 ──────── r
@@ -418,3 +500,6 @@ print(burst_balloons([]))             # expected: 0
 Same five slots every time. Only the merge price changes.
 
 > Continue to `03 - your challenge.md`.
+
+
+</details>

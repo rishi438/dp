@@ -1,3 +1,64 @@
+# Chapter 2 example: Calculate Fibonacci once per position
+
+Find `fib(6)`, with positions 1 and 2 both equal to 1. The answer is **8**.
+
+Plain recursion calculates some positions repeatedly. We will keep a dictionary called `memo`, where a key is a position and its value is that position's answer.
+
+## What stays the same?
+
+The smaller questions are `fib(i-1)` and `fib(i-2)`. Their sum gives `fib(i)`. The known starting answers are still 1 and 1.
+
+**What changes:** before calculating, check whether the result is already in `memo`. After calculating, put it there.
+
+## Follow the saved answers
+
+Start with `memo = {1: 1, 2: 1}`.
+
+| New result | Calculation | Stored answer |
+|---|---|---|
+| Position 3 | 1 + 1 | `memo[3] = 2` |
+| Position 4 | 2 + 1 | `memo[4] = 3` |
+| Position 5 | 3 + 2 | `memo[5] = 5` |
+| Position 6 | 5 + 3 | `memo[6] = 8` |
+
+For example, when position 5 needs position 3, its value is already stored. Reading that value is called a **cache hit**. It avoids all the smaller calls that would otherwise follow.
+
+## Runnable Python
+
+The function accepts a positive integer `n`. The outer function creates one cache; all recursive calls to `fib` use it.
+
+```python
+def fib_memo(n):
+    memo = {1: 1, 2: 1}
+
+    def fib(i):
+        if i in memo:
+            return memo[i]
+        memo[i] = fib(i - 1) + fib(i - 2)
+        return memo[i]
+
+    return fib(n)
+
+print(fib_memo(6))   # 8
+print(fib_memo(10))  # 55
+print(fib_memo(50))  # 12586269025
+```
+
+The final answer is `fib(n)`. We do not add all the entries in the dictionary; each entry answers a different position question.
+
+## Why is it faster?
+
+The program calculates at most `n` distinct positions, with one addition per new position. In the usual DP analysis, this is `O(n)` work: work grows roughly with the number of positions. It also stores `O(n)` answers and can have `O(n)` unfinished recursive calls. Very large Fibonacci numbers themselves take more space and arithmetic time.
+
+**Common mistake:** using a cache key that leaves out information affecting the answer. Position alone works here because it completely identifies a Fibonacci question. For a question involving both a position and a remaining budget, both may need to be in the key.
+
+Each call to `fib_memo` above creates a fresh dictionary, so separate runs do not share old input-specific results.
+
+---
+
+<details>
+<summary>More detail and extra examples (optional)</summary>
+
 # Chapter 2 · 02 — Worked Example: Turning Recursion Into Memoization
 
 > I take Chapter 1's dying `fib`, cure it in three lines, **measure** the cure,
@@ -261,3 +322,6 @@ RecursionError?                 → Trap 3. The depth limit. This is Chapter 3's
 > The thinking never changes. Only the bookkeeping.
 > Your turn: `03 - your challenge.md`. One challenge memoizes something that
 > **shouldn't** be memoized, and one hides an under-specified key.
+
+
+</details>

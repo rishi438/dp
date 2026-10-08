@@ -1,3 +1,44 @@
+# Chapter 7: Find the same letters in two strings
+
+**Keep the longest sequence of letters that appears in both strings, in the same order. You may skip letters.**
+
+For example:
+
+```text
+First string:   a b c d e
+Second string:  a   c   e
+Keep:           a   c   e   -> length 3
+```
+
+A **subsequence** means "keep some elements without changing their order." The letters do not need to touch. We want the length of the longest common subsequence, often shortened to **LCS**.
+
+## What are the choices?
+
+Compare the last letter of the two pieces you are looking at.
+
+- **Same letter:** use that matching pair. Add 1 to the answer for the two pieces before those letters.
+- **Different letters:** try skipping the last letter of the first piece, then try skipping the last letter of the second. Keep the larger answer.
+
+For `"abc"` and `"ac"`, both end in `c`. The earlier pieces `"ab"` and `"a"` share one letter. Add the matching `c`: `1 + 1 = 2`.
+
+## What do we save?
+
+`dp[i][j]` stores the answer using the first `i` letters of the first string and the first `j` letters of the second.
+
+Two counts are needed because we can skip a letter in either string separately. For example, `dp[3][2]` compares `"abc"` with `"ac"`.
+
+If either piece is empty, the answer is **0**. These starting answers fill row 0 and column 0. Then fill the table from top to bottom, left to right, using answers already saved.
+
+For the complete strings, return `dp[len(a)][len(b)]`. Here it is **3**, for `"ace"`.
+
+**Common mistake:** requiring letters to be next to each other. That solves a different problem, called a common substring. In this chapter, skipping `b` and `d` is allowed.
+
+
+---
+
+<details>
+<summary>More detail and extra examples (optional)</summary>
+
 # Chapter 7 · 01 — Story: The Twin Scribes
 
 > Family: **Two sequences compared.**
@@ -195,3 +236,6 @@ Next: **Gridlock, the Maze Warden**. The table stops being an abstraction and
 becomes the map itself.
 
 > Continue to `02 - worked example.md`.
+
+
+</details>

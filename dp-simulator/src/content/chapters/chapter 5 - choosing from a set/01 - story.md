@@ -1,3 +1,49 @@
+# Chapter 5: Try each allowed choice
+
+**When the options come from an input list, try each option and keep the result the question asks for.**
+
+Suppose coins have values `[1, 2, 5]`, with unlimited copies of each. We want to make exactly 11 using the fewest coins.
+
+One answer is `5 + 5 + 1`: **3 coins**.
+
+## Ask about the final coin
+
+If the final coin has value:
+
+- 1, we first need to make 10.
+- 2, we first need to make 9.
+- 5, we first need to make 6.
+
+For each case, solve the smaller amount and add **one coin**. Then keep the smallest coin count.
+
+## What dp stores
+
+`dp[x]` = the fewest coins needed to make exactly amount `x`.
+
+For each coin `c` that fits, try `dp[x-c] + 1`. The `+1` counts the new coin; it does not add that coin's monetary value.
+
+Start with `dp[0] = 0`: making zero requires zero coins. Mark other amounts as impossible until a valid choice reaches them. Fill amounts in increasing order, then return `dp[11]`.
+
+An impossible amount must stay distinct from zero. With coins `[2]`, amount 3 cannot be made, so the final answer should be `-1`.
+
+## Why not always take the largest coin?
+
+With coins `[1, 3, 4]` and target 6:
+
+```text
+Largest-first: 4 + 1 + 1 -> 3 coins
+Best answer:  3 + 3     -> 2 coins
+```
+
+Trying every final coin lets DP find the better result.
+
+**Common mistake:** adding the answers for all choices. This question asks for the **fewest coins**, so use `min`. Counting payment arrangements is a different question and needs a carefully defined counting method.
+
+---
+
+<details>
+<summary>More detail and extra examples (optional)</summary>
+
 # Chapter 5 · 01 — Story: Corin the Coinsmith
 
 > Family: **Choosing from a SET.**
@@ -157,3 +203,6 @@ ground, and who teaches the single most-failed question in all of DP:
 Reco will get that one wrong. Loudly.
 
 > Continue to `02 - worked example.md`.
+
+
+</details>

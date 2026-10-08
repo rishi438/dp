@@ -1,3 +1,81 @@
+# Chapter 7: Work through the shared letters
+
+**Question:** How many letters can we keep in both `"abcde"` and `"ace"`, preserving their order?
+
+The answer is **3**: `"ace"`. We return the length, not the letters themselves.
+
+## 1. Say what one table entry means
+
+`dp[i][j]` = longest shared sequence using `a[:i]` and `b[:j]`.
+
+In Python, `a[:i]` means the first `i` letters. So `dp[3][2]` compares `"abc"` and `"ac"`. A table index is a **count of letters**; the last letters being compared are `a[i - 1]` and `b[j - 1]`.
+
+## 2. Start with answers we already know
+
+An empty string shares no letters with any string. Set row 0 and column 0 to **0**. Allocate one extra row and column for those empty strings.
+
+## 3. Fill one entry
+
+If the last letters match, take that pair:
+
+```text
+answer = answer before both letters + 1
+       = dp[i - 1][j - 1] + 1
+```
+
+If they differ, at least one of them must be skipped. Try both possibilities and keep the better length:
+
+```text
+skip a's last letter: dp[i - 1][j]
+skip b's last letter: dp[i][j - 1]
+answer:              the larger of those two
+```
+
+We take the larger answer because these are alternative choices. Adding them would count letters from two different solutions together.
+
+## 4. See the numbers
+
+```text
+             b: empty  a  c  e
+    a: empty       0   0  0  0
+           a       0   1  1  1
+          ab       0   1  1  1
+         abc       0   1  2  2
+        abcd       0   1  2  2
+       abcde       0   1  2  3
+```
+
+For `"abc"` and `"ac"`, the last letters match: `dp[3][2] = dp[2][1] + 1 = 2`.
+
+For `"abcd"` and `"ac"`, `d` and `c` differ: `dp[4][2] = max(2, 1) = 2`. Skipping `d` keeps the shared `"ac"`.
+
+## 5. Run it
+
+```python
+def lcs(a, b):
+    m, n = len(a), len(b)
+    dp = [[0] * (n + 1) for _ in range(m + 1)]
+    for i in range(1, m + 1):
+        for j in range(1, n + 1):
+            if a[i - 1] == b[j - 1]:
+                dp[i][j] = dp[i - 1][j - 1] + 1
+            else:
+                dp[i][j] = max(dp[i - 1][j], dp[i][j - 1])
+    return dp[m][n]
+
+print(lcs("abcde", "ace"))  # 3
+```
+
+The final cell compares both complete strings, so it contains the answer. Each calculation reads only the row above or the cell to its left, which are already filled.
+
+**Common mistake:** comparing `a[i]` with `b[j]`. The loops start at 1 because row 0 represents an empty string; the characters still use Python's zero-based indices.
+
+
+---
+
+<details>
+<summary>More detail and extra examples (optional)</summary>
+
 # Chapter 7 · 02 — Worked Example: Longest Common Subsequence
 
 > Five slots, then the Invariant Lens. New this chapter: the invariant grows
@@ -20,7 +98,7 @@ Answer: `"ace"` → **3**.
 
 ## Slot 0 — FULCRUM
 
-> ### "What happened to the LAST character of each string?"
+> **Ask yourself:** "What happened to the LAST character of each string?"
 
 Point at both ends at once. Exactly two situations:
 
@@ -286,3 +364,6 @@ Space  O(m × n) → O(min(m, n))  roll to two rows (loses reconstruction)
 
 > Your turn: `03 - your challenge.md`. Challenge 5 changes exactly one word of
 > the problem and flips both the transition **and** the termination slot.
+
+
+</details>

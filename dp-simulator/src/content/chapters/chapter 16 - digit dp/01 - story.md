@@ -1,3 +1,50 @@
+# Chapter 16: Count numbers by building their digits
+
+**To count numbers up to a large limit, build them one digit at a time and reuse the counts for repeated situations.**
+
+Our rule: neighbouring digits must differ. `12` and `121` are allowed; `11` and `100` are not.
+
+## Start with a small limit
+
+From `0` to `21`, there are `22` numbers. Only `11` breaks the rule, so the answer is **21**.
+
+We can count them by their first digit:
+
+```text
+0 followed by 0..9 -> numbers 0..9      -> 10
+1 followed by 0..9, except 1            ->  9
+2 followed by 0 or 1 -> numbers 20, 21 ->  2
+Total                                  -> 21
+```
+
+The first row uses a leading zero just to write every number with two places. `04` still means `4`.
+
+## What do we remember?
+
+At each step we remember four things:
+
+- `pos`: which digit position we are filling, from left to right.
+- `previous`: the last digit, so we can reject a repeat.
+- `tight`: whether the digits written so far exactly match the limit's digits.
+- `started`: whether we have written the first nonzero digit.
+
+The saved answer is **how many valid ways we can fill the remaining positions** from that situation.
+
+## Why the two yes/no flags?
+
+For limit `21`, choosing first digit `2` keeps `tight` true: the last digit cannot exceed `1`. Choosing first digit `1` makes `tight` false: any last digit fits under the limit.
+
+`started` prevents padding zeros from breaking the rule. Before the number begins, `00` is padding. After it begins, the repeated zeros in `100` really are invalid.
+
+Try each allowed next digit and **add** its number of valid completions. At the end, a completed valid number contributes `1`, including zero here. The first call returns the total count.
+
+**Common mistake:** restricting every position to the limit's digit. Once the earlier digits are smaller, later digits may range from `0` to `9`.
+
+---
+
+<details>
+<summary>More detail and extra examples (optional)</summary>
+
 # Chapter 16 · 01 — Story: Digitus, the Ledger Keeper
 
 > Family: **Digit DP.**
@@ -263,3 +310,6 @@ Next: **Fortuna the Dice-Walker**, and the day the table stopped holding costs
 and started holding *probability*.
 
 > Continue to `02 - worked example.md`.
+
+
+</details>

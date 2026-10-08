@@ -4,8 +4,6 @@ import { BookOpen, Award, ArrowRight, ArrowLeft, Play, Target, CheckCircle2 } fr
 import { CHAPTERS } from '../data/chaptersData';
 import { useChapterMarkdown } from '../hooks/useChapterMarkdown';
 
-// Eagerly import all markdown files from all chapters across the entire book!
-
 export default function CurriculumReader({
   mode = 'story', // 'story' | 'worked_example' | 'challenge'
   selectedChapter,
@@ -60,18 +58,12 @@ export default function CurriculumReader({
           <div>
             <div className="flex items-center gap-2">
               <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-400 bg-cyan-950 px-2 py-0.5 rounded border border-cyan-800">
-                Chapter {chapter.num} · {chapter.half === 'approach' ? 'Approach Half' : 'Pattern Half'}
-              </span>
-              <span className="text-xs text-slate-500 font-mono hidden sm:inline">
-                {chapter.folder}/{targetDoc}
+                Chapter {chapter.num} · {chapter.half === 'approach' ? 'DP basics' : 'DP patterns'}
               </span>
             </div>
             <h1 className="text-lg font-bold text-white mt-0.5">
               {chapter.title}: {chapter.subtitle}
             </h1>
-            <p className="text-[11px] text-slate-400">
-              Character Guide: <strong className="text-slate-200">{chapter.character}</strong>
-            </p>
           </div>
         </div>
 
@@ -119,7 +111,7 @@ export default function CurriculumReader({
                 className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold rounded-xl transition flex items-center gap-1.5"
               >
                 <ArrowLeft className="w-3.5 h-3.5" />
-                <span>Back to Story</span>
+                <span>Back to simple explanation</span>
               </button>
               <div className="flex items-center gap-3">
                 <button

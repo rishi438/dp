@@ -1,3 +1,48 @@
+# Chapter 6: Find the best unbroken part of an array
+
+**Choose a nonempty stretch of neighboring numbers whose sum is largest.** You may choose where the stretch starts and ends, but you cannot skip anything between them.
+
+"Contiguous subarray" means exactly that: **an unbroken part of the array**.
+
+For `[3, -1, 4, 1]`, choosing all four gives `3 - 1 + 4 + 1 = 7`. Choosing only the positive numbers would skip the `-1`, so it would not be a valid stretch.
+
+## Two choices at each number
+
+Consider the best stretch that **ends at the current number**:
+
+1. Start a new stretch containing only this number.
+2. Extend the best stretch ending at the previous number.
+
+`dp[i]` stores the best sum of a nonempty stretch **ending exactly at index i**.
+
+The calculation is:
+
+`dp[i] = max(nums[i], dp[i-1] + nums[i])`
+
+For `[-2, 4]`, extending gives 2, while starting at 4 gives 4. Starting fresh wins. A negative earlier total would only make the new sum worse.
+
+## Starting and final answers
+
+Start with `dp[0] = nums[0]`: the only stretch ending at the first number is that number alone.
+
+The final answer is the largest value anywhere in `dp`, because the winning stretch can end anywhere.
+
+```text
+nums = [5, -100, 2]
+dp   = [5,  -95, 2]
+Best ending at the last position: 2
+Best anywhere:                   5
+```
+
+**Common mistake:** returning only the last entry. It answers a narrower question than the one we were asked.
+
+This method is called **Kadane's algorithm**. You can save memory by keeping two totals: the best ending here, and the best seen anywhere. Keep their meanings separate.
+
+---
+
+<details>
+<summary>More detail and extra examples (optional)</summary>
+
 # Chapter 6 · 01 — Story: Kade the Streak-Runner
 
 > Family: **Best contiguous run.**
@@ -206,3 +251,6 @@ that must ask about **two last characters at once.**
 Next: **The Twin Scribes**, and the day `dp[i]` grew a second dimension.
 
 > Continue to `02 - worked example.md`.
+
+
+</details>

@@ -1,3 +1,49 @@
+# Chapter 14: Solve a tree from the bottom up
+
+**At each house, calculate two answers: the best total if you take its money, and the best total if you skip it.**
+
+The houses form a tree. A house directly below another is its **child**; the house above is its **parent**. You cannot take money from both a parent and its direct child. Grandparent and grandchild are allowed.
+
+## A small example
+
+```text
+      3
+     / \
+    2   3
+     \   \
+      3   1
+```
+
+Take the top `3` and the bottom `3` and `1`. They do not share a parent-child connection, so the total is **7**.
+
+## What do we remember?
+
+A **subtree** means one house and all the houses below it. For each subtree, return two numbers:
+
+- `take`: the best total when we take money from its top house.
+- `skip`: the best total when we skip its top house.
+
+We need both. If we remember only the larger total, the parent cannot tell whether taking its own money would break the rule.
+
+## How are the answers combined?
+
+**Take this house:** add its money and the `skip` answers from its children. Skipping a child still lets us take money further below it.
+
+**Skip this house:** choose the better answer for each child separately, then add those answers. The two branches share no houses.
+
+Start at the bottom. A house worth `3` with no children returns `(3, 0)`. A missing child contributes `(0, 0)`.
+
+For the left house worth `2`, taking gives `2`; skipping gives the bottom house's `3`. Its answer is `(2, 3)`.
+
+Eventually the top house returns `(7, 6)`. The final answer is the larger value: **7**.
+
+**Common mistake:** always taking the top house. It is optional too; compare its `take` and `skip` answers.
+
+---
+
+<details>
+<summary>More detail and extra examples (optional)</summary>
+
 # Chapter 14 · 01 — Story: Root, the Elder Tree
 
 > Family: **Tree DP.**
@@ -260,3 +306,6 @@ Next: **Maska the Bit-Witch**, and the day your state stopped being a number
 and became a subset.
 
 > Continue to `02 - worked example.md`.
+
+
+</details>

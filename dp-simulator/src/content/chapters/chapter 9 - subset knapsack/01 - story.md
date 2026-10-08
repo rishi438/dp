@@ -1,3 +1,49 @@
+# Chapter 9: Choose items that fit in a bag
+
+**Choose items with the largest total value, while keeping their total weight within the bag's limit. Each item can be used once.**
+
+This is called **0/1 knapsack**: for each item, choose 0 copies or 1 copy.
+
+| Item | Weight | Value |
+|---|---:|---:|
+| A | 1 | 1 |
+| B | 3 | 4 |
+| C | 4 | 5 |
+| D | 5 | 7 |
+
+The bag holds at most **7** units of weight. Taking B and C uses `3 + 4 = 7` weight and gives `4 + 5 = 9` value.
+
+Taking the most valuable item first would give D and A, worth only `8`. We need to compare combinations.
+
+## What are the choices?
+
+For the current item:
+
+- **Skip it:** keep the best value possible without it.
+- **Take it, if it fits:** reserve its weight, use the remaining capacity for earlier items, and add its value.
+
+Take whichever choice gives the larger total value.
+
+## What do we save?
+
+`dp[i][w]` = best value using the first `i` items with a weight limit of `w`.
+
+The limit is **at most** `w`; unused space is allowed. Both choices look at row `i - 1`, so neither can reuse the current item.
+
+For item C with limit 7, skipping gives value `5`. Taking it leaves capacity `3`; earlier items can give value `4` there. Taking C therefore gives `4 + 5 = 9`, which wins.
+
+With no items, the best value is **0**. With zero capacity and positive item weights, it is also **0**. These are the starting answers.
+
+After considering every item, return `dp[number_of_items][capacity]`: **9** here.
+
+**Common mistake:** adding the item's value even when you skip it. Add its value only to the "take" calculation, and only when its weight fits.
+
+
+---
+
+<details>
+<summary>More detail and extra examples (optional)</summary>
+
 # Chapter 9 · 01 — Story: Sacky, the Packmaster
 
 > Family: **Subset / Knapsack (0/1).**
@@ -270,3 +316,6 @@ Next: **Lissa the Chainbuilder**, and the day the doors stopped being two, and
 became *every element you've already passed*.
 
 > Continue to `02 - worked example.md`.
+
+
+</details>

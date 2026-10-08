@@ -1,3 +1,51 @@
+# Chapter 8: Find the cheapest route through a grid
+
+**Start at the top-left cell and reach the bottom-right cell with the smallest total cost. Move only right or down.**
+
+Every visited cell costs its number, including the start and finish:
+
+```text
+1  3  1
+1  5  1
+4  2  1
+```
+
+One cheapest route is across the top, then down the right edge: `1 + 3 + 1 + 1 + 1 = 7`.
+
+## What are the choices?
+
+Pick a cell and ask: **how could I have reached it?**
+
+You could have come from the cell above or the cell to the left. Those are the only possibilities, because moves are limited to right and down.
+
+If you already know the cheapest cost to reach each of those cells, take the cheaper one and add the cost of the current cell.
+
+```text
+cheapest cost here = this cell's cost + min(cost above, cost on left)
+```
+
+## What do we save?
+
+`dp[r][c]` stores the cheapest total cost from the start to row `r`, column `c`, **including that cell**.
+
+For the middle cell, the cheapest cost above is `4` and the cheapest cost on the left is `2`. Its own cost is `5`, so its answer is `5 + min(4, 2) = 7`.
+
+## Where do we start and finish?
+
+At the starting cell, the cost is simply `grid[0][0]`, which is **1** here.
+
+Along the top row, you can only arrive from the left. Along the left edge, you can only arrive from above. Fill these edges, then calculate the remaining cells row by row.
+
+Return the saved cost at the bottom-right cell: **7**.
+
+**Common mistake:** looking only at the next cell's price. A cheap next step can lead to an expensive route. Compare the saved **total costs**, not just the neighbouring cell values.
+
+
+---
+
+<details>
+<summary>More detail and extra examples (optional)</summary>
+
 # Chapter 8 · 01 — Story: Gridlock, the Maze Warden
 
 > Family: **Grid / 2D movement.**
@@ -201,3 +249,6 @@ Next: **Sacky the Packmaster**, and the day the second dimension stopped being
 a position and became a **resource you spend**.
 
 > Continue to `02 - worked example.md`.
+
+
+</details>

@@ -1,3 +1,90 @@
+# Chapter 18: Get the best jump score faster
+
+**Start at the first number, jump forward one or two positions at a time, and finish at the last number.** Each landing adds that number to your score, including the starting number.
+
+```text
+Position:  0   1   2   3   4   5
+Number:    1  -1  -2   4  -7   3
+```
+
+The best route uses positions `0 -> 1 -> 3 -> 5`. Its score is `1 - 1 + 4 + 3 = 7`.
+
+## Get the DP calculation clear first
+
+Let `nums` be the input list and `k` the maximum jump length. `dp[i]` means **the best score of a route ending at position `i`**.
+
+Start with `dp[0] = nums[0]`. For each later position, add its number to the best score among positions close enough to jump from:
+
+```text
+dp[i] = nums[i] + largest DP score among the previous k positions
+```
+
+For `k = 2`, the complete calculation is small:
+
+| Position | Calculation | Saved score |
+|---|---|---:|
+| 0 | Start on `1` | 1 |
+| 1 | `-1 + 1` | 0 |
+| 2 | `-2 + max(1, 0)` | -1 |
+| 3 | `4 + max(0, -1)` | 4 |
+| 4 | `-7 + max(-1, 4)` | -3 |
+| 5 | `3 + max(4, -3)` | 7 |
+
+## Speed up finding that largest score
+
+A **deque** lets us remove items from the front or back quickly. Our deque stores positions, ordered so their saved scores decrease from front to back. The front is the best position to jump from.
+
+Before calculating position `i`, remove positions smaller than `i - k`: they are too far away.
+
+After calculating `dp[i]`, remove older candidates whose scores are no larger than it. The new position is at least as good and will stay in range longer. Then append position `i`.
+
+For example, after position `2`, the candidates are `[0, 1, 2]` with scores `[1, 0, -1]`. At position `3`:
+
+1. Remove `0`: a jump from `0` to `3` is too long.
+2. The front is now `1`, whose score is `0`. Calculate `4 + 0 = 4`.
+3. Remove candidates `2` and `1`: their scores are worse than `4`.
+4. Add `3`. It is the only candidate needed now.
+
+## Runnable Python
+
+This code assumes a nonempty input list and `k` of at least one.
+
+```python
+from collections import deque
+
+
+def best_jump_score(nums, k):
+    dp = [0] * len(nums)
+    dp[0] = nums[0]
+    candidates = deque([0])
+
+    for i in range(1, len(nums)):
+        while candidates and candidates[0] < i - k:
+            candidates.popleft()
+
+        dp[i] = nums[i] + dp[candidates[0]]
+
+        while candidates and dp[candidates[-1]] <= dp[i]:
+            candidates.pop()
+        candidates.append(i)
+
+    return dp[-1]
+
+
+print(best_jump_score([1, -1, -2, 4, -7, 3], 2))  # 7
+```
+
+`candidates[0]` reads the front; `candidates[-1]` reads the back. `popleft` removes the front; `pop` removes the back. Storing positions lets us check both their age and their score.
+
+Each position enters the deque once and leaves at most once. Total work grows with the number of positions, instead of positions multiplied by jump length.
+
+**Common mistake:** returning `max(dp)`. The route must end at the last position, so the answer is `dp[-1]`. An earlier high score cannot replace the required finish.
+
+---
+
+<details>
+<summary>More detail and extra examples (optional)</summary>
+
 # Chapter 18 · 02 — Worked Example: Jump Game VI
 
 > Five slots, then the Invariant Lens. New this chapter: **nothing in the five
@@ -20,7 +107,7 @@
 
 ## Slot 0 — FULCRUM
 
-> ### "I am standing on index `i`. Which index did I jump FROM?"
+> **Ask yourself:** "I am standing on index `i`. Which index did I jump FROM?"
 
 ```
 doors = every j with   i - k  ≤  j  ≤  i - 1   and   j ≥ 0
@@ -603,3 +690,6 @@ VERIFY           Initialization / Maintenance / Termination.
 > You have the map. Now walk it.
 
 > Continue to `03 - your challenge.md`.
+
+
+</details>

@@ -1,3 +1,47 @@
+# Chapter 1: Solve smaller questions with recursion
+
+**Recursion means a function asks itself to solve a smaller version of the same question.** It stops when it reaches an answer we already know.
+
+Use Fibonacci numbers as the example:
+
+```text
+Position:  1  2  3  4  5  6
+Number:    1  1  2  3  5  8
+```
+
+The first two numbers are 1. Each later number is the sum of the two before it.
+
+## What the function means
+
+`fib(n)` means "give me the Fibonacci number at position n," for `n >= 1`. There is no `dp` table yet. The function call represents the smaller question we want answered.
+
+- **Smaller questions:** find `fib(n-1)` and `fib(n-2)`.
+- **Calculation:** add their answers.
+- **Starting answers:** `fib(1) = 1` and `fib(2) = 1`.
+- **Final answer:** the value returned by the original call, such as `fib(5)`.
+
+For Fibonacci, both smaller answers are needed. They are not competing choices where we keep just one.
+
+## What happens for position 5?
+
+```text
+fib(5) asks for fib(4) and fib(3).
+fib(4) asks for fib(3) and fib(2).
+                    ^
+             fib(3) is needed again.
+```
+
+The calculation is correct, but plain recursion does not keep earlier results. The second call to `fib(3)` repeats the same work as the first.
+
+This repetition grows quickly as `n` increases. A recursion tree shows it: each node is one function call, and its children are the calls it makes.
+
+**Common mistake:** believing the computer automatically remembers a function's answer. Calling `fib(3)` again runs the function again unless we explicitly save the result. Chapter 2 adds that saved memory; the Fibonacci calculation stays the same.
+
+---
+
+<details>
+<summary>More detail and extra examples (optional)</summary>
+
 # Chapter 1 · 01 — Story: Without Memoization (Feel the Pain)
 
 > This chapter has NO notebook. On purpose. You must feel the villain before
@@ -120,3 +164,6 @@ and 40 billion calls collapse into just `n`. The cure is coming. But first,
 feel the disease.
 
 > Continue to `02 - worked example.md`.
+
+
+</details>

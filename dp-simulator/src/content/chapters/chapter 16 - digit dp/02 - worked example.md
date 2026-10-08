@@ -1,3 +1,85 @@
+# Chapter 16: Count valid numbers from 0 to 21
+
+**Count numbers whose neighbouring digits are different.** The range includes both `0` and `21`.
+
+There are `22` numbers in that range. Only `11` is invalid, so we expect **21**. The same method gives **923** for the original limit `1234`.
+
+## What the saved answer means
+
+`count_from(pos, previous, tight, started)` returns **the number of valid ways to finish the number**.
+
+- `pos` is the next position in `digits`, the limit written as individual digits.
+- `previous` is the last digit we wrote.
+- `tight` is true if everything written so far matches the limit. Then the next digit cannot exceed the limit's digit at this position.
+- `started` is true once a nonzero digit has appeared. Before that, zeros only pad shorter numbers.
+
+The cache remembers the result for each combination of these four values. Different earlier digits can leave us with the same remaining task, so we calculate that task once.
+
+## Choose the next digit
+
+If `tight` is true, try digits from zero through the current limit digit. Otherwise try zero through nine.
+
+Reject a digit matching `previous` only when the number has started. For each accepted digit, move to the next position and add its completion count.
+
+`tight` stays true only if it was already true and we choose the limit's digit. `started` becomes true when we choose a nonzero digit.
+
+## A tiny trace
+
+| First digit for limit 21 | What happens next | Count |
+|---|---|---:|
+| 0 | Padding; all last digits 0..9 allowed | 10 |
+| 1 | Already below 21; all last digits except 1 | 9 |
+| 2 | Still matches 21; last digit must be 0 or 1 | 2 |
+
+Add the counts: `10 + 9 + 2 = 21`.
+
+## Runnable Python
+
+```python
+from functools import lru_cache
+
+
+def count_no_adjacent_equal(limit):
+    if limit < 0:
+        return 0
+    digits = [int(digit) for digit in str(limit)]
+
+    @lru_cache(maxsize=None)
+    def count_from(pos, previous, tight, started):
+        if pos == len(digits):
+            return 1  # One complete valid number.
+
+        largest = digits[pos] if tight else 9
+        total = 0
+        for digit in range(largest + 1):
+            if started and digit == previous:
+                continue
+            total += count_from(
+                pos + 1,
+                digit,
+                tight and digit == digits[pos],
+                started or digit != 0,
+            )
+        return total
+
+    return count_from(0, -1, True, False)
+
+
+print(count_no_adjacent_equal(21))    # 21
+print(count_no_adjacent_equal(1234))  # 923
+```
+
+The first call starts at position zero, has no previous digit (`-1`), matches the empty beginning of the limit, and has not started a number.
+
+When no positions remain, return `1`: we finished one valid number. Returning `0` would discard every completed number.
+
+**Common mistake:** treating leading zeros as real neighbouring digits. The padded number `004` means `4` and is allowed. Keep `started` in the state so padding does not reject it.
+
+---
+
+<details>
+<summary>More detail and extra examples (optional)</summary>
+
 # Chapter 16 · 02 — Worked Example: Count Numbers ≤ N With No Two Equal Adjacent Digits
 
 > Five slots, then the Invariant Lens. New this chapter: the input is a
@@ -16,7 +98,7 @@
 
 ## Slot 0 — FULCRUM
 
-> ### "I am at digit position `pos`. Which digit do I write here?"
+> **Ask yourself:** "I am at digit position `pos`. Which digit do I write here?"
 
 Ten doors — unless the ceiling says otherwise.
 
@@ -513,3 +595,6 @@ print(count_digit_one(1234))   # expected: 689
 > and it is the whole job.
 
 > Continue to `03 - your challenge.md`.
+
+
+</details>

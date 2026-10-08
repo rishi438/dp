@@ -1,3 +1,85 @@
+# Chapter 9: Work through taking or skipping an item
+
+**Question:** A bag holds at most 7 weight units. Which whole items give the highest value? Each item can be taken only once.
+
+```text
+Item:    A  B  C  D
+Weight:  1  3  4  5
+Value:   1  4  5  7
+```
+
+B and C fit exactly: weight `3 + 4 = 7`, value `4 + 5 = 9`. The answer is **9**.
+
+## 1. Say what one table entry means
+
+`dp[i][w]` = largest total value using the first `i` items, with total weight **at most** `w`.
+
+For example, `dp[2][3]` uses only A and B, with limit 3. Taking B gives value 4, so this entry is **4**.
+
+Row 0 means no items. Row 1 introduces A, at list index 0. That is why row `i` reads `weights[i - 1]` and `values[i - 1]`.
+
+## 2. Start at zero
+
+With no items, the best value is 0 at every capacity. With positive weights, zero capacity also gives 0. Create a table filled with zeros.
+
+## 3. Compare the two choices
+
+For an item of weight `weight` and value `value`:
+
+```text
+skip = dp[i - 1][w]
+take = dp[i - 1][w - weight] + value   (only if weight <= w)
+```
+
+Keep the larger value. Both choices use the **previous row**, which contains only earlier items. This prevents taking the current item twice.
+
+At capacity 7, adding C gives:
+
+```text
+skip C: dp[2][7]     = 5
+take C: dp[2][3] + 5 = 4 + 5 = 9
+save 9
+```
+
+Next, adding D gives:
+
+```text
+skip D: dp[3][7]     = 9
+take D: dp[3][2] + 7 = 1 + 7 = 8
+keep 9
+```
+
+Taking D would leave too little room for B or C. The best answer can therefore skip the most valuable single item.
+
+## 4. Run it
+
+```python
+def knapsack_01(weights, values, capacity):
+    n = len(weights)
+    dp = [[0] * (capacity + 1) for _ in range(n + 1)]
+    for i in range(1, n + 1):
+        weight, value = weights[i - 1], values[i - 1]
+        for w in range(capacity + 1):
+            skip = dp[i - 1][w]
+            dp[i][w] = skip
+            if weight <= w:
+                take = dp[i - 1][w - weight] + value
+                dp[i][w] = max(skip, take)
+    return dp[n][capacity]
+
+print(knapsack_01([1, 3, 4, 5], [1, 4, 5, 7], 7))  # 9
+```
+
+The final row includes all items. Its entry for capacity 7 contains the answer, **9**. The bag need not be full for a solution to be valid.
+
+**Common mistake:** using the current row for the "take" calculation. That can reuse the item. First learn this version with separate rows; the optional details explain how to safely reduce it to one array.
+
+
+---
+
+<details>
+<summary>More detail and extra examples (optional)</summary>
+
 # Chapter 9 · 02 — Worked Example: 0/1 Knapsack
 
 > Five slots, then the Invariant Lens. New this chapter: the second dimension
@@ -21,7 +103,7 @@
 
 ## Slot 0 — FULCRUM
 
-> ### "Looking at the LAST relic: did I take it, or leave it?"
+> **Ask yourself:** "Looking at the LAST relic: did I take it, or leave it?"
 
 Not *"which relic first"* — that's forward and branches into `2ⁿ` futures.
 Stand at the end and reverse the decision. Two doors, always two:
@@ -413,3 +495,6 @@ Space  O(n × W) → O(W)       roll to one array, iterate backwards
 > Your turn: `03 - your challenge.md`. Challenge 4 hands you a forward loop
 > that returns a perfectly reasonable wrong number and asks you to name the
 > problem it actually solved.
+
+
+</details>

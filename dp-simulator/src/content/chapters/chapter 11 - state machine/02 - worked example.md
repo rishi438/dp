@@ -1,3 +1,91 @@
+# Chapter 11: Calculate stock profit with a waiting day
+
+**Question:** Prices are `[1, 2, 3, 0, 2]`. You may hold at most one share, and you cannot buy on the day immediately after a sale. What is the largest profit?
+
+A valid best plan is **buy at 1, sell at 2, wait, buy at 0, sell at 2**. The profit is `(2 - 1) + (2 - 0) = 3`.
+
+## 1. Save three kinds of answer
+
+At the end of a day:
+
+| Saved answer | What it means |
+|---|---|
+| `hold` | Best cash balance while owning one share |
+| `sold` | Best cash balance after selling today |
+| `rest` | Best cash balance with no share and no sale today |
+
+Each number describes a different possible history. They are not three actions taken together. A positive `hold` is possible if earlier trades earned more than the latest purchase cost.
+
+## 2. Start on day 0
+
+At price 1:
+
+```text
+hold = -1     buy one share
+rest = 0      do nothing
+sold = -inf   impossible: there was no previously owned share to sell
+```
+
+`-inf` means negative infinity. It marks an impossible situation so it cannot beat a real value in `max`.
+
+## 3. Work out today's choices
+
+Use only yesterday's answers:
+
+```text
+new_hold = max(hold, rest - price)  # keep holding, or buy
+new_sold = hold + price            # sell
+new_rest = max(rest, sold)         # stay without a share, or wait after a sale
+```
+
+Buying uses yesterday's `rest`, **never yesterday's `sold`**. A sale must first pass through a whole waiting day.
+
+## 4. Follow the numbers
+
+```text
+Day   Price   hold   sold   rest
+ 0      1      -1   -inf     0
+ 1      2      -1      1     0
+ 2      3      -1      2     1
+ 3      0       1     -1     2
+ 4      2       1      3     2
+```
+
+On day 3, buying uses day 2's `rest = 1`: `1 - 0 = 1`. This comes from selling on **day 1**, then waiting on **day 2**.
+
+On day 4, selling gives `1 + 2 = 3`. The final answer is `max(sold, rest) = max(3, 2) = 3`.
+
+## 5. Run it
+
+```python
+def max_profit_cooldown(prices):
+    if not prices:
+        return 0
+    hold = -prices[0]
+    sold = float('-inf')
+    rest = 0
+
+    for price in prices[1:]:
+        new_hold = max(hold, rest - price)
+        new_sold = hold + price
+        new_rest = max(rest, sold)
+        hold, sold, rest = new_hold, new_sold, new_rest
+
+    return max(sold, rest)
+
+print(max_profit_cooldown([1, 2, 3, 0, 2]))  # 3
+```
+
+The temporary variables keep yesterday's answers available until all three calculations are done. We return a result with no share remaining, so a purchase has been matched by a sale.
+
+**Common mistake:** combining day 2's sale at 3 with day 3's purchase at 0. Those prices look attractive, but that plan skips the required waiting day.
+
+
+---
+
+<details>
+<summary>More detail and extra examples (optional)</summary>
+
 # Chapter 11 · 02 — Worked Example: Best Time to Buy and Sell Stock with Cooldown
 
 > Five slots, then the Invariant Lens. New this chapter: **one state per mask**,
@@ -18,7 +106,7 @@
 
 ## Slot 0 — FULCRUM
 
-> ### "I am on day `i` wearing mask `M`. Which mask was I wearing on day `i-1`?"
+> **Ask yourself:** "I am on day `i` wearing mask `M`. Which mask was I wearing on day `i-1`?"
 
 The doors, straight off Modus's diagram:
 
@@ -332,3 +420,6 @@ SPACE = O(n) tabulated  →  O(1) rolled  (the window reaches exactly 1 day back
 > for you. Every "adjacency" constraint is a missing arrow.
 
 > Continue to `03 - your challenge.md`.
+
+
+</details>
