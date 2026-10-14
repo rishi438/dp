@@ -16,7 +16,7 @@ export const PRACTICE = [
   ...[0, 1, 2, 3, 4].map(chapter => task(`stairs-${chapter}`, chapter,
     ['Count staircase paths', 'Recursive staircase paths', 'Memoized staircase paths', 'Tabulate staircase paths', 'Roll the staircase window'][chapter],
     [arg('n', 'int'), arg('hops', 'ints')],
-    'Return the number of ordered paths to step n using the allowed positive hops. The empty path counts once. For Chapter 4, use only the last max(hops) states.',
+    'Start at step 0 of a staircase with n steps. Each move must use one of the allowed positive hop sizes. How many different sequences of hops reach exactly step n? Order matters: [1, 2] and [2, 1] are different paths. For n = 3 and hops = [1, 2], the answer is 3: [1, 1, 1], [1, 2], and [2, 1]. For n = 0, doing nothing counts as one path.' + (chapter === 4 ? ' Use only the last max(hops) states.' : ''),
     [{ n: 5, hops: [1, 2] }, { n: 5, hops: [1, 2, 3] }, { n: 0, hops: [1, 2] }, { n: 3, hops: [2] }],
     'ways(i): number of paths ending at step i', 'ways(0) = 1; ways(i) = sum(ways(i - hop)) for legal hops', stairs)),
   ...[1, 2, 3, 4].map(chapter => task(`fib-${chapter}`, chapter, 'Fibonacci: derive the base cases', [arg('n', 'int')],

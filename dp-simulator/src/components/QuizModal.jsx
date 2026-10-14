@@ -29,7 +29,7 @@ function ChapterQuiz({ chapterNum, onGoToReasoning }) {
     setAnswers(a => resetChapterMistakes(a, chapterMistakes));
   };
   return <section className="panel quiz-panel">
-    <div className="section-heading"><div><p className="eyebrow">Chapter {chapterNum} · {chapter?.title}</p><h2>Trap drills</h2><p>{questions.length} questions for this chapter. Your answers and position are saved.</p></div><strong>{correct} correct / {answered.length} answered</strong></div>
+    <div className="section-heading"><div><p className="eyebrow">Chapter {chapterNum} · {chapter?.title}</p><h2>Trap drills</h2><p>{questions.length} questions for this chapter. Your answers and position are saved.</p></div><div className="quiz-header-actions"><strong>{correct} correct / {answered.length} answered</strong>{onGoToReasoning && <button className="primary-button" onClick={onGoToReasoning}>Next: 05 — Your reasoning →</button>}</div></div>
     <div className="workspace-toolbar"><span>{retryIds ? 'Reviewing this chapter’s mistakes' : 'Jump to any question'}</span>
       <div className="segmented-control">{retryIds && <button onClick={() => { setRetryIds(null); setIndex(0); }}>Back to chapter questions</button>}
         <button onClick={retry} disabled={!chapterMistakes.length}>Retry chapter mistakes ({chapterMistakes.length})</button>
@@ -54,7 +54,7 @@ function ChapterQuiz({ chapterNum, onGoToReasoning }) {
         <span>{String.fromCharCode(65 + i)}.</span> {option.text}{answers[question.id] !== undefined && option.correct && ' ✓'}
       </button>)}</div>
       {answers[question.id] !== undefined && <div className="explanation" role="status"><strong>{question.options[answers[question.id]]?.correct ? 'Correct.' : 'Review this reasoning.'}</strong><p>{question.options[answers[question.id]]?.explanation || question.explanation}</p>{!question.options[answers[question.id]]?.correct && <p>{question.options.find(option => option.correct)?.explanation}</p>}</div>}
-      <div className="learning-footer"><button disabled={safeIndex === 0} onClick={() => setIndex(safeIndex - 1)}>← Previous</button><span>{safeIndex + 1} / {filtered.length}{retryIds ? ' in review' : ''}</span><button disabled={safeIndex === filtered.length - 1} onClick={() => setIndex(safeIndex + 1)}>Next →</button>{onGoToReasoning && <button className="primary-button" onClick={onGoToReasoning}>Next: 04 — Your reasoning →</button>}</div>
+      <div className="learning-footer"><button disabled={safeIndex === 0} onClick={() => setIndex(safeIndex - 1)}>← Previous</button><span>{safeIndex + 1} / {filtered.length}{retryIds ? ' in review' : ''}</span><button disabled={safeIndex === filtered.length - 1} onClick={() => setIndex(safeIndex + 1)}>Next →</button></div>
     </>}
   </section>;
 }

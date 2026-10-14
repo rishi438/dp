@@ -14,6 +14,7 @@ import { Maximize2, Minimize2, Sparkles } from 'lucide-react';
 import { useForceLayout } from '../hooks/useForceLayout';
 import DPNode from './DPNode';
 import DoorEdge from './DoorEdge';
+import MovableOverlay from './MovableOverlay';
 
 const nodeTypes = {
   dpNode: DPNode,
@@ -33,7 +34,8 @@ function FlowVisualizerContent({
   computedStates,
   expanded,
   onExpand,
-  playbackControls
+  playbackControls,
+  cacheControl
 }) {
   const [usePhysics, setUsePhysics] = useState(false);
   const { setCenter } = useReactFlow();
@@ -137,7 +139,8 @@ function FlowVisualizerContent({
 
   return (
     <div className={`staircase-graph w-full h-[380px] rounded-xl overflow-hidden border border-slate-800 bg-slate-950 relative shadow-xl ${playbackControls ? 'has-playback-dock' : ''}`}>
-      <div className="absolute top-2.5 left-2.5 z-10 bg-slate-900/90 backdrop-blur border border-slate-800 rounded-md px-2 py-1 text-[10px] text-slate-300 flex items-center gap-1.5">
+      {cacheControl}
+      <div className="absolute top-14 left-2.5 z-10 bg-slate-900/90 backdrop-blur border border-slate-800 rounded-md px-2 py-1 text-[10px] text-slate-300 flex items-center gap-1.5">
         <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping"></span>
         <span className="font-bold">Subproblem DAG</span>
         <span className="text-slate-500">· Drag / Zoom {usePhysics ? '· ⚛ Physics' : ''}</span>
@@ -183,7 +186,7 @@ function FlowVisualizerContent({
           className="!bottom-2 !right-2 !scale-75 !origin-bottom-right"
         />
       </ReactFlow>
-      {playbackControls && <div className="playback-dock">{playbackControls}</div>}
+      {playbackControls && <MovableOverlay className="playback-dock" label="playback controls">{playbackControls}</MovableOverlay>}
     </div>
   );
 }

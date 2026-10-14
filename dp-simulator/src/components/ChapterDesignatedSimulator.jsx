@@ -49,7 +49,7 @@ function Simulator({ problem, compare }) {
 
   if (isCustomVisual) {
     return <div className="space-y-4">
-      <div className="section-heading"><div><h2>{problem.title}</h2><p>{problem.state}</p></div>
+      <div className="section-heading"><div><h2>{problem.title}</h2><p><strong>Problem:</strong> {problem.prompt}</p><p><strong>State:</strong> {problem.state}</p></div>
         <div className="segmented-control">
           <button aria-pressed={true} onClick={() => setMode('visual')}>{isStaircase && problem.chapter === 0 ? 'Frog staircase' : 'Visual walkthrough'}</button>
           {isStaircase && problem.chapter >= 3 && <button aria-pressed={false} onClick={() => setMode('stairs')}>Frog staircase · full table</button>}
@@ -62,14 +62,14 @@ function Simulator({ problem, compare }) {
   }
 
   return <div className="space-y-4">
-    <div className="section-heading"><div><h2>{problem.title}</h2><p>{problem.state}</p></div>
+    <div className="section-heading"><div><h2>{problem.title}</h2><p><strong>Problem:</strong> {problem.prompt}</p><p><strong>State:</strong> {problem.state}</p></div>
       {!compare && (Visual || (isStaircase && problem.chapter >= 3)) && <div className="segmented-control">
         {Visual && <button aria-pressed={mode === 'visual'} onClick={() => setMode('visual')}>{isStaircase && problem.chapter === 0 ? 'Frog staircase' : 'Visual walkthrough'}</button>}
         {isStaircase && problem.chapter >= 3 && <button aria-pressed={mode === 'stairs'} onClick={() => setMode('stairs')}>Frog staircase · full table</button>}
         <button aria-pressed={mode === 'trace'} onClick={() => setMode('trace')}>Code, trace & predict</button>
       </div>}
     </div>
-    {compare && <p>Switch With cache / Without cache to run the same input. A cache hit reuses a saved answer; without cache, repeated calls calculate it again.</p>}
+    {compare && <p>Start without cache to see repeated calls calculate their answers again. Turn on the cache switch inside the simulator to reuse saved answers for the same input.</p>}
     <ResizableWorkspace>
       <div className="challenge-problem space-y-4">
         {!compare && isStaircase && mode === 'stairs' ? (

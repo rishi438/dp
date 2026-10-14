@@ -13,8 +13,8 @@ const tabs = [
   ['story', '01 · Simple explanation'],
   ['worked_example', '02 · Worked example'],
   ['quiz', '03 · Trap drills'],
-  ['reasoning', '04 · Your reasoning'],
-  ['tree', '05 · Recursion Tree vs Memo'],
+  ['tree', '04 · Recursion Tree vs Memo'],
+  ['reasoning', '05 · Your reasoning'],
   ['flow', '06 · Simulation'],
   ['challenge', '07 · Write code']
 ];

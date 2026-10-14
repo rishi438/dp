@@ -1,5 +1,12 @@
 ﻿# DP Simulator project memory
 
+## Simulator controls — 2026-10-14
+- Tabs now place Recursion Tree vs Memo at 04 and Your reasoning at 05; reasoning shortcut moved to Trap drills header. Every chapter simulation shows its problem statement before the state definition; staircase prompt includes a concrete example.
+- TraceExplorer starts without cache across chapters. Single draggable cache switch is inside both call-tree and frog canvases. Top-right icon menu starts closed and groups example size, view, prediction, recurrence/work counts and tree details.
+- MovableOverlay.jsx supports direct background dragging and keyboard movement for the tools menu and frosted-glass playback docks; no separate grips. Cache toggle has no grip or surrounding background. Legend has no background and sits above settings with compact 4px spacing. Restored missing walkthrough grid rule aligns canvas and Code flow, including expanded view; narrow layouts stack.
+- Frog canvas fills its full height behind the dock; zoom/minimap stay above playback. Subproblem DAG label sits below cache toggle. Fit-view icon retained at user request.
+- Validation: 9 existing render/walkthrough checks and production build pass (nonfatal occupied HMR port warning). Live Simulation verified initial cache off, toggle/drag without changing mode, preserved switch position on toggle, grouped menu closed initially, playback movement/translucency, desktop alignment including expanded view, and 390px cache bounds/no overflow. Backups: .codex/backups/20261014-084109-movable-cache-switch/ and preceding timestamped UI backups.
+
 ## Project
 - Root: C:\Users\AMD\OneDrive\Desktop\Study\dp. React/Vite app: dp-simulator.
 - Original curriculum: chapters 0-18. Preserve .agent/rules/graperoot.md and .codex/rules.

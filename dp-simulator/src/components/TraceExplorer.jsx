@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { ReactFlow, Controls, ControlButton } from '@xyflow/react';
-import { Maximize2, Minimize2, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Maximize2, Minimize2, Sparkles, ChevronLeft, ChevronRight, SlidersHorizontal, GitBranch, Network, ListFilter, Footprints, GitGraph, Eye } from 'lucide-react';
 import { runTrace, displayValue } from '../data/practice';
 import { callTreeNodes, layoutCallTree } from '../data/callTree';
 import { codeStepTrace } from '../data/traceCode';
@@ -12,9 +12,10 @@ import { useExpandedPanel } from '../hooks/useExpandedPanel';
 import TraceCodeViewer from './TraceCodeViewer';
 import FlowVisualizer from './FlowVisualizer';
 import Playback from './Playback';
+import MovableOverlay from './MovableOverlay';
 
 
-function CallGraph({ trace, event, revealed, eventIndex, smallTree, expanded, onExpand, playbackControls }) {
+function CallGraph({ trace, event, revealed, eventIndex, smallTree, expanded, onExpand, playbackControls, cacheControl }) {
   const [usePhysics, setUsePhysics] = useState(false);
   const graphRef = useRef(null);
   const [flow, setFlow] = useState(null);
@@ -93,6 +94,7 @@ function CallGraph({ trace, event, revealed, eventIndex, smallTree, expanded, on
   return <div className="call-tree-view">
     {event.id !== undefined && !ids.has(event.id) && <p role="status">Current call {event.key} is beyond the drawing limit. Follow its code and variables alongside the tree.</p>}
     <div ref={graphRef} className={`trace-graph ${playbackControls ? 'has-playback-dock' : ''}`} aria-label="Recursive call tree">
+      {cacheControl}
       <div className="tree-legend" aria-label="Call colors"><span className="legend-current">Current</span><span className="legend-cache">Cached / returned</span><span className="legend-repeat">Repeated work</span><span className="legend-waiting">Waiting</span></div>
       <ReactFlow key={scope} onInit={setFlow} nodes={graph.nodes} edges={graph.edges} onNodesChange={onNodesChange}
       fitView fitViewOptions={fitOptions} minZoom={0.05}
@@ -117,37 +119,88 @@ function CallGraph({ trace, event, revealed, eventIndex, smallTree, expanded, on
         </ControlButton>
       </Controls>
     </ReactFlow>
-    {playbackControls && <div className="playback-dock">{playbackControls}</div>}
+    {playbackControls && <MovableOverlay className="playback-dock" label="playback controls">{playbackControls}</MovableOverlay>}
     </div>
-    <details className="tree-info"><summary>Tree details</summary><p className="tree-explanation">{smallTree ? 'Complete small example: all its branches stay visible as the code runs.' : 'Follow the call tree and total work for the selected input.'} {trace.nodes.length} calls to go.{trace.nodes.length > 119 ? ' Drawing solve and the first 119 calls; playback includes every recorded call.' : ''} Drag tiles or use the zoom controls to inspect.</p></details>
   </div>;
 }
 
-export default function TraceExplorer({ problem, input, memoized = true, initialSize = 'input', codeTarget, codeVisible = true, active = true }) {
+function CacheSwitch({ enabled, onToggle, position, setPosition }) {
+  const buttonRef = useRef(null);
+  const drag = useRef(null);
+  const suppressClick = useRef(false);
+  const constrain = (point, button) => ({
+    x: Math.max(8, Math.min(point.x, button.parentElement.clientWidth - button.offsetWidth - 8)),
+    y: Math.max(8, Math.min(point.y, button.parentElement.clientHeight - button.offsetHeight - 8)),
+  });
+  useEffect(() => {
+    const button = buttonRef.current;
+    const observer = new ResizeObserver(() => setPosition(previous => {
+      const next = constrain(previous, button);
+      return next.x === previous.x && next.y === previous.y ? previous : next;
+    }));
+    observer.observe(button.parentElement);
+    return () => observer.disconnect();
+  }, [setPosition]);
+  return <button ref={buttonRef} type="button" role="switch" aria-checked={enabled} aria-label="Use cache"
+    className="cache-mode-switch" style={{ left: position.x, top: position.y }}
+    title="Click to toggle cache. Drag to move, or use arrow keys when focused."
+    onPointerDown={event => {
+      if (event.button !== 0) return;
+      suppressClick.current = false;
+      drag.current = { pointerId: event.pointerId, x: event.clientX, y: event.clientY, position };
+      event.currentTarget.setPointerCapture(event.pointerId);
+    }}
+    onPointerMove={event => {
+      const start = drag.current;
+      if (!start || start.pointerId !== event.pointerId) return;
+      const dx = event.clientX - start.x;
+      const dy = event.clientY - start.y;
+      if (!suppressClick.current && Math.hypot(dx, dy) < 5) return;
+      suppressClick.current = true;
+      setPosition(constrain({ x: start.position.x + dx, y: start.position.y + dy }, event.currentTarget));
+    }}
+    onPointerUp={event => {
+      drag.current = null;
+      if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+    }}
+    onPointerCancel={() => { drag.current = null; suppressClick.current = true; }}
+    onLostPointerCapture={() => { drag.current = null; }}
+    onClick={event => {
+      if (event.detail !== 0 && suppressClick.current) { suppressClick.current = false; return; }
+      onToggle();
+    }}
+    onKeyDown={event => {
+      const offset = { ArrowLeft: [-10, 0], ArrowRight: [10, 0], ArrowUp: [0, -10], ArrowDown: [0, 10] }[event.key];
+      if (!offset) return;
+      event.preventDefault();
+      setPosition(constrain({ x: position.x + offset[0], y: position.y + offset[1] }, event.currentTarget));
+    }}>
+    <span className="cache-switch-track" aria-hidden="true"><span /></span>
+    <span>{enabled ? 'With cache' : 'Without cache'}</span>
+  </button>;
+}
+
+export default function TraceExplorer({ problem, input, initialSize = 'input', codeTarget, codeVisible = true, active = true }) {
   const [size, setSize] = useState(initialSize);
-  const [cacheEnabled, setCacheEnabled] = useState(memoized);
+  const [cacheEnabled, setCacheEnabled] = useState(false);
+  const [cachePosition, setCachePosition] = useState({ x: 12, y: 12 });
   const examples = useMemo(() => treeExamples(problem), [problem]);
   const selectedInput = size === 'input' ? input : examples[size];
   const toolbar = <div className="workspace-toolbar">
-    <div className="segmented-control" aria-label="Cache mode">
-      <button aria-pressed={cacheEnabled} onClick={() => setCacheEnabled(true)}>With cache</button>
-      <button aria-pressed={!cacheEnabled} onClick={() => setCacheEnabled(false)}>Without cache</button>
-    </div>
     <div className="segmented-control" aria-label="Simulation example size">
-      <button aria-pressed={size === 'small'} onClick={() => setSize('small')}>Small tree</button>
-      <button aria-pressed={size === 'large'} onClick={() => setSize('large')}>Large tree</button>
-      <button aria-pressed={size === 'input'} onClick={() => setSize('input')}>Current inputs</button>
+      <button aria-pressed={size === 'small'} onClick={() => setSize('small')}><GitBranch size={16} /> Small tree</button>
+      <button aria-pressed={size === 'large'} onClick={() => setSize('large')}><Network size={16} /> Large tree</button>
+      <button aria-pressed={size === 'input'} onClick={() => setSize('input')}><ListFilter size={16} /> Current inputs</button>
     </div>
     <span>{size === 'small' ? 'Small complete example' : size === 'large' ? 'Larger complete example' : 'Your selected example or custom input'}: <code>{JSON.stringify(selectedInput)}</code></span>
   </div>;
 
   return <div className="space-y-4">
-    {codeTarget === undefined && toolbar}
-    <TracePlayback key={`${problem.id}:${size}:${cacheEnabled}:${JSON.stringify(selectedInput)}`} problem={problem} input={selectedInput} memoized={cacheEnabled} smallTree={size === 'small'} codeTarget={codeTarget} codeVisible={codeVisible} active={active} inlineToolbar={codeTarget !== undefined ? toolbar : null} />
+    <TracePlayback key={`${problem.id}:${size}:${cacheEnabled}:${JSON.stringify(selectedInput)}`} problem={problem} input={selectedInput} memoized={cacheEnabled} smallTree={size === 'small'} codeTarget={codeTarget} codeVisible={codeVisible} active={active} inlineToolbar={toolbar} cacheControl={<CacheSwitch enabled={cacheEnabled} onToggle={() => setCacheEnabled(value => !value)} position={cachePosition} setPosition={setCachePosition} />} />
   </div>;
 }
 
-function TracePlayback({ problem, input, memoized, smallTree, codeTarget, codeVisible, active, inlineToolbar }) {
+function TracePlayback({ problem, input, memoized, smallTree, codeTarget, codeVisible, active, inlineToolbar, cacheControl }) {
   const expansion = useExpandedPanel();
   const trace = useMemo(() => codeStepTrace(problem, runTrace(problem, input, { memoized }), memoized), [problem, input, memoized]);
   const alternate = useMemo(() => runTrace(problem, input, { memoized: !memoized }), [problem, input, memoized]);
@@ -185,20 +238,22 @@ function TracePlayback({ problem, input, memoized, smallTree, codeTarget, codeVi
   </div> : <Playback compact playback={playback} length={trace.events.length} />;
   const status = <div className="event-banner" aria-live="polite"><strong>{event.message} {event.kind !== 'answer' && event.key}</strong>{event.value !== undefined && <span> → {needsPrediction ? '?' : displayValue(event.value)}</span>}</div>;
 
-  const simulationColumns = <div className={`walkthrough-columns ${externalCode ? 'simulation-only' : ''}`}><div className="simulation-column">
-    {isStaircase && view === 'stairs' ? <FlowVisualizer playbackControls={controls} expanded={expansion.expanded} onExpand={expansion.toggle} problem={{ id: 'stairs', hops: input.hops }} n={input.n} currentStep={event.state[0] ?? input.n} dpResults={stairCells} computedStates={computedStates} terminationIndex={input.n} onSelectStep={i => { if (predict) return; const index = trace.events.findIndex(e => e.state[0] === i); if (index >= 0) playback.seek(index); }} /> : <CallGraph playbackControls={controls} trace={trace} event={event} revealed={!needsPrediction} eventIndex={playback.step} smallTree={smallTree} expanded={expansion.expanded} onExpand={expansion.toggle} />}
+  const simulationColumns = () => <div className={`walkthrough-columns ${externalCode ? 'simulation-only' : ''}`}><div className="simulation-column">
+    {isStaircase && view === 'stairs' ? <FlowVisualizer cacheControl={<>{cacheControl}{tools}</>} playbackControls={controls} expanded={expansion.expanded} onExpand={expansion.toggle} problem={{ id: 'stairs', hops: input.hops }} n={input.n} currentStep={event.state[0] ?? input.n} dpResults={stairCells} computedStates={computedStates} terminationIndex={input.n} onSelectStep={i => { if (predict) return; const index = trace.events.findIndex(e => e.state[0] === i); if (index >= 0) playback.seek(index); }} /> : <CallGraph cacheControl={<>{cacheControl}{tools}</>} playbackControls={controls} trace={trace} event={event} revealed={!needsPrediction} eventIndex={playback.step} smallTree={smallTree} expanded={expansion.expanded} onExpand={expansion.toggle} />}
     </div>{externalCode
       ? codeTarget && createPortal(<TraceCodeViewer status={status} problem={problem} memoized={memoized} event={event} hiddenValue={needsPrediction} visible={codeVisible} />, codeTarget)
       : <TraceCodeViewer status={status} problem={problem} memoized={memoized} event={event} hiddenValue={needsPrediction} />}
   </div>;
 
-  const headerControls = <>
-    <div className="simulation-topbar">
+  const tools = <MovableOverlay className="simulator-tools" label="simulator menu"><details>
+    <summary aria-label="Simulator tools" title="Simulator tools"><SlidersHorizontal size={19} /></summary>
+    <div className="simulator-tools-menu">
     <div className="section-heading"><h2>{memoized ? 'Memoized dependency trace' : 'Plain recursion trace'}</h2>
-      <label className="check-label"><input type="checkbox" checked={predict} onChange={e => { setPredict(e.target.checked); playback.seek(playback.step); }} /> Predict return values</label>
-      {expansion.expanded && <button data-close-expanded onClick={expansion.close}>Exit expanded view · Esc</button>}
+      <label className="check-label"><Eye size={16} /><input type="checkbox" role="switch" checked={predict} onChange={e => { setPredict(e.target.checked); playback.seek(playback.step); }} /> Predict return values</label>
     </div>
-    </div>
+    <fieldset><legend>Example size</legend>{inlineToolbar}</fieldset>
+    {isStaircase && <fieldset><legend>View</legend><div className="segmented-control trace-view-switch"><button aria-pressed={view === 'stairs'} onClick={() => setView('stairs')}><Footprints size={16} /> Frog staircase</button><button aria-pressed={view === 'tree'} onClick={() => setView('tree')}><GitGraph size={16} /> Call tree</button></div></fieldset>}
+    <details className="tree-info"><summary>Tree details</summary><p>{smallTree ? 'Complete small example: all its branches stay visible as the code runs.' : 'Follow the call tree and total work for the selected input.'} {trace.nodes.length} calls.{trace.nodes.length > 119 ? ' Drawing solve and the first 119 calls; playback includes every recorded call.' : ''} Drag tiles or use zoom to inspect.</p></details>
     <details className="trace-inspector"><summary>Recurrence & work counts</summary><p>{problem.state}</p>
     <p className="recurrence">{problem.recurrence}</p>
     <div className="comparison-stats" aria-label="Cache comparison for the same input">
@@ -208,28 +263,30 @@ function TracePlayback({ problem, input, memoized, smallTree, codeTarget, codeVi
       <span>Code steps: {trace.events.length}</span>
     </div>
     </details>
+    </div>
+  </details></MovableOverlay>;
+
+  const headerControls = <>
+    {expansion.expanded && <button data-close-expanded onClick={expansion.close}>Exit expanded view · Esc</button>}
     {trace.truncated && <p role="status">Stopped after 2,500 calls. Reduce the input to see the complete plain-recursion tree.</p>}
     {needsPrediction && <form className="prediction" onSubmit={e => { e.preventDefault(); check(); }}>
       <label>Your predicted value <input aria-label="Predicted state value" value={guess} onChange={e => setGuess(e.target.value)} autoComplete="off" /></label>
       <button type="submit">Check prediction</button><button type="button" onClick={() => { setAnswers(a => ({ ...a, [playback.step]: false })); setFeedback(`Returned ${displayValue(event.value)}. ${problem.recurrence}`); }}>Reveal explanation</button>
     </form>}
     {feedback && <p role="status">{feedback}</p>}
-    {isStaircase && <div className="segmented-control trace-view-switch"><button aria-pressed={view === 'stairs'} onClick={() => setView('stairs')}>Frog staircase</button><button aria-pressed={view === 'tree'} onClick={() => setView('tree')}>Call tree</button></div>}
   </>;
 
   return <section {...expansion.panelProps} className={`trace-explorer ${expansion.expanded ? 'expanded-simulation' : ''}`} aria-label="Simulation and code playback">
     {externalCode ? (
       <>
-        {simulationColumns}
-        {inlineToolbar}
+        {simulationColumns()}
         {headerControls}
       </>
     ) : (
       <>
-        {inlineToolbar}
         {headerControls}
         {externalCode && !codeVisible && status}
-        {simulationColumns}
+        {simulationColumns()}
       </>
     )}
     <div className="trace-details">

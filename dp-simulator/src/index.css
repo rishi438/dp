@@ -296,6 +296,7 @@ summary { cursor: pointer; font-weight: 600; }
   background: transparent;
   box-shadow: none;
 }
+.walkthrough-columns { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(250px, 1fr); align-items: start; gap: 16px; margin-top: 16px; }
 .walkthrough-columns > * { min-width: 0; }
 .code-playback { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: var(--code); }
 .code-playback header { display: flex; justify-content: space-between; gap: 8px; padding: 12px; background: var(--subtle); font-size: 12px; flex-wrap: wrap; }
@@ -335,16 +336,17 @@ summary { cursor: pointer; font-weight: 600; }
   margin: 0;
   padding: 6px 12px;
   gap: 12px;
-  background: color-mix(in srgb, var(--surface) 88%, transparent);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid var(--border);
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: 0;
   border-radius: 8px;
-  box-shadow: var(--shadow);
+  box-shadow: none;
   pointer-events: none;
 }
 .trace-graph { height: 450px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; position: relative; background-color: var(--code); background-image: radial-gradient(circle, color-mix(in srgb, var(--border) 55%, transparent) 1px, transparent 1px); background-size: 24px 24px; }
 .trace-graph .react-flow { background: transparent; }
+.app-shell .staircase-graph { background-color: var(--code) !important; background-image: radial-gradient(circle, color-mix(in srgb, var(--border) 55%, transparent) 1px, transparent 1px); background-size: 16px 16px; }
 .trace-graph .react-flow__pane { cursor: default; }
 .react-flow__node.trace-node { background: var(--subtle); color: var(--text); border: 2px solid var(--muted); border-radius: 14px; width: 140px; height: 68px; padding: 8px; font-size: 14px; display: flex; flex-direction: column; justify-content: center; cursor: grab; box-shadow: var(--shadow); }
 .react-flow__node.trace-node.dragging { cursor: grabbing; }
@@ -398,6 +400,7 @@ summary { cursor: pointer; font-weight: 600; }
 .prediction { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
 .prediction input { width: 110px; margin-left: 8px; }
 .quiz-panel { width: 100%; }
+.quiz-header-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 14px; margin-left: auto; }
 .quiz-question { font-size: 20px !important; white-space: pre-wrap; }
 .quiz-options { display: grid; gap: 12px; margin: 20px 0; }
 .quiz-number-nav { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 8px; }
@@ -493,8 +496,37 @@ summary { cursor: pointer; font-weight: 600; }
 .workspace-code-switch { margin-bottom: 12px; }
 .has-playback-dock { height: 560px; }
 .has-playback-dock > .react-flow { height: calc(100% - 108px) !important; }
-.playback-dock { position: absolute; bottom: 12px; left: 12px; right: 12px; z-index: 8; }
-.floating-playback, .prediction-playback { margin: 0 auto; max-width: 480px; padding: 10px; border: 1px solid var(--border); border-radius: 14px; background: var(--surface); color: var(--text); box-shadow: 0 6px 22px #0002; }
+.staircase-graph.has-playback-dock > .react-flow { height: 100% !important; }
+.staircase-graph.has-playback-dock .react-flow__controls { bottom: 120px !important; }
+.staircase-graph.has-playback-dock .react-flow__minimap { bottom: 108px !important; }
+.playback-dock { position: absolute; bottom: 12px; left: 12px; width: min(480px, calc(100% - 24px)); z-index: 8; }
+.movable-overlay { position: absolute; cursor: grab; touch-action: none; }
+.movable-overlay:active { cursor: grabbing; }
+.simulator-tools { top: 12px; right: 12px; z-index: 15; width: 40px; }
+.simulator-tools:has(> details[open]) { width: min(340px, calc(100% - 24px)); }
+.simulator-tools > details > summary { display: grid; place-items: center; width: 40px; height: 40px; border: 1px solid var(--border); border-radius: 9px; background: color-mix(in srgb, var(--surface) 80%, transparent); backdrop-filter: blur(8px); cursor: pointer; list-style: none; }
+.simulator-tools > details > summary::-webkit-details-marker { display: none; }
+.simulator-tools > details > summary { margin-left: auto; }
+.simulator-tools-menu { margin-top: 8px; width: 100%; max-height: 350px; overflow: auto; padding: 14px; border: 1px solid var(--border); border-radius: 12px; background: color-mix(in srgb, var(--surface) 92%, transparent); backdrop-filter: blur(12px); box-shadow: 0 8px 24px #0003; }
+.simulator-tools-menu fieldset { min-width: 0; margin: 12px 0; padding: 10px 0; border: 0; border-top: 1px solid var(--border); }
+.simulator-tools-menu legend { padding-right: 8px; font-size: 12px; color: var(--muted); }
+.simulator-tools-menu .segmented-control { display: flex; flex-wrap: wrap; }
+.simulator-tools-menu button { display: inline-flex; align-items: center; gap: 6px; }
+.simulator-tools-menu .workspace-toolbar { margin: 0; }
+.simulator-tools-menu code { overflow-wrap: anywhere; }
+.trace-graph:has(.simulator-tools) .tree-legend { min-height: 0; padding: 0; align-items: center; max-width: calc(100% - 24px); }
+.trace-graph:has(.simulator-tools) { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto minmax(0, 1fr); }
+.trace-graph:has(.simulator-tools) .tree-legend { position: relative; top: auto; right: auto; grid-column: 1; grid-row: 1; justify-self: end; margin: 4px 12px 0; }
+.trace-graph:has(.simulator-tools) > .simulator-tools { top: auto; right: auto; position: relative; grid-column: 1; grid-row: 2; justify-self: end; margin: 4px 12px 0; }
+.trace-graph:has(.simulator-tools) > .react-flow { grid-column: 1; grid-row: 1 / -1; }
+.app-shell .trace-explorer button.cache-mode-switch, .app-shell .trace-explorer button.cache-mode-switch:hover { position: absolute; z-index: 10; display: flex; align-items: center; gap: 9px; padding: 8px 12px !important; background: transparent; border-color: transparent; box-shadow: none; touch-action: none; user-select: none; cursor: grab; font-size: 12px; white-space: nowrap; }
+.app-shell .cache-mode-switch:active { cursor: grabbing; }
+.cache-switch-track { display: inline-flex; align-items: center; width: 32px; height: 18px; padding: 2px; border-radius: 20px; background: var(--border); }
+.cache-switch-track > span { width: 14px; height: 14px; border-radius: 50%; background: var(--text); transition: transform .15s; }
+.cache-mode-switch[aria-checked="true"] .cache-switch-track { background: var(--accent); }
+.cache-mode-switch[aria-checked="true"] .cache-switch-track > span { transform: translateX(14px); background: var(--surface); }
+.floating-playback, .prediction-playback { margin: 0 auto; max-width: 480px; padding: 10px; border: 1px solid color-mix(in srgb, var(--text) 18%, transparent); border-radius: 14px; background: color-mix(in srgb, var(--surface) 22%, transparent); backdrop-filter: blur(12px) saturate(140%); -webkit-backdrop-filter: blur(12px) saturate(140%); color: var(--text); box-shadow: inset 0 1px 0 #ffffff24, 0 4px 18px #00000014; }
+.simulator-tools-menu { touch-action: pan-y; cursor: auto; }
 .floating-playback { width: 100%; min-width: 0; display: grid; grid-template-columns: repeat(4, 32px) minmax(0, 1fr) auto; gap: 8px 6px; align-items: center; }
 .app-shell .floating-playback > button { width: 32px; height: 32px; padding: 0 !important; display: grid; place-items: center; }
 .floating-playback .playback-seek { grid-column: 1 / 6; grid-row: 2; min-width: 0; gap: 6px; margin: 0; }
