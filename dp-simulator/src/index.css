@@ -347,7 +347,8 @@ summary { cursor: pointer; font-weight: 600; }
 .trace-graph { height: 450px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; position: relative; background-color: var(--code); background-image: radial-gradient(circle, color-mix(in srgb, var(--border) 55%, transparent) 1px, transparent 1px); background-size: 24px 24px; }
 .trace-graph .react-flow { background: transparent; }
 .app-shell .staircase-graph { background-color: var(--code) !important; background-image: radial-gradient(circle, color-mix(in srgb, var(--border) 55%, transparent) 1px, transparent 1px); background-size: 16px 16px; }
-.trace-graph .react-flow__pane { cursor: default; }
+.trace-graph .react-flow__pane { cursor: grab; }
+.trace-graph .react-flow__pane:active { cursor: grabbing; }
 .react-flow__node.trace-node { background: var(--subtle); color: var(--text); border: 2px solid var(--muted); border-radius: 14px; width: 140px; height: 68px; padding: 8px; font-size: 14px; display: flex; flex-direction: column; justify-content: center; cursor: grab; box-shadow: var(--shadow); }
 .react-flow__node.trace-node.dragging { cursor: grabbing; }
 .trace-node strong { display: block; font-family: 'JetBrains Mono', monospace; overflow-wrap: anywhere; font-size: 15px; }
@@ -449,7 +450,7 @@ summary { cursor: pointer; font-weight: 600; }
 /* Fill the browser content area while keeping browser/Windows chrome intact. */
 .expanded-simulation {
   position: fixed;
-  inset: 8px;
+  inset: 0;
   z-index: 10000;
   margin: 0 !important;
   overflow: auto;
@@ -459,7 +460,7 @@ summary { cursor: pointer; font-weight: 600; }
   color: var(--text);
   box-shadow: 0 0 0 8px var(--page);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 0;
   padding: 22px;
 }
 .expanded-simulation .simulation-topbar {
@@ -475,9 +476,10 @@ summary { cursor: pointer; font-weight: 600; }
 .expanded-simulation > .recurrence,
 .expanded-simulation > .comparison-stats { display: none; }
 .expanded-simulation .walkthrough-columns {
-  grid-template-columns: minmax(0, 1.35fr) minmax(250px, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   margin-top: 8px;
 }
+.expanded-simulation .code-playback { display: none; }
 .expanded-simulation .trace-graph,
 .expanded-simulation .staircase-graph {
   height: max(300px, calc(100dvh - 320px));
@@ -494,25 +496,27 @@ summary { cursor: pointer; font-weight: 600; }
 .staircase-simulator .walkthrough-columns.simulation-only { grid-template-columns: minmax(0, 1fr); }
 .workspace-code-pane { min-width: 0; }
 .workspace-code-switch { margin-bottom: 12px; }
+.workspace-code-switch button { font-size: 12px; }
 .has-playback-dock { height: 560px; }
-.has-playback-dock > .react-flow { height: calc(100% - 108px) !important; }
-.staircase-graph.has-playback-dock > .react-flow { height: 100% !important; }
-.staircase-graph.has-playback-dock .react-flow__controls { bottom: 120px !important; }
+.has-playback-dock > .react-flow { height: 100% !important; }
+.has-playback-dock .react-flow__controls { bottom: 120px !important; }
 .staircase-graph.has-playback-dock .react-flow__minimap { bottom: 108px !important; }
 .playback-dock { position: absolute; bottom: 12px; left: 12px; width: min(480px, calc(100% - 24px)); z-index: 8; }
 .movable-overlay { position: absolute; cursor: grab; touch-action: none; }
 .movable-overlay:active { cursor: grabbing; }
 .simulator-tools { top: 12px; right: 12px; z-index: 15; width: 40px; }
-.simulator-tools:has(> details[open]) { width: min(340px, calc(100% - 24px)); }
-.simulator-tools > details > summary { display: grid; place-items: center; width: 40px; height: 40px; border: 1px solid var(--border); border-radius: 9px; background: color-mix(in srgb, var(--surface) 80%, transparent); backdrop-filter: blur(8px); cursor: pointer; list-style: none; }
+.simulator-tools > details > summary { display: grid; place-items: center; width: 40px; height: 40px; border: 0; border-radius: 9px; background: transparent; backdrop-filter: none; cursor: pointer; list-style: none; }
 .simulator-tools > details > summary::-webkit-details-marker { display: none; }
 .simulator-tools > details > summary { margin-left: auto; }
-.simulator-tools-menu { margin-top: 8px; width: 100%; max-height: 350px; overflow: auto; padding: 14px; border: 1px solid var(--border); border-radius: 12px; background: color-mix(in srgb, var(--surface) 92%, transparent); backdrop-filter: blur(12px); box-shadow: 0 8px 24px #0003; }
-.simulator-tools-menu fieldset { min-width: 0; margin: 12px 0; padding: 10px 0; border: 0; border-top: 1px solid var(--border); }
+.simulator-tools-menu { position: absolute; top: 48px; right: 0; width: min(340px, calc(100vw - 64px)); max-height: 350px; overflow: auto; padding: 14px; border: 1px solid var(--border); border-radius: 12px; background: color-mix(in srgb, var(--surface) 92%, transparent); backdrop-filter: blur(12px); box-shadow: 0 8px 24px #0003; }
+.simulator-tools-menu fieldset { min-width: 0; margin: 6px 0; padding: 4px 0; border: 0; border-top: 1px solid var(--border); }
 .simulator-tools-menu legend { padding-right: 8px; font-size: 12px; color: var(--muted); }
+.simulator-tools-menu .trace-view-switch { margin-top: 4px; }
 .simulator-tools-menu .segmented-control { display: flex; flex-wrap: wrap; }
-.simulator-tools-menu button { display: inline-flex; align-items: center; gap: 6px; }
+.simulator-tools-menu button { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; }
 .simulator-tools-menu .workspace-toolbar { margin: 0; }
+.simulator-tools-menu .workspace-toolbar > span { font-size: 10px; line-height: 1.5; }
+.simulator-tools-menu .workspace-toolbar > span code { display: inline-block; max-width: 100%; font-size: inherit; white-space: nowrap; overflow-x: auto; vertical-align: bottom; }
 .simulator-tools-menu code { overflow-wrap: anywhere; }
 .trace-graph:has(.simulator-tools) .tree-legend { min-height: 0; padding: 0; align-items: center; max-width: calc(100% - 24px); }
 .trace-graph:has(.simulator-tools) { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto minmax(0, 1fr); }
@@ -535,7 +539,7 @@ summary { cursor: pointer; font-weight: 600; }
 .floating-playback .playback-pace { grid-column: 5 / -1; grid-row: 1; justify-self: end; gap: 4px; font-size: 11px; margin: 0; }
 .app-shell .floating-playback .playback-pace select { padding: 5px 3px; font-size: 11px; width: 73px; }
 .prediction-playback { justify-content: center; gap: 18px; }
-.expanded-simulation .has-playback-dock { height: max(420px, calc(100dvh - 230px)); }
+.expanded-simulation .has-playback-dock { height: max(420px, calc(100dvh - 110px)); }
 @container trace-layout (max-width: 620px) {
   .trace-explorer .walkthrough-columns, .staircase-simulator .walkthrough-columns { grid-template-columns: minmax(0, 1fr); }
 }

@@ -99,7 +99,7 @@ function CallGraph({ trace, event, revealed, eventIndex, smallTree, expanded, on
       <ReactFlow key={scope} onInit={setFlow} nodes={graph.nodes} edges={graph.edges} onNodesChange={onNodesChange}
       fitView fitViewOptions={fitOptions} minZoom={0.05}
       nodesDraggable nodesConnectable={false} elementsSelectable={false}
-      panOnDrag={false} panOnScroll={false} panActivationKeyCode={null}
+      panOnDrag={true} panOnScroll={false} panActivationKeyCode={null}
       zoomOnScroll={false} zoomOnPinch={false} zoomOnDoubleClick={false} zoomActivationKeyCode={null}
       autoPanOnNodeDrag={false} autoPanOnNodeFocus={false} proOptions={{ hideAttribution: true }}>
       <Controls showInteractive={false} fitViewOptions={fitOptions}>
@@ -183,6 +183,7 @@ function CacheSwitch({ enabled, onToggle, position, setPosition }) {
 export default function TraceExplorer({ problem, input, initialSize = 'input', codeTarget, codeVisible = true, active = true }) {
   const [size, setSize] = useState(initialSize);
   const [cacheEnabled, setCacheEnabled] = useState(false);
+  const [toolsOpen, setToolsOpen] = useState(false);
   const [cachePosition, setCachePosition] = useState({ x: 12, y: 12 });
   const examples = useMemo(() => treeExamples(problem), [problem]);
   const selectedInput = size === 'input' ? input : examples[size];
@@ -196,11 +197,11 @@ export default function TraceExplorer({ problem, input, initialSize = 'input', c
   </div>;
 
   return <div className="space-y-4">
-    <TracePlayback key={`${problem.id}:${size}:${cacheEnabled}:${JSON.stringify(selectedInput)}`} problem={problem} input={selectedInput} memoized={cacheEnabled} smallTree={size === 'small'} codeTarget={codeTarget} codeVisible={codeVisible} active={active} inlineToolbar={toolbar} cacheControl={<CacheSwitch enabled={cacheEnabled} onToggle={() => setCacheEnabled(value => !value)} position={cachePosition} setPosition={setCachePosition} />} />
+    <TracePlayback key={`${problem.id}:${size}:${cacheEnabled}:${JSON.stringify(selectedInput)}`} problem={problem} input={selectedInput} memoized={cacheEnabled} smallTree={size === 'small'} codeTarget={codeTarget} codeVisible={codeVisible} active={active} inlineToolbar={toolbar} toolsOpen={toolsOpen} onToggleTools={() => setToolsOpen(value => !value)} cacheControl={<CacheSwitch enabled={cacheEnabled} onToggle={() => setCacheEnabled(value => !value)} position={cachePosition} setPosition={setCachePosition} />} />
   </div>;
 }
 
-function TracePlayback({ problem, input, memoized, smallTree, codeTarget, codeVisible, active, inlineToolbar, cacheControl }) {
+function TracePlayback({ problem, input, memoized, smallTree, codeTarget, codeVisible, active, inlineToolbar, cacheControl, toolsOpen, onToggleTools }) {
   const expansion = useExpandedPanel();
   const trace = useMemo(() => codeStepTrace(problem, runTrace(problem, input, { memoized }), memoized), [problem, input, memoized]);
   const alternate = useMemo(() => runTrace(problem, input, { memoized: !memoized }), [problem, input, memoized]);
@@ -245,16 +246,16 @@ function TracePlayback({ problem, input, memoized, smallTree, codeTarget, codeVi
       : <TraceCodeViewer status={status} problem={problem} memoized={memoized} event={event} hiddenValue={needsPrediction} />}
   </div>;
 
-  const tools = <MovableOverlay className="simulator-tools" label="simulator menu"><details>
-    <summary aria-label="Simulator tools" title="Simulator tools"><SlidersHorizontal size={19} /></summary>
+  const tools = <MovableOverlay className="simulator-tools" label="simulator menu"><details open={toolsOpen}>
+    <summary aria-label="Simulator tools" title="Simulator tools" onClick={event => { event.preventDefault(); onToggleTools(); }}><SlidersHorizontal size={19} /></summary>
     <div className="simulator-tools-menu">
     <div className="section-heading"><h2>{memoized ? 'Memoized dependency trace' : 'Plain recursion trace'}</h2>
       <label className="check-label"><Eye size={16} /><input type="checkbox" role="switch" checked={predict} onChange={e => { setPredict(e.target.checked); playback.seek(playback.step); }} /> Predict return values</label>
     </div>
     <fieldset><legend>Example size</legend>{inlineToolbar}</fieldset>
     {isStaircase && <fieldset><legend>View</legend><div className="segmented-control trace-view-switch"><button aria-pressed={view === 'stairs'} onClick={() => setView('stairs')}><Footprints size={16} /> Frog staircase</button><button aria-pressed={view === 'tree'} onClick={() => setView('tree')}><GitGraph size={16} /> Call tree</button></div></fieldset>}
-    <details className="tree-info"><summary>Tree details</summary><p>{smallTree ? 'Complete small example: all its branches stay visible as the code runs.' : 'Follow the call tree and total work for the selected input.'} {trace.nodes.length} calls.{trace.nodes.length > 119 ? ' Drawing solve and the first 119 calls; playback includes every recorded call.' : ''} Drag tiles or use zoom to inspect.</p></details>
-    <details className="trace-inspector"><summary>Recurrence & work counts</summary><p>{problem.state}</p>
+    <details className="tree-info" open><summary>Tree details</summary><p>{smallTree ? 'Complete small example: all its branches stay visible as the code runs.' : 'Follow the call tree and total work for the selected input.'} {trace.nodes.length} calls.{trace.nodes.length > 119 ? ' Drawing solve and the first 119 calls; playback includes every recorded call.' : ''} Drag tiles or use zoom to inspect.</p></details>
+    <details className="trace-inspector" open><summary>Recurrence & work counts</summary><p>{problem.state}</p>
     <p className="recurrence">{problem.recurrence}</p>
     <div className="comparison-stats" aria-label="Cache comparison for the same input">
       <span>Without cache: {(memoized ? alternate : trace).calls}{(memoized ? alternate : trace).truncated ? '+' : ''} calls</span>

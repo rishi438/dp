@@ -1,6 +1,8 @@
 ﻿# DP Simulator project memory
 
 ## Simulator controls — 2026-10-14
+- Follow-up: settings icon has no background; menu stays anchored while opening/closing and remains open across selections until its icon is clicked. Dragging keeps icon/panel inside the canvas. Menu buttons use 11px labels, input summary 10px with unbroken values, and reduced vertical spacing; Tree details and Recurrence & work counts start open.
+- Expanded view is simulator-only across the viewport; exiting restores reference code. Both frog and call-tree canvases fill the height behind glass playback; call-tree background dragging now pans the grid.
 - Tabs now place Recursion Tree vs Memo at 04 and Your reasoning at 05; reasoning shortcut moved to Trap drills header. Every chapter simulation shows its problem statement before the state definition; staircase prompt includes a concrete example.
 - TraceExplorer starts without cache across chapters. Single draggable cache switch is inside both call-tree and frog canvases. Top-right icon menu starts closed and groups example size, view, prediction, recurrence/work counts and tree details.
 - MovableOverlay.jsx supports direct background dragging and keyboard movement for the tools menu and frosted-glass playback docks; no separate grips. Cache toggle has no grip or surrounding background. Legend has no background and sits above settings with compact 4px spacing. Restored missing walkthrough grid rule aligns canvas and Code flow, including expanded view; narrow layouts stack.

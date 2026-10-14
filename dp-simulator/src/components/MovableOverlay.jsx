@@ -1,4 +1,24 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+
+const useBrowserLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
+
+function placeMenu(element) {
+  const menu = element.querySelector('.simulator-tools-menu');
+  if (!menu || !element.querySelector('details')?.open) return;
+  const parent = element.parentElement;
+  const bounds = parent.getBoundingClientRect();
+  const icon = element.getBoundingClientRect();
+  const x = icon.left - bounds.left - parent.clientLeft;
+  const y = icon.top - bounds.top - parent.clientTop;
+  menu.style.maxWidth = `${Math.max(0, parent.clientWidth - 16)}px`;
+  menu.style.maxHeight = `${Math.max(0, Math.min(350, parent.clientHeight - 64))}px`;
+  const left = Math.max(8, Math.min(x + element.offsetWidth - menu.offsetWidth, parent.clientWidth - menu.offsetWidth - 8));
+  const below = y + element.offsetHeight + 8;
+  const preferred = below + menu.offsetHeight <= parent.clientHeight - 8 ? below : y - menu.offsetHeight - 8;
+  const top = Math.max(8, Math.min(preferred, parent.clientHeight - menu.offsetHeight - 8));
+  menu.style.left = `${left - x}px`;
+  menu.style.top = `${top - y}px`;
+}
 
 export default function MovableOverlay({ children, className, label }) {
   const overlayRef = useRef(null);
@@ -9,18 +29,22 @@ export default function MovableOverlay({ children, className, label }) {
     x: Math.max(8, Math.min(point.x, element.parentElement.clientWidth - element.offsetWidth - 8)),
     y: Math.max(8, Math.min(point.y, element.parentElement.clientHeight - element.offsetHeight - 8)),
   });
+  useBrowserLayoutEffect(() => { placeMenu(overlayRef.current); }, [children, position]);
   useEffect(() => {
     const element = overlayRef.current;
-    const observer = new ResizeObserver(() => setPosition(previous => {
-      if (!previous) return previous;
-      const next = constrain(previous, element);
-      return next.x === previous.x && next.y === previous.y ? previous : next;
-    }));
+    const observer = new ResizeObserver(() => {
+      placeMenu(element);
+      setPosition(previous => {
+        if (!previous) return previous;
+        const next = constrain(previous, element);
+        return next.x === previous.x && next.y === previous.y ? previous : next;
+      });
+    });
     observer.observe(element);
     observer.observe(element.parentElement);
     return () => observer.disconnect();
   }, []);
-  return <div ref={overlayRef} className={`movable-overlay ${className}`} style={position ? { left: position.x, top: position.y, right: 'auto', bottom: 'auto' } : undefined}
+  return <div ref={overlayRef} className={`movable-overlay ${className}`} style={position ? { position: 'absolute', gridArea: 'auto', margin: 0, left: position.x, top: position.y, right: 'auto', bottom: 'auto' } : undefined}
       role="group" tabIndex={0} aria-label={`Movable ${label}`} title="Drag the background to move · Arrow keys also move"
       onPointerDown={event => {
         if (event.button !== 0 || event.target.closest('button, input, select, textarea, label, a, .simulator-tools-menu')) return;
