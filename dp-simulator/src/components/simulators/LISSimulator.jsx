@@ -51,6 +51,11 @@ export default function LISSimulator({ input }) {
   const playback = useAutoplay({ playing: isPlaying, step: currentIdx, last: nums.length - 1, speed, setSpeed, onStep: setCurrentIdx, onStop: setIsPlaying });
 
   const activeDoors = lisData.doorsLog[currentIdx] || [];
+  const best = lisData.prevIndices[currentIdx];
+  const isLast = currentIdx === nums.length - 1;
+  const explanation = activeDoors.length === 0
+    ? `No earlier number is smaller than ${nums[currentIdx]}, so nothing can come before it. The chain is just [${nums[currentIdx]}]: length 1.`
+    : `${nums[currentIdx]} can be added to the end of any chain that ends in a smaller, earlier number. The longest such chain ends at ${nums[best]} (length ${lisData.dp[best]}). Add ${nums[currentIdx]}: ${lisData.dp[best]} + 1 = ${lisData.dp[currentIdx]}.`;
 
   return (
     <div className="space-y-4">
@@ -68,7 +73,7 @@ export default function LISSimulator({ input }) {
               <span className="text-xs text-slate-400 font-semibold">Lissa the Chainbuilder</span>
             </div>
             <h2 className="text-base font-bold text-white mt-0.5">
-              Longest Increasing Subsequence (LIS): Data-Driven Doors
+              Longest Increasing Subsequence: longest chain of rising numbers
             </h2>
           </div>
         </div>
@@ -139,7 +144,7 @@ export default function LISSimulator({ input }) {
           {/* Data-Driven Doors List */}
           <div className="space-y-2 pt-2">
             <span className="text-xs font-bold text-slate-300 block">
-              Data-Driven Doors (all j &lt; {currentIdx} where nums[j] &lt; {nums[currentIdx]}):
+              Earlier numbers smaller than {nums[currentIdx]} (the chain could come from any of them):
             </span>
 
             {activeDoors.length === 0 ? (
@@ -157,8 +162,8 @@ export default function LISSimulator({ input }) {
                         isBest ? 'bg-emerald-950/40 border-emerald-500 text-emerald-200 font-bold' : 'bg-slate-950 border-slate-800 text-slate-400'
                       }`}
                     >
-                      <span>From [{door.j}] ({door.num}): dp[{door.j}] = {door.dpVal}</span>
-                      <span className="font-mono">+{door.candidateLen} {isBest && '⭐'}</span>
+                      <span>After {door.num} (chain length {door.dpVal})</span>
+                      <span className="font-mono">→ {door.candidateLen} {isBest && '⭐'}</span>
                     </div>
                   );
                 })}
@@ -189,7 +194,7 @@ export default function LISSimulator({ input }) {
               </div>
               <div className="pl-4 text-slate-500">for i in range(len(nums)):</div>
               <div className={`pl-8 py-0.5 rounded ${currentIdx > 0 ? 'bg-indigo-950/70 border-l-2 border-indigo-400 text-indigo-200 font-bold' : 'text-slate-500'}`}>
-                for j in range(i):  # DATA DOORS!
+                for j in range(i):  # try every earlier number
               </div>
               <div className={`pl-12 py-0.5 rounded ${currentIdx > 0 && activeDoors.length > 0 ? 'bg-cyan-950/70 border-l-2 border-cyan-400 text-cyan-200' : 'text-slate-500'}`}>
                 if nums[j] &lt; nums[i]:
@@ -214,16 +219,20 @@ export default function LISSimulator({ input }) {
                     Checked {currentIdx} predecessors · {activeDoors.length} valid doors (nums[j] &lt; {nums[currentIdx]})
                   </div>
                   <div className="text-emerald-300 font-bold">
-                    Best predecessor index {lisData.prevIndices[currentIdx]} ({nums[lisData.prevIndices[currentIdx]]}): dp[{currentIdx}] = {lisData.dp[currentIdx]}
+                    Best previous number {nums[lisData.prevIndices[currentIdx]]} (index {lisData.prevIndices[currentIdx]}): dp[{currentIdx}] = {lisData.dp[currentIdx]}
                   </div>
                 </div>
               )}
+              <p className="mt-2 text-slate-200">
+                {explanation}
+                {isLast && <strong className="text-amber-300"> The longest chain can end at any number, not only the last one, so the answer is the largest dp value: {lisData.maxLen}.</strong>}
+              </p>
             </div>
           </div>
 
           <div className="mt-4 p-2.5 bg-slate-900 rounded-lg border border-slate-800 font-sans text-xs text-slate-300">
-            <strong className="text-indigo-400 block mb-1">Lissa's Lesson:</strong>
-            "The inner <code className="text-cyan-300">for j in range(i)</code> IS the fulcrum. When doors are decided by data rather than fixed constants, transition cost becomes $O(N)$."
+            <strong className="text-indigo-400 block mb-1">The rule in plain words:</strong>
+            The previous number in the chain could be ANY earlier smaller number, so we check them all with a loop (<code className="text-cyan-300">for j in range(i)</code>) and keep the longest. That loop is why this takes about n² steps.
           </div>
         </div>
       </div>

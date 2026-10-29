@@ -3,19 +3,27 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { getPractice } from './src/data/practice.js';
-import { executeSolution, runProcess } from './runner.js';
+import { executeSolution, executeSnippet, runProcess } from './runner.js';
+import { validateSnippet, validateSubmission } from './src/data/questionBank.js';
 import { reviewReasoning, ReviewUnavailable } from './reasoning-review.js';
+import { openStore } from './reasoning-store.js';
 import { answerErrors } from './src/data/reasoning.js';
 import { goldPractice } from './src/data/staircase.js';
 
 const directory = path.dirname(fileURLToPath(import.meta.url));
 const dist = path.join(directory, 'dist');
 const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.png': 'image/png', '.svg': 'image/svg+xml', '.ico': 'image/x-icon' };
-const origins = new Set(['http://localhost:4173', 'http://127.0.0.1:4173', 'http://localhost:5173', 'http://127.0.0.1:5173']);
+const origins = new Set(['http://localhost:9000', 'http://127.0.0.1:9000', 'http://localhost:6179', 'http://127.0.0.1:6179']);
 
-export function createServer({ reviewer = reviewReasoning } = {}) {
+// store: undefined opens the default SQLite file on first use; null disables saving.
+export function createServer({ reviewer = reviewReasoning, store } = {}) {
   let active = false;
   let reviewing = false;
+  let opened;
+  const persist = action => {
+    try { const target = store === undefined ? (opened ??= openStore()) : store; return target ? action(target) : undefined; }
+    catch (error) { console.error('reasoning_store_failed', error.message); }
+  };
   const json = (res, code, value) => { res.writeHead(code, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }); res.end(JSON.stringify(value)); };
   return http.createServer(async (req, res) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -30,6 +38,7 @@ export function createServer({ reviewer = reviewReasoning } = {}) {
       reviewing = true;
       const controller = new AbortController();
       res.on('close', () => { if (!res.writableEnded) controller.abort(); });
+      let check;
       try {
         const chunks = []; let bytes = 0;
         for await (const chunk of req) {
@@ -43,16 +52,56 @@ export function createServer({ reviewer = reviewReasoning } = {}) {
         if (!problem) return json(res, 400, { error: 'Choose a valid exercise.' });
         const fields = answerErrors(data.answers);
         if (Object.keys(fields).length) return json(res, 400, { error: 'Complete all five answers before checking.', fields });
+        check = persist(target => target.saveCheck(problem, data.answers));
         const review = await reviewer(problem, data.answers, controller.signal);
-        if (!res.destroyed) json(res, 200, { review });
+        if (check) persist(target => target.saveReview(check.id, review));
+        if (!res.destroyed) json(res, 200, { review, checkId: check?.publicId });
       } catch (error) {
-        if (!res.destroyed) json(res, 503, { error: error instanceof ReviewUnavailable ? error.message : 'The reasoning check could not finish. Your answers are saved; please retry.' });
+        if (!res.destroyed) json(res, 503, { error: error instanceof ReviewUnavailable ? error.message : 'The reasoning check could not finish. Your answers are saved; please retry.', checkId: check?.publicId });
       } finally { reviewing = false; }
       return;
     }
     if (url.pathname === '/api/health' && req.method === 'GET') {
       const versions = await Promise.all(['python', 'rustc'].map(command => runProcess(command, ['--version'], { timeout: 3000 })));
       return json(res, 200, { python: versions[0].success ? versions[0].stdout.trim() : null, rust: versions[1].success ? versions[1].stdout.trim() : null });
+    }
+    if (url.pathname === '/api/bank/submit' && req.method === 'POST') {
+      if (!origins.has(req.headers.origin)) return json(res, 403, { error: 'Submit from the local simulator.' });
+      if (!req.headers['content-type']?.startsWith('application/json')) return json(res, 415, { error: 'Expected JSON.' });
+      let bytes = 0, body = '';
+      for await (const chunk of req) {
+        bytes += chunk.length;
+        if (bytes > 262144) return json(res, 413, { error: 'Submission too large (256 KB maximum).' });
+        body += chunk;
+      }
+      let submission;
+      try { submission = validateSubmission(JSON.parse(body)); } catch (error) { return json(res, 400, { error: error instanceof SyntaxError ? 'Invalid JSON.' : error.message }); }
+      const id = persist(target => target.saveBankAnswer(submission));
+      return id ? json(res, 201, { id }) : json(res, 503, { error: 'Could not save the submission. Check the local terminal.' });
+    }
+    if (url.pathname === '/api/run-snippet' && req.method === 'POST') {
+      if (!origins.has(req.headers.origin)) return json(res, 403, { error: 'Run code from the local simulator.' });
+      if (!req.headers['content-type']?.startsWith('application/json')) return json(res, 415, { error: 'Expected JSON.' });
+      if (active) return json(res, 429, { error: 'A solution is already running. Wait for it to finish.' });
+      active = true;
+      const controller = new AbortController();
+      res.on('close', () => { if (!res.writableEnded) controller.abort(); });
+      try {
+        let bytes = 0, body = '';
+        for await (const chunk of req) {
+          bytes += chunk.length;
+          if (bytes > 131072) return json(res, 413, { error: 'Request too large (128 KB maximum).' });
+          body += chunk;
+        }
+        let snippet;
+        try { snippet = validateSnippet(JSON.parse(body)); } catch (error) { return json(res, 400, { error: error instanceof SyntaxError ? 'Invalid JSON.' : error.message }); }
+        const result = await executeSnippet(snippet, controller.signal);
+        if (!res.destroyed) json(res, 200, result);
+      } catch (error) {
+        if (!res.destroyed) json(res, 500, { error: 'The runner could not complete this request. Check the local terminal.' });
+        console.error('snippet_failed', error.message);
+      } finally { active = false; }
+      return;
     }
     if (url.pathname === '/api/run' && req.method === 'POST') {
       if (!origins.has(req.headers.origin)) return json(res, 403, { error: 'Run solutions from the local simulator.' });
@@ -101,6 +150,6 @@ export function createServer({ reviewer = reviewReasoning } = {}) {
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const server = createServer();
-  server.listen(4173, '127.0.0.1', () => console.log('DP simulator and local code runner: http://127.0.0.1:4173'));
+  server.listen(9000, '127.0.0.1', () => console.log('DP simulator and local code runner: http://127.0.0.1:9000'));
   server.on('error', error => { console.error(`Server failed: ${error.message}`); process.exitCode = 1; });
 }

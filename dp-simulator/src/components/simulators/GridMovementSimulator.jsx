@@ -47,6 +47,14 @@ export default function GridMovementSimulator({ input }) {
 
 
   const activeDoor = dpGrid.doors[curR]?.[curC];
+  const above = curR > 0 ? dpGrid.dp[curR - 1][curC] : null, leftVal = curC > 0 ? dpGrid.dp[curR][curC - 1] : null;
+  const explanation = curR === 0 && curC === 0
+    ? `This is the start. You must pay its cost, so the cheapest way to be here is ${grid[0][0]}.`
+    : curR === 0
+    ? `Top row: you can only arrive from the left (nothing is above). Cost = ${leftVal} + ${grid[curR][curC]} = ${dpGrid.dp[curR][curC]}.`
+    : curC === 0
+    ? `Left column: you can only arrive from above (nothing is to the left). Cost = ${above} + ${grid[curR][curC]} = ${dpGrid.dp[curR][curC]}.`
+    : `You move only right or down, so you arrived from above (${above}) or from the left (${leftVal}). Take the cheaper one, ${Math.min(above, leftVal)} from ${above <= leftVal ? 'above' : 'the left'}, then add this cell's own cost ${grid[curR][curC]}.`;
 
   return (
     <div className="space-y-4">
@@ -79,14 +87,14 @@ export default function GridMovementSimulator({ input }) {
         <div className="lg:col-span-7 bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-xl space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-slate-300">
-              Grid Cell Costs & Computed Min Sums: dp[r][c]
+              Cheapest total cost to reach each cell: dp[r][c]
             </span>
             <span className="text-[11px] font-mono text-cyan-400">
               At ({curR}, {curC})
             </span>
           </div>
 
-          <div className="grid grid-cols-3 gap-3 p-4 bg-slate-950 rounded-xl border border-slate-800">
+          <div className="grid gap-3 p-4 bg-slate-950 rounded-xl border border-slate-800" style={{ gridTemplateColumns: `repeat(${C}, minmax(0, 1fr))` }}>
             {grid.map((row, r) =>
               row.map((cost, c) => {
                 const isCur = r === curR && c === curC;
@@ -149,6 +157,8 @@ export default function GridMovementSimulator({ input }) {
             <div className="space-y-1 text-slate-300">
               <div className="text-slate-500">def min_path_sum(grid):</div>
               <div className="pl-4 text-slate-500">R, C = len(grid), len(grid[0])</div>
+              <div className="pl-4 text-slate-500">inf = float('inf')</div>
+              <div className="pl-4 text-slate-500">dp = [[0] * C for _ in range(R)]</div>
               <div className={`pl-4 py-0.5 rounded ${curR === 0 && curC === 0 ? 'bg-amber-950/70 border-l-2 border-amber-400 text-amber-200 font-bold' : ''}`}>
                 dp[0][0] = grid[0][0]  # Base: start cell
               </div>
@@ -186,12 +196,16 @@ export default function GridMovementSimulator({ input }) {
                   </div>
                 </div>
               )}
+              <p className="mt-2 text-slate-200">
+                {explanation}
+                {curR === R - 1 && curC === C - 1 && <strong className="text-purple-300"> This is the exit (bottom-right), so the answer is {dpGrid.dp[R - 1][C - 1]}.</strong>}
+              </p>
             </div>
           </div>
 
           <div className="mt-4 p-2.5 bg-slate-900 rounded-lg border border-slate-800 font-sans text-xs text-slate-300">
-            <strong className="text-emerald-400 block mb-1">Gridlock's Law:</strong>
-            "Mandatory cost is added OUTSIDE min: <code className="text-cyan-300">grid[r][c] + min(above, left)</code>. Out-of-bounds walls simply yield ∞."
+            <strong className="text-emerald-400 block mb-1">The rule in plain words:</strong>
+            You always pay for the cell you step on, so it is added outside the <code className="text-cyan-300">min</code>: <code className="text-cyan-300">grid[r][c] + min(above, left)</code>. A side that does not exist counts as ∞, so it is never picked.
           </div>
         </div>
       </div>

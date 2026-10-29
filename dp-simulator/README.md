@@ -13,14 +13,14 @@ npm install
 npm run dev
 ```
 
-Open http://127.0.0.1:5173. This single command starts Vite and the native runner
-on 127.0.0.1:4173. `start-simulator.bat` in the parent directory does the same.
+Open http://127.0.0.1:6179. This single command starts Vite and the native runner
+on 127.0.0.1:9000. `start-simulator.bat` in the parent directory does the same.
 Python and Rust must be on PATH for their respective Run buttons to work. The
 editor reports the actual detected versions. No packages beyond Python's standard
 library or Rust's standard library are required by the runners.
 
 For a production preview, run `npm run build` followed by `npm start`, then open
-http://127.0.0.1:4173. The parent `preview-simulator.bat` builds and starts this.
+http://127.0.0.1:9000. The parent `preview-simulator.bat` builds and starts this.
 
 ## Learning flow
 
@@ -66,6 +66,39 @@ Only one review runs at a time, with a two-minute timeout. Unavailable, cancelle
 incomplete, and malformed reviews preserve answers without marking them accepted.
 Skip remains available, including when the local reviewer is offline. This is an
 optional learning step stored in the browser, not an authentication boundary.
+
+## Saved reasoning and MCP
+
+Every **Check my reasoning** click saves the five answers, a snapshot of the exercise
+contract, and (when the Ollama review succeeds) its assessment to SQLite at
+`data/reasoning.db`, even if the reviewer is offline. Set `DP_REASONING_DB` to
+use another file. Saving uses Node's built-in `node:sqlite`; no extra packages.
+
+`mcp-server/reasoning_mcp_server.py` (registered in `.vscode/mcp.json` as
+`dp-reasoning-store`) opens that file read-only and exposes `list_problem_ids`,
+`list_reasoning_checks`, and `get_latest_reasoning_check` to Copilot Chat. It needs
+Python's `mcp` package (`pip install mcp`). Start it from **MCP: List Servers**.
+
+## Question bank (08 · Question bank)
+
+Load interview questions from a JSON file with **Load question file**, or start with
+**Load JPMC SE III sample** (`public/question-banks/jpmc-se3-python-fullstack.json`).
+**Download template** gives the exact shape:
+
+```json
+{ "format": "dp-question-bank/v1", "title": "...", "questions": [
+  { "id": "two-sum", "title": "Two Sum", "category": "Python coding", "difficulty": "Easy",
+    "prompt": "Markdown", "starter": "def two_sum(nums, target): ...",
+    "tests": [{ "call": "two_sum([2, 7], 9)", "expected": "[0, 1]" }],
+    "answer": "Markdown model answer", "solution": "reference code" } ] }
+```
+
+Questions with `starter` or `tests` open in the Python editor; **Run tests** evaluates each
+`call` and `expected` as Python expressions against your code (`==` comparison) through the
+local runner. Questions without them show a notes box. Only `id`, `title` and `prompt` are
+required. The loaded bank, your code and notes are kept in browser storage. Raw HTML in
+uploaded Markdown is shown as text. Like the rest of the runner, only load files you trust:
+test expressions run as Python on this machine.
 
 ## Native runner boundary
 

@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 
 // Expand within the browser page. Never enter OS/browser fullscreen.
-export function useExpandedPanel() {
-  const [expanded, setExpanded] = useState(false);
+// Pass [expanded, setExpanded] from a parent to keep expansion across remounts.
+export function useExpandedPanel(state) {
+  const own = useState(false);
+  const [expanded, setExpanded] = state ?? own;
   const panelRef = useRef(null);
 
   useEffect(() => {

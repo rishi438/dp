@@ -74,7 +74,9 @@ The final cell compares both complete strings, so it contains the answer. Each c
 ---
 
 <details>
-<summary>More detail and extra examples (optional)</summary>
+<summary>More detail</summary>
+
+> **Words used below:** **fulcrum** = the last move or decision that led here · **door** = one possible last move (a smaller state you could have come from) · **Invariant Lens** = a 3-part check: true at the start (Initialization), stays true each step (Maintenance), gives the answer at the end (Termination) · **termination** (slot 4) = which dp value answers the question.
 
 # Chapter 7 · 02 — Worked Example: Longest Common Subsequence
 
@@ -354,12 +356,13 @@ Space  O(m × n) → O(min(m, n))  roll to two rows (loses reconstruction)
 ## The Takeaway
 
 ```
-0. FULCRUM      "what happened to the LAST char of EACH?"
-1. STATE        dp[i][j] = answer for a[:i] vs b[:j]   → 2 sequences, 2 indices
-2. TRANSITION   match → ↖ +1  |  differ → max(↑, ←)
-3. BASE         row 0 / col 0 = 0, DERIVED from "empty prefix"
-4. TERMINATION  dp[m][n] — the corner dominates
-5. LENS         check ALL THREE source cells are already filled
+0. FULCRUM      Compare the last character of each string: same or different?
+1. STATE        dp[i][j] = answer for the first i chars of a and first j chars of b
+2. TRANSITION   same      → dp[i-1][j-1] + 1                (diagonal)
+                different → max(dp[i-1][j], dp[i][j-1])     (up or left)
+3. BASE CASE    row 0 and column 0 are 0  (an empty string shares nothing)
+4. TERMINATION  dp[m][n]  (both full strings)
+5. CHECK        the diagonal, up and left cells are filled before dp[i][j]
 ```
 
 > Your turn: `03 - your challenge.md`. Challenge 5 changes exactly one word of

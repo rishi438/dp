@@ -42,7 +42,9 @@ After considering every item, return `dp[number_of_items][capacity]`: **9** here
 ---
 
 <details>
-<summary>More detail and extra examples (optional)</summary>
+<summary>More detail</summary>
+
+> **Words used below:** **fulcrum** = the last move or decision that led here · **door** = one possible last move (a smaller state you could have come from) · **termination** (slot 4) = which dp value answers the question.
 
 # Chapter 9 · 01 — Story: Sacky, the Packmaster
 

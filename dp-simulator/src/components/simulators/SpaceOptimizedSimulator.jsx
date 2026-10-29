@@ -22,7 +22,7 @@ export default function SpaceOptimizedSimulator({ input }) {
     prev1: null,
     curr: 1,
     line: 3,
-    desc: 'Base case 0: curr = 1. Only 1 way to stand at ground 0.'
+    desc: 'Base case: dp[0] = 1. Standing still at step 0 is one way.'
   });
   if (n >= 1) {
     steps.push({
@@ -32,7 +32,7 @@ export default function SpaceOptimizedSimulator({ input }) {
       prev1: 1,
       curr: 1,
       line: 4,
-      desc: 'Base case 1: prev2 = 1, prev1 = 1. Starting registers initialized.'
+      desc: 'Base case: dp[1] = 1. Keep just these two answers: prev2 = dp[0] = 1, prev1 = dp[1] = 1.'
     });
   }
 
@@ -47,7 +47,7 @@ export default function SpaceOptimizedSimulator({ input }) {
       prev1: p1,
       curr: cur,
       line: 6,
-      desc: `Step ${i}: curr = prev1 (${p1}) + prev2 (${p2}) = ${cur}. Rolling window shifts forward!`
+      desc: `Step ${i}: curr = prev1 (${p1}) + prev2 (${p2}) = ${cur}. Then slide: prev2 takes prev1, prev1 takes curr. dp[${i - 2}] is never read again, so we can forget it.${i === n ? ` Step ${n} is the top: the answer is ${cur}.` : ''}`
     });
     p2 = p1;
     p1 = cur;
@@ -99,7 +99,7 @@ export default function SpaceOptimizedSimulator({ input }) {
               <span className="text-xs text-slate-400 font-semibold">The Cloth Weaver · Rolling Window</span>
             </div>
             <h2 className="text-base font-bold text-white tracking-tight">
-              O(N) Space → O(1) Two-Register Sliding Window
+              Keep only the last 2 answers instead of the whole table
             </h2>
           </div>
         </div>
@@ -134,14 +134,14 @@ export default function SpaceOptimizedSimulator({ input }) {
           {/* Active Registers Box */}
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg">
             <div className="text-xs font-bold text-slate-300 mb-3 flex items-center justify-between">
-              <span>Hardware Register View (Only 2 Memory Slots Kept!)</span>
+              <span>Three variables (2 saved answers + the new one being computed)</span>
               <span className="text-[11px] font-mono text-emerald-400">Step {active.step} / {steps.length - 1}</span>
             </div>
 
             <div className="grid grid-cols-3 gap-3 text-center">
               {/* prev2 Register */}
               <div className="p-4 rounded-xl border border-slate-800 bg-slate-950">
-                <div className="text-[11px] font-mono text-slate-500 uppercase tracking-wider">Register prev2 (dp[i-2])</div>
+                <div className="text-[11px] font-mono text-slate-500 uppercase tracking-wider">prev2 (dp[i-2])</div>
                 <div className="text-2xl font-black text-slate-300 mt-1">
                   {active.prev2 !== null ? active.prev2 : '—'}
                 </div>
@@ -150,7 +150,7 @@ export default function SpaceOptimizedSimulator({ input }) {
 
               {/* prev1 Register */}
               <div className="p-4 rounded-xl border border-emerald-800/60 bg-emerald-950/20">
-                <div className="text-[11px] font-mono text-emerald-400 uppercase tracking-wider">Register prev1 (dp[i-1])</div>
+                <div className="text-[11px] font-mono text-emerald-400 uppercase tracking-wider">prev1 (dp[i-1])</div>
                 <div className="text-2xl font-black text-emerald-300 mt-1">
                   {active.prev1 !== null ? active.prev1 : '—'}
                 </div>
@@ -159,7 +159,7 @@ export default function SpaceOptimizedSimulator({ input }) {
 
               {/* curr Register */}
               <div className="p-4 rounded-xl border border-cyan-500/60 bg-cyan-950/30 ring-2 ring-cyan-500/30">
-                <div className="text-[11px] font-mono text-cyan-400 uppercase tracking-wider">Register curr (dp[i])</div>
+                <div className="text-[11px] font-mono text-cyan-400 uppercase tracking-wider">curr (dp[i])</div>
                 <div className="text-2xl font-black text-cyan-200 mt-1">
                   {active.curr}
                 </div>
@@ -179,7 +179,7 @@ export default function SpaceOptimizedSimulator({ input }) {
           {/* Contrast: Full Array O(N) vs Window O(1) */}
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg">
             <div className="text-xs font-bold text-slate-300 mb-2">
-              Memory footprint: O(N) Tabulation array vs O(1) Weaver's Window
+              Full table (Chapter 3) vs the 2-answer window used here
             </div>
             <div className="flex items-center gap-1.5 overflow-x-auto pb-2">
               {Array.from({ length: n + 1 }).map((_, idx) => {
@@ -215,7 +215,7 @@ export default function SpaceOptimizedSimulator({ input }) {
               })}
             </div>
             <div className="text-[11px] text-slate-400 mt-2 flex items-center justify-between">
-              <span>Gray struck-out memory slots are reclaimed by garbage collection.</span>
+              <span>Struck-out cells are only shown for comparison: this code never stores them.</span>
               <span className="font-mono text-emerald-400 font-bold">Space saved: {Math.max(0, n - 2)} slots</span>
             </div>
           </div>

@@ -1,4 +1,5 @@
 import React, { lazy, Suspense, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { validateInput } from '../data/practice';
 import { simulationPractices } from '../data/staircase';
 import { useStoredState } from '../hooks/useStoredState';
@@ -90,10 +91,11 @@ function Simulator({ problem, compare }) {
   </div>;
 }
 
-export default function ChapterDesignatedSimulator({ chapterNum, compare = false }) {
+export default function ChapterDesignatedSimulator({ chapterNum, compare = false, toolbarTarget }) {
   const choices = simulationPractices(chapterNum);
   const [problem, setSelected] = usePracticeSelection(chapterNum, choices);
-  return <div className="space-y-4"><div className="workspace-toolbar"><label>Chapter {chapterNum} · Problem <select aria-label="Chapter simulation problem" value={problem.id} onChange={e => setSelected(e.target.value)}>{choices.map(p => <option key={p.id} value={p.id}>{p.title}</option>)}</select></label><span>{compare ? 'Recursion Tree vs Memo' : 'Interactive simulation'}</span></div>
+  const selector = <label>Problem <select aria-label="Chapter simulation problem" value={problem.id} onChange={e => setSelected(e.target.value)}>{choices.map(p => <option key={p.id} value={p.id}>{p.title}</option>)}</select></label>;
+  return <div className="space-y-4">{toolbarTarget ? createPortal(selector, toolbarTarget) : <div className="workspace-toolbar">{selector}</div>}
     <Simulator key={`${problem.id}.${compare}`} problem={problem} compare={compare} />
   </div>;
 }

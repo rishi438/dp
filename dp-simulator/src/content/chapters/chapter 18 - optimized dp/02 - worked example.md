@@ -83,7 +83,9 @@ Each position enters the deque once and leaves at most once. Total work grows wi
 ---
 
 <details>
-<summary>More detail and extra examples (optional)</summary>
+<summary>More detail</summary>
+
+> **Words used below:** **fulcrum** = the last move or decision that led here · **door** = one possible last move (a smaller state you could have come from) · **Invariant Lens** = a 3-part check: true at the start (Initialization), stays true each step (Maintenance), gives the answer at the end (Termination) · **termination** (slot 4) = which dp value answers the question.
 
 # Chapter 18 · 02 — Worked Example: Jump Game VI
 
@@ -641,42 +643,39 @@ print(lis_fast([]))                             # expected: 0
 Eighteen chapters, one procedure. This is the book, compressed:
 
 ```
-0. FULCRUM       "What was the LAST decision that landed me here?"
-                 The answer is a LIST OF DOORS.
-                 Few fixed doors → one line.  Many data-driven doors → a loop.
+0. FULCRUM       What was the last choice that got me here?
+                 A few fixed choices      -> one line.
+                 Choices that depend on the data -> a loop.
 
-1. STATE         dp[...] = ONE English sentence.
-                 If it cannot answer the fulcrum's question, it is WRONG.
-                 Pin the endpoint: "ending exactly at…", "given that…".
+1. STATE         dp[...] = one plain sentence.
+                 Add "ending exactly at..." or "given that..." when needed.
 
-2. TRANSITION    The fulcrum, in symbols.
-                   min/max  = CHOOSE one door        (optimizing)
-                   +        = COMBINE / COUNT        (counting)
-                   Σ pᵢ·(…) = WEIGHTED COMBINE       (probability)
-                 Mandatory cost → OUTSIDE the choice.
-                 Optional gain  → INSIDE one branch.
+2. TRANSITION    Build dp from smaller answers.
+                   min/max  = pick the best choice
+                   +        = add up the ways
+                   sum p*() = average by probability
+                 A cost you always pay goes outside the min/max.
 
-3. BASE CASE     DERIVE it from the state sentence. NEVER copy it.
-                 Impossible world → sentinel (inf / -inf / 0 ways).
-                 Counting → 1 ("one way to do nothing").
-                 Probability → a point mass.
+3. BASE CASE     Work it out from the state sentence. Don't copy it.
+                 Impossible  -> inf / -inf / 0 ways.
+                 Counting    -> 1 ("one way to do nothing").
+                 Probability -> 1 at the starting point.
 
-4. TERMINATION   WHERE does the answer live?
-                   endpoint forced         → read that cell
-                   endpoint free           → survey with max
-                   some end-states illegal → filter, then survey
-                   disjoint events         → SUM the table
-                   a returned value        → the root of the recursion
-                   + a cost outside the table (Ch 15)
+4. TERMINATION   Which dp value answers the question?
+                   must end at a fixed place -> read that cell
+                   can end anywhere          -> take the max
+                   some endings not allowed  -> skip them, then take the max
+                   separate outcomes         -> add them up
+                   recursion                 -> the top call's return value
+                 Add any cost kept outside the table (Ch 15).
 
-   THEN, and only then:
-5. COST          TIME = states × transition cost.
-                 Is the right factor a scan over a structured set?
-                 → sum / deque / binary search / stack / proved monotonicity
-                 Is it unstructured? → that IS the price. Stop looking.
+5. COST          Time = number of states x work per state.
+                 Is the work a scan over a window or a sorted list?
+                 -> prefix sum / deque / binary search / stack can speed it up.
+                 No structure to use? Then that is the real cost.
 
-VERIFY           Initialization / Maintenance / Termination.
-                 And a brute force. Always a brute force.
+VERIFY           Check it is true at the start, after each step, and at the end.
+                 Compare with a brute-force solution.
 ```
 
 ---

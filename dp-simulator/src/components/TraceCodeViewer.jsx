@@ -35,7 +35,7 @@ export default function TraceCodeViewer({ problem, memoized, event, hiddenValue,
       {memoized && event.key && !['call', 'answer'].includes(event.kind) && <span><b>key</b> = ({event.state.join(', ')}{event.state.length === 1 ? ',' : ''})</span>}
       {event.returnedValue !== undefined && <span><b>child {event.returnedKey} returned</b> = {hiddenValue ? '?' : displayValue(event.returnedValue)}</span>}
       {event.value !== undefined && <span><b>{event.kind === 'answer' ? 'answer' : 'value'}</b> = {hiddenValue ? '?' : displayValue(event.value)}</span>}</div>
-    {!status && <p>{event.message || (event.kind === 'enter' ? 'Evaluate the base case or recurse into dependencies.' : event.kind === 'cache' ? 'Reuse this state without running its recurrence again.' : event.kind === 'answer' ? 'Return the final result to the caller.' : 'This state is complete; return its value to the parent.')}</p>}
-    <small>Next follows code execution, including memo checks, writes, and returning to the caller. Your editable solution runs separately with Run tests.</small>
+    {!status && <p>{event.message || (event.kind === 'enter' ? 'Use the base case if it applies; otherwise ask the smaller calls.' : event.kind === 'cache' ? 'This answer is already saved, so reuse it.' : event.kind === 'answer' ? 'Done. This is the final answer.' : 'This call is finished; hand its answer back.')}</p>}
+    <small>Next moves one line of code at a time, including memo checks and returns. Your own solution runs separately with Run tests.</small>
   </CodePlaybackPanel>;
 }

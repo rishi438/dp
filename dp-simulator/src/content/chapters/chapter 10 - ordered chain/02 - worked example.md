@@ -71,7 +71,9 @@ Processing from left to right means every earlier `dp[j]` is ready when we use i
 ---
 
 <details>
-<summary>More detail and extra examples (optional)</summary>
+<summary>More detail</summary>
+
+> **Words used below:** **fulcrum** = the last move or decision that led here · **door** = one possible last move (a smaller state you could have come from) · **Invariant Lens** = a 3-part check: true at the start (Initialization), stays true each step (Maintenance), gives the answer at the end (Termination) · **termination** (slot 4) = which dp value answers the question.
 
 # Chapter 10 · 02 — Worked Example: Longest Increasing Subsequence
 
@@ -512,13 +514,14 @@ print(max_sum_increasing([10, 5, 4, 3]))               # expected: 10
 ## The Takeaway
 
 ```
-0. FULCRUM      "which index came just BEFORE i?"  → 0…i doors → A LOOP
-1. STATE        dp[i] = longest chain ENDING EXACTLY at i
-                pin the endpoint, or the transition has nothing to attach to
-2. TRANSITION   max over legal j of (dp[j] + 1)    → `<` strict, `<=` non-decreasing
-3. BASE         dp[i] = 1 for ALL i, DERIVED       → also acts as the max's floor
-4. TERMINATION  max(dp)                            → endpoint is FREE, so survey
-5. LENS         ascending i keeps every dp[j] final; TIME = states × transition cost
+0. FULCRUM      Which earlier index j came just before i? (any of them, so loop)
+1. STATE        dp[i] = longest increasing chain that ENDS exactly at i
+2. TRANSITION   dp[i] = max(dp[j] + 1) over j < i with nums[j] < nums[i]
+                (use <= instead of < for non-decreasing)
+3. BASE CASE    dp[i] = 1 for every i  (each number alone is a chain)
+4. TERMINATION  max(dp)  (the longest chain can end anywhere)
+5. CHECK        left to right, so every dp[j] is final before it is used
+                time = number of states × work per state
 ```
 
 > Your turn: `03 - your challenge.md`. Challenge 3 hands you an input where

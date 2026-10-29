@@ -59,6 +59,7 @@ export default function StateMachineSimulator({ input }) {
 
   const curDayData = smData[day] || smData[0];
   const maxProfit = Math.max(curDayData.rest, curDayData.sold === -Infinity ? 0 : curDayData.sold);
+  const fmt = v => v === -Infinity ? '-∞' : v < 0 ? `-$${-v}` : `$${v}`;
 
   return (
     <div className="space-y-4">
@@ -84,7 +85,7 @@ export default function StateMachineSimulator({ input }) {
         {/* Profit Badge */}
         <div className="flex items-center gap-2 bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 text-xs">
           <DollarSign className="w-4 h-4 text-emerald-400" />
-          <span className="text-slate-400">Max Legal Profit:</span>
+          <span className="text-slate-400">Best profit if you stop today:</span>
           <span className="text-base font-black font-mono text-emerald-400">
             ${maxProfit}
           </span>
@@ -151,12 +152,22 @@ export default function StateMachineSimulator({ input }) {
 
           {/* State Transition Flow Explanation */}
           <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 text-xs space-y-1.5">
-            <span className="font-bold text-slate-200 block mb-1">State Machine Transitions for Day {day}:</span>
-            <div className="text-[11px] font-mono text-slate-300 space-y-1">
-              <div>• REST: max(stay rest: {curDayData.prevRest ?? 0}, cool down from sold: {curDayData.prevSold ?? '-inf'}) = <strong className="text-cyan-400">${curDayData.rest}</strong></div>
-              <div>• HOLD: max(stay holding: {curDayData.prevHold ?? -prices[0]}, buy today: {curDayData.prevRest ?? 0} - {prices[day]}) = <strong className="text-amber-400">${curDayData.hold}</strong></div>
-              <div>• SOLD: hold + sell at {prices[day]} = <strong className="text-rose-400">{curDayData.sold === -Infinity ? '-inf' : `$${curDayData.sold}`}</strong></div>
-            </div>
+            <span className="font-bold text-slate-200 block mb-1">How each mode is reached on day {day} (using yesterday's values):</span>
+            {day === 0 ? (
+              <div className="text-[11px] text-slate-300 space-y-1">
+                <div>• REST = $0: you start with no stock and no profit.</div>
+                <div>• HOLD = -${prices[0]}: the only way to hold a share on day 0 is to buy it today for ${prices[0]}.</div>
+                <div>• SOLD = -∞: you cannot sell on day 0 because you owned nothing before today. -∞ means "impossible".</div>
+              </div>
+            ) : (
+              <div className="text-[11px] text-slate-300 space-y-1">
+                <div>• <strong className="text-cyan-400">REST</strong> (no stock, free to buy): either you were already resting ({fmt(curDayData.prevRest)}) or yesterday you sold and today is your cooldown ({fmt(curDayData.prevSold)}). Best = <strong className="text-cyan-400">{fmt(curDayData.rest)}</strong></div>
+                <div>• <strong className="text-amber-400">HOLD</strong> (own a share): either keep the share you had ({fmt(curDayData.prevHold)}) or buy today from REST: {fmt(curDayData.prevRest)} - {prices[day]} = {fmt(curDayData.prevRest - prices[day])}. Best = <strong className="text-amber-400">{fmt(curDayData.hold)}</strong></div>
+                <div>• <strong className="text-rose-400">SOLD</strong> (sold today): only possible from HOLD: {fmt(curDayData.prevHold)} + {prices[day]} = <strong className="text-rose-400">{fmt(curDayData.sold)}</strong></div>
+                <div className="text-slate-400">There is no arrow from SOLD to HOLD, so you can never buy the day after selling. That missing arrow IS the cooldown rule.</div>
+              </div>
+            )}
+            {day === prices.length - 1 && <p className="text-emerald-300 font-semibold">Last day: ending while still holding a share wastes money, so the answer is the better of REST and SOLD: ${maxProfit}.</p>}
           </div>
         </div>
 
@@ -191,14 +202,14 @@ export default function StateMachineSimulator({ input }) {
               </div>
               <div className="pl-4 text-slate-500">rest, hold, sold = new_rest, new_hold, new_sold</div>
               <div className={`py-0.5 rounded ${day === prices.length - 1 ? 'bg-emerald-950/70 border-l-2 border-emerald-400 text-emerald-200 font-bold' : 'text-slate-500'}`}>
-                return max(rest, sold)  # Final Profit: ${Math.max(curDayData.rest, curDayData.sold)}
+                return max(rest, sold)  # Final Profit: ${maxProfit}
               </div>
             </div>
           </div>
 
           <div className="mt-4 p-2.5 bg-slate-900 rounded-lg border border-slate-800 font-sans text-xs text-slate-300">
-            <strong className="text-rose-400 block mb-1">Modus's Sacred Rule:</strong>
-            "The cooldown is not an <code className="text-white">if</code>. It is a <strong>MISSING ARROW</strong>. You cannot transition from SOLD to HOLD. Constraints live in the graph, not guard clauses!"
+            <strong className="text-rose-400 block mb-1">The rule in plain words:</strong>
+            Each day you are in exactly one of 3 modes. Today's value for each mode is built only from yesterday's modes. The cooldown is not an <code className="text-white">if</code> check: there is simply no way to go from SOLD straight to HOLD.
           </div>
         </div>
       </div>

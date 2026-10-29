@@ -129,12 +129,12 @@ function CodingExercise({ problem, chapterNum, onPassed }) {
   return <>
     <ResizableWorkspace>
       <section className="panel challenge-problem">
-        <div className="section-heading">
-          <h2>{problem.title}</h2>
-          <div className="challenge-heading-actions">
-            {showSimulation && <label className="simulation-example-select">Simulation example <select aria-label="Simulation example" value={example} onChange={e => setExample(Number(e.target.value))}>{problem.examples.map((_, i) => <option key={i} value={i}>Example {i + 1}</option>)}</select></label>}
-            <button onClick={() => { if (showSimulation) setShowSimulation(false); else { openSimulation(); setCodeView('flow'); } }}>{showSimulation ? 'Read problem' : 'Explore simulation'}</button>
+        <div className="section-heading challenge-heading">
+          <div className="challenge-title-group">
+            <h2>{problem.title}</h2>
+            {showSimulation && <select className="simulation-example-select" aria-label="Simulation example" value={example} onChange={e => setExample(Number(e.target.value))}>{problem.examples.map((_, i) => <option key={i} value={i}>Example {i + 1}</option>)}</select>}
           </div>
+          <button className="challenge-view-toggle" onClick={() => { if (showSimulation) setShowSimulation(false); else { openSimulation(); setCodeView('flow'); } }}>{showSimulation ? 'Read problem' : 'Explore simulation'}</button>
         </div>
         <div hidden={showSimulation}>
           <p>{problem.prompt}</p><p>Complete <code>{functionName(problem)}</code>. Keep the provided parameters and return type. Helpers can be declared inside the function.</p>

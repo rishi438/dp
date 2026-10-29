@@ -75,7 +75,9 @@ print(frog_ways(0))  # 1
 ---
 
 <details>
-<summary>More detail and extra examples (optional)</summary>
+<summary>More detail</summary>
+
+> **Words used below:** **fulcrum** = the last move or decision that led here · **door** = one possible last move (a smaller state you could have come from) · **genie** = pretend the smaller answers are already known · **termination** (slot 4) = which dp value answers the question.
 
 # Chapter 0 · 02 — Worked Example: Cracking a Problem With the Five Slots
 
@@ -195,14 +197,14 @@ print(frog_ways(5))   # 8
 ## The Takeaway (the method you will REUSE)
 
 ```
-0. FULCRUM      "what was the LAST move?"         → gives you the doors
-1. STATE        write dp[i] in PLAIN ENGLISH      → what a door leads to
-2. TRANSITION   combine smaller dp's (genie)      → sum? or pick the best?
-3. BASE CASE    smallest known answers, DERIVED   → never copied
-4. TERMINATION  WHERE does the answer live?       → dp[n], max(dp), a corner?
+0. FULCRUM      What was the last move?            → a 1-hop or a 2-hop
+1. STATE        What does dp[i] mean?              → ways to reach step i
+2. TRANSITION   Build dp[i] from smaller answers   → dp[i] = dp[i-1] + dp[i-2]
+3. BASE CASE    Answers you know by looking        → dp[1] = 1, dp[2] = 2
+4. TERMINATION  Which value answers the question?  → dp[n], the frog lands on n
 
-   then: verify by hand on small numbers   → build trust
-   then: write the code                    → last, not first
+   then: check by hand with small numbers
+   then: write the code
 ```
 
 Notice: I wrote English before I wrote Python. The code was the EASY part.

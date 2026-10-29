@@ -42,6 +42,12 @@ export default function KnapsackSimulator({ input }) {
 
 
   const activeDec = knapsackData.decisions[curItem]?.[curCap];
+  const item = items[curItem - 1];
+  const explanation = curItem === 0
+    ? `No items to choose from yet, so the best value is $0 whatever the bag size.`
+    : !activeDec?.canTake
+    ? `${item.name} weighs ${item.wt}, but the bag only holds ${curCap}. It cannot fit, so copy the best value without it from the row above: $${activeDec.skip}.`
+    : `Skip ${item.name}: keep the best of the earlier items with the same space ($${activeDec.skip}). Take it: use ${item.wt} of the ${curCap} space, earn $${item.val}, and fill the remaining ${curCap - item.wt} with earlier items only ($${activeDec.take - item.val}), total $${activeDec.take}. ${activeDec.chosen === 'take' ? 'Taking' : 'Skipping'} is better.`;
 
   return (
     <div className="space-y-4">
@@ -73,7 +79,7 @@ export default function KnapsackSimulator({ input }) {
         {/* Left Table (7 cols) */}
         <div className="lg:col-span-7 bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-xl space-y-3">
           <span className="text-xs font-bold text-slate-300 block">
-            Knapsack Matrix: dp[item][weight] (Capacity 0..{W})
+            Table: best value using the first items (rows) with a bag of size w (columns)
           </span>
 
           <div className="overflow-x-auto">
@@ -203,12 +209,16 @@ export default function KnapsackSimulator({ input }) {
                   </div>
                 </div>
               )}
+              <p className="mt-2 text-slate-200">
+                {explanation}
+                {curItem === items.length && curCap === W && <strong className="text-amber-300"> All items considered with the full bag: the answer is ${knapsackData.dp[items.length][W]}.</strong>}
+              </p>
             </div>
           </div>
 
           <div className="mt-4 p-2.5 bg-slate-900 rounded-lg border border-slate-800 font-sans text-xs text-slate-300">
-            <strong className="text-yellow-400 block mb-1">Sacky's Law:</strong>
-            "The budget $w$ is a resource spent by the TAKE door. Rolled space MUST run backward to prevent taking the same item twice!"
+            <strong className="text-yellow-400 block mb-1">The rule in plain words:</strong>
+            Both choices look at the row ABOVE (earlier items only). That is what stops an item from being taken twice. The answer is the bottom-right cell: every item, full bag.
           </div>
         </div>
       </div>

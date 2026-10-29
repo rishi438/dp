@@ -78,7 +78,9 @@ The final row includes all items. Its entry for capacity 7 contains the answer, 
 ---
 
 <details>
-<summary>More detail and extra examples (optional)</summary>
+<summary>More detail</summary>
+
+> **Words used below:** **fulcrum** = the last move or decision that led here · **door** = one possible last move (a smaller state you could have come from) · **Invariant Lens** = a 3-part check: true at the start (Initialization), stays true each step (Maintenance), gives the answer at the end (Termination) · **termination** (slot 4) = which dp value answers the question.
 
 # Chapter 9 · 02 — Worked Example: 0/1 Knapsack
 
@@ -482,14 +484,15 @@ Space  O(n × W) → O(W)       roll to one array, iterate backwards
 ## The Takeaway
 
 ```
-0. FULCRUM      "the LAST relic: take it or leave it?"  → two doors, always two
-1. STATE        dp[i][w] = best value, first i relics, capacity w
-                            i = progress,  w = RESOURCE you spend
-2. TRANSITION   max(dp[i-1][w], dp[i-1][w-wt] + val)    → gain INSIDE the branch
-                i-1 on BOTH doors                       → that is what "0/1" means
-3. BASE         dp[0][*] = 0, DERIVED                   → and it is 1 / True in the cousins
-4. TERMINATION  dp[n][W]                                → all items, full capacity
-5. LENS         rolled array: BACKWARD = 0/1, FORWARD = unbounded. Not style. Semantics.
+0. FULCRUM      The last relic: take it or leave it?
+1. STATE        dp[i][w] = best value using the first i relics with capacity w
+2. TRANSITION   dp[i][w] = max(dp[i-1][w],               leave it
+                               dp[i-1][w-wt] + val)      take it (if wt <= w)
+                Both use i-1, so each relic is used at most once.
+3. BASE CASE    dp[0][w] = 0  (no relics, no value)
+                Counting or yes/no versions start at 1 / True instead.
+4. TERMINATION  dp[n][W]  (all relics, full capacity)
+5. CHECK        one-row version: loop w BACKWARD for 0/1, FORWARD for unlimited
 ```
 
 > Your turn: `03 - your challenge.md`. Challenge 4 hands you a forward loop

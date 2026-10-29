@@ -11,7 +11,8 @@ export default function CodeEditor({
   setResetPrompt,
   versions,
   running,
-  onCancel
+  onCancel,
+  lockedFooter
 }) {
   const editorRef = useRef(null);
   const gutterRef = useRef(null);
@@ -401,7 +402,7 @@ export default function CodeEditor({
         <div className="flex items-center gap-3">
           <strong>solution.{language === 'python' ? 'py' : 'rs'}</strong>
           <span className="text-xs text-emerald-400 font-medium hidden sm:inline">
-            ● Full file editable
+            {lockedFooter ? '● Edit your code above the grey runner' : '● Full file editable'}
           </span>
         </div>
 
@@ -509,6 +510,11 @@ export default function CodeEditor({
           wrap="off"
         />
       </div>
+
+      {lockedFooter && <div className="locked-code" aria-label="Read-only test runner code">
+        <div className="locked-code-label">Read-only · Run tests calls your code like this</div>
+        {lockedFooter.split('\n').map((line, i) => <div key={i} className="locked-code-line"><span className="locked-code-number">{lines.length + i + 1}</span><code>{line || ' '}</code></div>)}
+      </div>}
 
       <div className="editor-footer">
         <small>

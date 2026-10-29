@@ -48,7 +48,9 @@ The final answer is `fib(n)`. We do not add all the entries in the dictionary; e
 
 ## Why is it faster?
 
-The program calculates at most `n` distinct positions, with one addition per new position. In the usual DP analysis, this is `O(n)` work: work grows roughly with the number of positions. It also stores `O(n)` answers and can have `O(n)` unfinished recursive calls. Very large Fibonacci numbers themselves take more space and arithmetic time.
+Each position is calculated **once** and then reused, so `fib(n)` needs about `n` additions instead of millions of repeated calls. Doubling `n` roughly doubles the work. (In Big-O notation this is written `O(n)`.)
+
+The memo stores one answer per position, so memory also grows with `n`.
 
 **Common mistake:** using a cache key that leaves out information affecting the answer. Position alone works here because it completely identifies a Fibonacci question. For a question involving both a position and a remaining budget, both may need to be in the key.
 
@@ -57,7 +59,9 @@ Each call to `fib_memo` above creates a fresh dictionary, so separate runs do no
 ---
 
 <details>
-<summary>More detail and extra examples (optional)</summary>
+<summary>More detail</summary>
+
+> **Words used below:** **fulcrum** = the last move or decision that led here · **door** = one possible last move (a smaller state you could have come from) · **termination** (slot 4) = which dp value answers the question.
 
 # Chapter 2 · 02 — Worked Example: Turning Recursion Into Memoization
 
@@ -83,8 +87,8 @@ can't point at all five, you don't understand the recursion well enough to
 memoize it safely.
 
 ```
-0. FULCRUM     = the two sub-calls: fib(n-1), fib(n-2)  → two doors
-1. STATE       = n                (the only argument → the only thing that varies)
+0. FULCRUM     = fib(n) needs two smaller calls: fib(n-1) and fib(n-2)
+1. STATE       = n   (the only input that changes between calls)
 2. TRANSITION  = fib(n-1) + fib(n-2)
 3. BASE CASE   = if n <= 2: return 1
 4. TERMINATION = the top-level call fib(n)
@@ -196,7 +200,7 @@ TIME = (number of distinct states) × (cost of one transition)
 ```
 0. FULCRUM     "What was my LAST hop onto the top?"
                I arrived from stair n-1 (hopping 1) or stair n-2 (hopping 2).
-               Two doors.
+               Two choices.
 
 1. STATE       dp(i) = the minimum cost to REACH stair i.
                (Reach it — standing on it, having not yet paid its toll.)

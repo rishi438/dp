@@ -25,7 +25,7 @@ At each step we remember four things:
 
 - `pos`: which digit position we are filling, from left to right.
 - `previous`: the last digit, so we can reject a repeat.
-- `tight`: whether the digits written so far exactly match the limit's digits.
+- `tight`: are we still exactly on the limit so far? If yes, the next digit cannot go above the limit's digit. If no, we are already below the limit, so any digit 0-9 is fine.
 - `started`: whether we have written the first nonzero digit.
 
 The saved answer is **how many valid ways we can fill the remaining positions** from that situation.
@@ -43,7 +43,9 @@ Try each allowed next digit and **add** its number of valid completions. At the 
 ---
 
 <details>
-<summary>More detail and extra examples (optional)</summary>
+<summary>More detail</summary>
+
+> **Words used below:** **fulcrum** = the last move or decision that led here · **door** = one possible last move (a smaller state you could have come from).
 
 # Chapter 16 · 01 — Story: Digitus, the Ledger Keeper
 

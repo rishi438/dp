@@ -64,6 +64,8 @@ export default function TreeDPSimulator({ input }) {
         computed: true
       };
 
+      const kids = [node.left, node.right].filter(Boolean).map(id => `$${nodeMap[id].val}`);
+      const isRoot = idx === postOrderIds.length - 1;
       allSteps.push({
         stepIdx: idx,
         nodeId,
@@ -72,8 +74,11 @@ export default function TreeDPSimulator({ input }) {
         skipVal,
         leftId: node.left,
         rightId: node.right,
-        line: 5,
-        desc: `Visiting Node ${nodeId} ($${node.val}): rob = $${node.val} + ${leftState.skip || 0} + ${rightState.skip || 0} = $${robVal}. skip = max(${leftState.rob || 0}, ${leftState.skip || 0}) + max(${rightState.rob || 0}, ${rightState.skip || 0}) = $${skipVal}.`,
+        lines: isRoot ? { python: [6, 7, 10], rust: [9, 10, 15] } : { python: [6, 7], rust: [9, 10] },
+        desc: (kids.length === 0
+          ? `House $${node.val} has no children. Rob it: $${robVal}. Skip it: $0.`
+          : `House $${node.val} (children: ${kids.join(', ')}). Rob it: take $${node.val}, but then its children must be skipped → $${robVal}. Skip it: each child may be robbed or skipped, so take each child's better option → $${skipVal}.`)
+          + (isRoot ? ` This is the top house, so the answer is the better of the two: $${Math.max(robVal, skipVal)}.` : ' Children are always solved before their parent.'),
         snapshot: JSON.parse(JSON.stringify(stateSnapshot))
       });
     });
@@ -154,7 +159,7 @@ export default function TreeDPSimulator({ input }) {
               <span className="text-xs text-slate-400 font-semibold">Root the Elder Tree</span>
             </div>
             <h2 className="text-base font-bold text-white tracking-tight">
-              Tree DP · House Robber III (Post-Order DFS Pair)
+              Tree DP · House Robber on a tree (never rob a house and its direct child)
             </h2>
           </div>
         </div>
@@ -171,7 +176,7 @@ export default function TreeDPSimulator({ input }) {
         <div className="lg:col-span-7 space-y-4">
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg">
             <div className="flex items-center justify-between text-xs mb-2 text-slate-400">
-              <span className="font-semibold text-slate-300">Binary Tree Post-Order Hierarchy (Leaves First)</span>
+              <span className="font-semibold text-slate-300">Each house gets two numbers: R = best if robbed, S = best if skipped. Leaves first, root last.</span>
               <span className="font-mono text-lime-400">Step {currentStepIndex + 1} / {steps.length}</span>
             </div>
 
@@ -259,15 +264,15 @@ export default function TreeDPSimulator({ input }) {
             {/* Final outcome banner */}
             <div className="mt-3 p-3 bg-slate-950 border border-slate-800 rounded-xl flex items-center justify-between">
               <div>
-                <div className="text-[10px] text-slate-500 uppercase tracking-wider font-mono">Max Loot Formula</div>
+                <div className="text-[10px] text-slate-500 uppercase tracking-wider font-mono">Answer</div>
                 <div className="text-sm font-bold text-slate-200 font-mono mt-0.5">
-                  max(rob(root), skip(root))
+                  better of R and S at the top house
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-[10px] text-slate-500 uppercase tracking-wider font-mono">Max Plunder</div>
+                <div className="text-[10px] text-slate-500 uppercase tracking-wider font-mono">Most money</div>
                 <div className="text-base font-extrabold text-lime-400 font-mono">
-                  {isFinalStep ? '$9 Loot (Nodes 2 & 3)' : 'Computing...'}
+                  {isFinalStep ? `$${Math.max(finalMap[1].rob, finalMap[1].skip)} (rob ${[...robbedIds].map(id => `$${treeNodes.find(n => n.id === id).val}`).join(' + ')})` : 'Computing...'}
                 </div>
               </div>
             </div>
@@ -302,7 +307,7 @@ export default function TreeDPSimulator({ input }) {
 
           <div className="p-3 bg-slate-950/90 font-mono text-[11px] leading-relaxed flex-1 overflow-x-auto">
             {(activeLang === 'python' ? pythonCode : rustCode).map((line) => {
-              const isHighlight = line.num === activeStep.line;
+              const isHighlight = activeStep.lines[activeLang].includes(line.num);
               return (
                 <div
                   key={line.num}

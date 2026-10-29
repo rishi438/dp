@@ -97,7 +97,7 @@ const drills = {
     ['In the O(n log n) tails algorithm, does tails itself always represent one valid subsequence?', 'No; each entry tracks a smallest possible tail for its length', 'Yes; append all tails to reconstruct the answer', 'No; tails stores counts instead of values', 'Entries can come from different candidate subsequences. Reconstruction needs predecessor information.'],
   ],
   11: [
-    ['What is the holding-state value before buying any stock on day zero?', '-price[0] after choosing to buy', 'price[0]', 'Always zero after buying', 'Buying spends money; the running profit decreases by the purchase price.'],
+    ['After choosing to buy on day zero, what is the holding-state profit?', '-price[0]', 'price[0]', 'Always zero after buying', 'Buying spends money, so the running profit drops by the purchase price. Before any purchase, holding is impossible.'],
     ['May a final answer include an unsold stock as completed cash profit?', 'No; choose a non-holding terminal state', 'Yes; add its purchase price again', 'Only when its price fell', 'Holding includes the cost of a purchase that has not been closed by a sale.'],
     ['In a three-state cooldown DP, buying today must come from which previous state?', 'Rest, not yesterday’s just-sold state', 'Any state, including just sold', 'Holding only', 'The missing sold-to-buy transition enforces the cooldown day.'],
     ['For prices [1,2,3,0,2] with one-day cooldown, what is the best profit?', '3', '4', '2', 'Buy at 1, sell at 2, rest at 3, buy at 0, sell at 2: total 1+2=3.'],
@@ -130,7 +130,7 @@ const drills = {
     ['Which traversal naturally computes children before parents?', 'Postorder', 'Preorder without deferred work', 'Level order from root down without revisiting', 'A node’s transition needs completed results from its child subtrees.'],
     ['What pair should a missing child return for tree robbery?', '(0,0)', '(1,1)', '(infinity,infinity)', 'A nonexistent subtree contributes no money under either choice.'],
     ['For a root worth 3 with two leaf children worth 4 and 5, what is optimal?', 'Skip root and take both children: 9', 'Take all three: 12', 'Take root only: 3', 'The children are not adjacent to each other; both can be selected when the root is skipped.'],
-    ['Can the root itself be forced into the optimal answer?', 'Only if the problem explicitly requires it', 'Yes, because it is processed last', 'Yes, because it contains both subtrees', 'Normally return max(rob(root),skip(root)); traversal order does not force selection.'],
+    ['Does processing the root last mean the algorithm must rob it?', 'No; return the better of robbing and skipping the root', 'Yes, because it is processed last', 'Yes, because it contains both subtrees', 'The order you visit nodes does not force a choice. Return max(rob(root), skip(root)).'],
   ],
   15: [
     ['What does a visited-set bitmask encode?', 'Which individual elements have been visited', 'Only the number of visited elements', 'The order in which every element was visited', 'Each bit belongs to one element. The mask distinguishes sets of equal size.'],
@@ -254,7 +254,7 @@ const additionalDrills = {
     ['A single-cell grid contains cost 9. What is its minimum path sum?', '9', '0', '18', 'Start and destination are the same cell, and its cost is counted once.'],
   ],
   9: [
-    ['For nonnegative weights, why can an odd total sum never be split into two equal-sum subsets?', 'Each half would need a noninteger sum', 'Odd numbers cannot appear in subsets', 'Every subset must have even size', 'Equal integer sums add to an even total. This check can reject the instance before DP.'],
+    ['For nonnegative integer weights, why can an odd total sum never be split into two equal-sum subsets?', 'Each half would need a noninteger sum', 'Odd numbers cannot appear in subsets', 'Every subset must have even size', 'Equal integer sums add to an even total. This check can reject the instance before DP.'],
     ['In EXACT-fill maximum-value knapsack, how should positive capacities initially be represented before any items?', 'Unreachable, such as negative infinity', 'Zero, as in an at-most-capacity variant', 'The capacity itself', 'With no items only exact weight zero is reachable; empty selections cannot fill positive capacity.'],
     ['With two distinct items of weights [2,2], can 0/1 subset sum reach target 4?', 'Yes; take each item once', 'No; equal weights count as one item', 'Yes; reuse the first item twice', 'The restriction applies to item identities. Distinct items may have equal weights.'],
     ['For weights [2,3], values [4,5], and capacity 3, what is the 0/1 optimum?', '5', '9', '8', 'Only one item fits at a time. Taking the weight-3 item yields value 5.'],
@@ -349,7 +349,7 @@ const stateQuestions = Array.from({ length: 19 }, (_, chapter) => {
   const problem = chapterPractices(chapter)[0];
   const choices = [problem.state, 'The answer for the whole input, regardless of the indices', 'The number of loops already executed', 'The best answer using future states that are not yet solved'];
   const shift = chapter % 4;
-  return { id: `state-${chapter}`, category: `Ch ${chapter} · State design`, question: `For ${problem.title}, which state definition matches the recurrence?`, options: choices.map((text, i) => ({ text, correct: i === 0 })).map((_, i, all) => all[(i + shift) % 4]), explanation: `${problem.state}. ${problem.recurrence}` };
+  return { id: `state-${chapter}`, category: `Ch ${chapter} · State design`, question: `For ${problem.title}, using ${problem.recurrence}, which state definition matches?`, options: choices.map((text, i) => ({ text, correct: i === 0 })).map((_, i, all) => all[(i + shift) % 4]), explanation: `${problem.state}. ${problem.recurrence}` };
 });
 
 const chapterDrills = Array.from({ length: 19 }, (_, chapter) => {

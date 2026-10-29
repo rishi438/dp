@@ -36,7 +36,9 @@ Memoization saves repeated calculations, but still uses recursion. A very deep c
 ---
 
 <details>
-<summary>More detail and extra examples (optional)</summary>
+<summary>More detail</summary>
+
+> **Words used below:** **fulcrum** = the last move or decision that led here · **termination** (slot 4) = which dp value answers the question.
 
 # Chapter 2 · 01 — Story: The Wizard and the Magic Notebook
 

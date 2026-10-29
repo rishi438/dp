@@ -31,7 +31,7 @@ export default function TabulationSimulator({ input }) {
               Chapter 3 · Bottom-Up Tabulation
             </div>
             <h3 className="font-bold text-white text-sm">
-              Iterative Table Filling: Left-to-Right in O(1) Stack Space
+              Fill the table from left to right, no recursion
             </h3>
           </div>
         </div>
@@ -103,12 +103,18 @@ export default function TabulationSimulator({ input }) {
         </div>
 
         {/* Recurrence Equation */}
-        <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 text-xs flex items-center justify-between font-mono">
-          <div>
-            {currentStep < 2 ? <>Base case: dp[{currentStep}] = 1 ({currentStep === 0 ? 'one empty path' : 'one single hop'})</> : <>dp[{currentStep}] = <span className="text-cyan-400 font-bold">{dp[currentStep - 1]}</span> + <span className="text-emerald-400 font-bold">{dp[currentStep - 2]}</span> = <span className="text-purple-300 font-black text-sm">{dp[currentStep]}</span></>}
+        <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 text-xs space-y-1.5">
+          <div className="font-mono">
+            {currentStep < 2 ? <>Base case: dp[{currentStep}] = 1</> : <>dp[{currentStep}] = <span className="text-cyan-400 font-bold">{dp[currentStep - 1]}</span> + <span className="text-emerald-400 font-bold">{dp[currentStep - 2]}</span> = <span className="text-purple-300 font-black text-sm">{dp[currentStep]}</span></>}
+          </div>
+          <div className="text-slate-300 font-sans">
+            {currentStep === 0 ? 'Standing still at step 0 counts as one way (the empty path).'
+              : currentStep === 1 ? 'There is only one way to reach step 1: a single 1-hop.'
+              : <>Every path to step {currentStep} ends with a 1-hop from step {currentStep - 1} (<span className="text-cyan-400">{dp[currentStep - 1]} ways</span>) or a 2-hop from step {currentStep - 2} (<span className="text-emerald-400">{dp[currentStep - 2]} ways</span>). These groups never overlap, so add them.</>}
+            {currentStep === n && <strong className="text-purple-300"> Step {n} is the top, so the answer is dp[{n}] = {dp[n]}.</strong>}
           </div>
           <div className="text-[11px] text-slate-400 font-sans">
-            Stack Depth: <strong>O(1)</strong> (No recursive frames!)
+            We fill left to right, so dp[i-1] and dp[i-2] are always ready before dp[i] needs them.
           </div>
         </div>
       </div>

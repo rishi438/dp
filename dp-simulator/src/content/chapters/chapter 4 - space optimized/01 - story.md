@@ -39,7 +39,9 @@ For Fibonacci, the number of calculation steps stays the same. The storage becom
 ---
 
 <details>
-<summary>More detail and extra examples (optional)</summary>
+<summary>More detail</summary>
+
+> **Words used below:** **fulcrum** = the last move or decision that led here · **door** = one possible last move (a smaller state you could have come from) · **Invariant Lens** = a 3-part check: true at the start (Initialization), stays true each step (Maintenance), gives the answer at the end (Termination) · **termination** (slot 4) = which dp value answers the question.
 
 # Chapter 4 · 01 — Story: The Cloth (Space-Optimized DP)
 

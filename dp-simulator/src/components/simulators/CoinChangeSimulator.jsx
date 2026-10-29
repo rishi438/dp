@@ -59,6 +59,14 @@ export default function CoinChangeSimulator({ input }) {
   const playback = useAutoplay({ playing: isPlaying, step: currentAmount, last: targetAmount, speed, setSpeed, onStep: setCurrentAmount, onStop: setIsPlaying });
 
   const activeItem = dpData[currentAmount] || dpData[0];
+  const coinList = `[${coins.join(', ')}]`;
+  const explanation = currentAmount === 0
+    ? 'Base case: making $0 needs 0 coins.'
+    : activeItem.doors.length === 0
+    ? `No coin is $${currentAmount} or smaller, so $${currentAmount} cannot be made.`
+    : activeItem.val === -1
+    ? `Every coin leaves a remainder that cannot be made, so $${currentAmount} cannot be made either.`
+    : `Try each coin as the LAST coin: 1 coin + the fewest coins for what is left. The $${activeItem.bestCoin} coin wins: 1 + dp[${currentAmount - activeItem.bestCoin}] = ${activeItem.val}.`;
 
   return (
     <div className="space-y-4">
@@ -121,7 +129,7 @@ export default function CoinChangeSimulator({ input }) {
                   Evaluating Amount: ${currentAmount}
                 </span>
                 <p className="text-xs text-slate-400 mt-0.5">
-                  Available Coin Set: <strong className="text-slate-200">[1, 2, 5]</strong>
+                  Available coins: <strong className="text-slate-200">{coinList}</strong>
                 </p>
               </div>
 
@@ -136,12 +144,12 @@ export default function CoinChangeSimulator({ input }) {
             {/* The 3 Coin Doors */}
             <div className="space-y-2">
               <span className="text-xs font-bold text-slate-300 block">
-                The Coin Doors: What was the LAST coin picked?
+                Which coin was used LAST?
               </span>
 
               {activeItem.doors.length === 0 ? (
                 <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 text-xs text-amber-300">
-                  Base Amount $0: Exactly 0 coins needed.
+                  {currentAmount === 0 ? 'Nothing to pay: no coin is needed.' : 'No coin fits this amount.'}
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
@@ -163,10 +171,10 @@ export default function CoinChangeSimulator({ input }) {
                         )}
                       </div>
                       <div className="text-[11px] font-mono text-slate-400">
-                        From ${door.prevAmount} (dp[{door.prevAmount}] = {door.prevVal})
+                        From ${door.prevAmount} (dp[{door.prevAmount}] = {door.feasible ? door.prevVal : 'impossible'})
                       </div>
                       <div className="text-xs font-mono font-bold mt-1 text-slate-200">
-                        Total = {door.total} coins
+                        {door.feasible ? `Total = ${door.total} coins` : 'Not possible'}
                       </div>
                     </div>
                   ))}
@@ -175,11 +183,15 @@ export default function CoinChangeSimulator({ input }) {
             </div>
 
             {/* Coins Combination Picked */}
+            <p className="text-xs text-slate-200">
+              {explanation}
+              {currentAmount === targetAmount && <strong className="text-emerald-300"> ${targetAmount} is the amount asked for, so the answer is {activeItem.val}.</strong>}
+            </p>
             <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 text-xs flex items-center justify-between">
               <span className="text-slate-400 font-semibold">Coins Used for ${currentAmount}:</span>
               <div className="flex items-center gap-1.5">
                 {activeItem.coinsUsed.length === 0 ? (
-                  <span className="text-slate-500 italic">None (at $0)</span>
+                  <span className="text-slate-500 italic">{currentAmount === 0 ? 'None (at $0)' : 'Cannot be made'}</span>
                 ) : (
                   activeItem.coinsUsed.map((c, i) => (
                     <span
@@ -197,7 +209,7 @@ export default function CoinChangeSimulator({ input }) {
           {/* Amount Array Strip */}
           <div className="bg-slate-900 border border-slate-800 rounded-xl p-3 shadow-lg">
             <span className="text-xs font-bold text-slate-300 block mb-2">
-              Tabulation Table: dp[0..{targetAmount}] (Minimum Coins)
+              Table: dp[x] = fewest coins to make $x (∞ = cannot be made)
             </span>
             <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2">
               {dpData.map((item, idx) => (
@@ -243,21 +255,21 @@ export default function CoinChangeSimulator({ input }) {
               </div>
               <div className="pl-4 text-slate-500">for a in range(1, amount + 1):</div>
               <div className="pl-8 text-slate-500">for c in coins:</div>
-              <div className={`pl-12 py-0.5 rounded ${currentAmount > 0 && currentAmount < targetAmount ? 'bg-amber-950/70 border-l-2 border-amber-400 text-amber-200' : ''}`}>
+              <div className={`pl-12 py-0.5 rounded ${currentAmount > 0 ? 'bg-amber-950/70 border-l-2 border-amber-400 text-amber-200' : ''}`}>
                 if a - c &gt;= 0:
               </div>
-              <div className={`pl-16 py-0.5 rounded ${currentAmount > 0 && currentAmount < targetAmount ? 'bg-amber-950/70 border-l-2 border-amber-400 text-amber-200' : ''}`}>
+              <div className={`pl-16 py-0.5 rounded ${currentAmount > 0 ? 'bg-amber-950/70 border-l-2 border-amber-400 text-amber-200' : ''}`}>
                 dp[a] = min(dp[a], 1 + dp[a - c])
               </div>
               <div className={`pl-4 py-0.5 rounded ${currentAmount === targetAmount ? 'bg-emerald-950/70 border-l-2 border-emerald-400 text-emerald-200' : ''}`}>
-                return dp[amount] if dp[amount] != inf else -1
+                return dp[amount] if dp[amount] != float('inf') else -1
               </div>
             </div>
           </div>
 
           <div className="mt-4 p-2.5 bg-slate-900 rounded-lg border border-slate-800 font-sans text-xs text-slate-300">
             <strong className="text-amber-400 block mb-1">Corin's Lesson:</strong>
-            "The doors come from the data array <code className="text-cyan-300">[1, 2, 5]</code>. The fulcrum became a loop over coins, and we pick the cheapest door with <code className="text-emerald-400">min</code>."
+            The choices come from the coin list <code className="text-cyan-300">{coinList}</code>, so we loop over every coin and keep the one that needs the fewest coins (<code className="text-emerald-400">min</code>).
           </div>
         </div>
       </div>

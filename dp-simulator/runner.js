@@ -77,3 +77,35 @@ export async function executeSolution(problem, language, body, signal) {
     await rm(tempDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 });
   }
 }
+
+// Tests are read from JSON by the harness, never spliced into Python source.
+const SNIPPET_HARNESS = `import json, runpy
+with open('tests.json', encoding='utf-8') as f:
+    tests = json.load(f)
+ns = runpy.run_path('solution.py', run_name='solution')
+for t in tests:
+    try:
+        actual = eval(t['call'], ns)
+        expected = eval(t['expected'], ns)
+        record = {'passed': actual == expected, 'actual': repr(actual), 'expected': repr(expected)}
+    except Exception as error:
+        record = {'passed': False, 'error': f'{type(error).__name__}: {error}'}
+    print('__QB_RESULT__' + json.dumps(record), flush=True)
+`;
+
+export async function executeSnippet({ code, tests }, signal) {
+  const tempDir = await mkdtemp(path.join(os.tmpdir(), 'dp-bank-'));
+  try {
+    await writeFile(path.join(tempDir, 'solution.py'), code, 'utf8');
+    await writeFile(path.join(tempDir, 'tests.json'), JSON.stringify(tests), 'utf8');
+    await writeFile(path.join(tempDir, 'harness.py'), SNIPPET_HARNESS, 'utf8');
+    const run = await runProcess('python', ['-I', '-u', 'harness.py'], { cwd: tempDir, signal });
+    const records = run.stdout.split(/\r?\n/).filter(line => line.startsWith('__QB_RESULT__')).map(line => {
+      try { return JSON.parse(line.slice('__QB_RESULT__'.length)); } catch { return { passed: false, error: 'Invalid result line.' }; }
+    });
+    const results = tests.map((test, i) => ({ call: test.call, expected: records[i]?.expected ?? test.expected, actual: records[i]?.actual ?? null, passed: records[i]?.passed === true, error: records[i]?.error || (records[i] ? '' : 'Not run.') }));
+    return { ...run, passed: run.success && results.every(result => result.passed), results, stdout: run.stdout.split(/\r?\n/).filter(line => !line.startsWith('__QB_RESULT__')).join('\n').trim() };
+  } finally {
+    await rm(tempDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 });
+  }
+}

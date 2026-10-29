@@ -42,6 +42,13 @@ export default function LCSSimulator({ input }) {
 
 
   const activeDetail = lcsMatrix.details[currentI]?.[currentJ];
+  const a = s1.slice(0, currentI), b = s2.slice(0, currentJ);
+  const top = lcsMatrix.table[currentI - 1]?.[currentJ], left = lcsMatrix.table[currentI]?.[currentJ - 1];
+  const explanation = currentI === 0 || currentJ === 0
+    ? `One side is empty ("${a}" vs "${b}"). An empty word shares nothing, so the answer is 0.`
+    : activeDetail?.match
+    ? `Both "${a}" and "${b}" end in '${activeDetail.char}'. Keep that letter as part of the answer (+1), then solve the rest without it: "${a.slice(0, -1)}" vs "${b.slice(0, -1)}".`
+    : `"${a}" ends in '${a.at(-1)}' and "${b}" ends in '${b.at(-1)}'. They differ, so at least one of them is not used. Try dropping either last letter and keep the better result: ${top} (drop '${a.at(-1)}') vs ${left} (drop '${b.at(-1)}').`;
 
   return (
     <div className="space-y-4">
@@ -72,7 +79,7 @@ export default function LCSSimulator({ input }) {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
         <div className="lg:col-span-7 bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-xl space-y-3">
           <span className="text-xs font-bold text-slate-300 block">
-            2D Tabulation Grid: dp[i][j] (Row: s1="{s1}", Col: s2="{s2}")
+            Table: dp[i][j] = longest common part of the first i letters of "{s1}" and the first j letters of "{s2}"
           </span>
 
           <div className="overflow-x-auto">
@@ -181,15 +188,19 @@ export default function LCSSimulator({ input }) {
                 </div>
               ) : (
                 <div className="text-cyan-300 font-mono text-[11px]">
-                  Diff: max(top: {lcsMatrix.table[currentI-1]?.[currentJ]}, left: {lcsMatrix.table[currentI]?.[currentJ-1]}) = <strong>{lcsMatrix.table[currentI][currentJ]}</strong>
+                  Different: max(top: {lcsMatrix.table[currentI-1]?.[currentJ]}, left: {lcsMatrix.table[currentI]?.[currentJ-1]}) = <strong>{lcsMatrix.table[currentI][currentJ]}</strong>
                 </div>
               )}
+              <p className="mt-2 text-slate-200">
+                {explanation}
+                {currentI === m && currentJ === n && <strong className="text-amber-300"> This cell uses both full words, so it is the answer: {lcsMatrix.table[m][n]}.</strong>}
+              </p>
             </div>
           </div>
 
           <div className="mt-4 p-2.5 bg-slate-900 rounded-lg border border-slate-800 font-sans text-xs text-slate-300">
-            <strong className="text-blue-400 block mb-1">Twin Scribes Rule:</strong>
-            "Match = pay 1 step into diagonal (both drop 1 letter). Diff = pick max(drop s1, drop s2)."
+            <strong className="text-blue-400 block mb-1">The rule in plain words:</strong>
+            Same last letter: keep it (+1) and look diagonally up-left. Different last letters: drop one of them and take the bigger of the cell above or the cell to the left.
           </div>
         </div>
       </div>

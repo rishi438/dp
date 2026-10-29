@@ -71,7 +71,9 @@ With `m` coin types, the work is `O(amount * m)`; table storage is `O(amount)`.
 ---
 
 <details>
-<summary>More detail and extra examples (optional)</summary>
+<summary>More detail</summary>
+
+> **Words used below:** **fulcrum** = the last move or decision that led here · **door** = one possible last move (a smaller state you could have come from) · **Invariant Lens** = a 3-part check: true at the start (Initialization), stays true each step (Maintenance), gives the answer at the end (Termination) · **termination** (slot 4) = which dp value answers the question.
 
 # Chapter 5 · 02 — Worked Example: Coin Change (Fewest Coins)
 
@@ -84,11 +86,11 @@ With `m` coin types, the work is `O(amount * m)`; table storage is `O(amount)`.
 ## Recap — The Five Slots (Ch 0) and the Lens (Ch 3)
 
 ```
-0. FULCRUM       "What was the LAST decision that landed me here?"  → the doors
-1. STATE         dp[...] = <one English sentence>
-2. TRANSITION    dp[i] = combine(dp[smaller], ...)
-3. BASE CASE     the smallest truths you know without computing
-4. TERMINATION   dp[n]? max(dp)? — WHERE does the answer live?
+0. FULCRUM       What was the last choice?
+1. STATE         Say what dp[...] means in one sentence
+2. TRANSITION    Build dp[i] from smaller dp values
+3. BASE CASE     The smallest answers you know without computing
+4. TERMINATION   Which dp value answers the question? (dp[n], max(dp), ...)
 ```
 
 | Loop-invariant phase | DP name       | What it means                                   |
@@ -290,12 +292,12 @@ Space  O(amount)                dp[x-c] can reach far back, so no rolling here
 ## The Takeaway
 
 ```
-0. FULCRUM      "what was the LAST decision?"      → the list of doors
-1. STATE        dp[...] in one English sentence    → what a door leads to
-2. TRANSITION   the fulcrum, in symbols            → min/max/sum over doors
-3. BASE CASE    derive it, never copy it           → Initialization
-4. TERMINATION  WHERE does the answer live?        → dp[amount], exactly
-5. LENS         fill Init / Maintain / Terminate   → now you KNOW it's right
+0. FULCRUM      Which coin did I use last?     → try every coin
+1. STATE        dp[x] = fewest coins that make x
+2. TRANSITION   dp[x] = 1 + min(dp[x - coin]) for each coin <= x
+3. BASE CASE    dp[0] = 0   (zero coins make 0)
+4. TERMINATION  dp[amount]  (return -1 if it is still unreachable)
+5. CHECK        true at the start, stays true each step, answer is in dp[amount]
 ```
 
 > Your turn: `03 - your challenge.md`. Two of the six punish you for copying a

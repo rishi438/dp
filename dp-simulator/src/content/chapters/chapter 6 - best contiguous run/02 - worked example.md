@@ -73,7 +73,9 @@ Each number is processed once, so time is `O(n)`. Only two saved totals are need
 ---
 
 <details>
-<summary>More detail and extra examples (optional)</summary>
+<summary>More detail</summary>
+
+> **Words used below:** **fulcrum** = the last move or decision that led here · **door** = one possible last move (a smaller state you could have come from) · **Invariant Lens** = a 3-part check: true at the start (Initialization), stays true each step (Maintenance), gives the answer at the end (Termination) · **termination** (slot 4) = which dp value answers the question.
 
 # Chapter 6 · 02 — Worked Example: Maximum Subarray (Kadane)
 
@@ -326,12 +328,12 @@ print(max_product([-2, 3, -4]))        # expected: 24   (all three: -2*3*-4)
 ## The Takeaway
 
 ```
-0. FULCRUM      extend the run, or start fresh?    → always exactly 2 doors
-1. STATE        "ENDING EXACTLY AT i"              → the phrase that makes it work
-2. TRANSITION   max(nums[i], dp[i-1] + nums[i])    → one line
-3. BASE         dp[0] = nums[0], DERIVED           → not 0; "at least one element"
-4. TERMINATION  max(dp), NOT dp[-1]                → the run can end anywhere
-5. LENS         Init / Maintain / Terminate        → proof, not hope
+0. FULCRUM      Does nums[i] extend the previous run, or start a new one?
+1. STATE        dp[i] = best sum of a run that ENDS exactly at i
+2. TRANSITION   dp[i] = max(nums[i], dp[i-1] + nums[i])
+3. BASE CASE    dp[0] = nums[0]  (a run needs at least one number, so not 0)
+4. TERMINATION  max(dp), not dp[-1]  (the best run can end anywhere)
+5. CHECK        true at the start, stays true each step, answer is the max
 ```
 
 > Your turn: `03 - your challenge.md`. Challenge 5 hands you a *wrong* state

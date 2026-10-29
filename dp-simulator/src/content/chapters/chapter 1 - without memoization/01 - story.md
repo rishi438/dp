@@ -40,7 +40,9 @@ This repetition grows quickly as `n` increases. A recursion tree shows it: each 
 ---
 
 <details>
-<summary>More detail and extra examples (optional)</summary>
+<summary>More detail</summary>
+
+> **Words used below:** **fulcrum** = the last move or decision that led here · **door** = one possible last move (a smaller state you could have come from) · **termination** (slot 4) = which dp value answers the question.
 
 # Chapter 1 · 01 — Story: Without Memoization (Feel the Pain)
 

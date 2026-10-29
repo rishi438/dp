@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { EMPTY_PLAN, REASONING_FIELDS, answerErrors, isPlanApproved, isReviewComplete, reasoningSnapshot } from '../data/reasoning';
 import { readStored, useStoredState } from '../hooks/useStoredState';
+import SubmissionId from './SubmissionId';
 
 const statusLabels = { correct: 'Accepted', needs_work: 'Revise this', unclear: 'Clarify this' };
 
@@ -12,6 +13,7 @@ export default function ReasoningGate({ problem, children }) {
   const skipped = plan.skipped === true;
   const review = isReviewComplete(plan.review) && plan.review.snapshot === reasoningSnapshot(problem.id, answers) ? plan.review : null;
   const [busy, setBusy] = useState(false), [error, setError] = useState(''), [errors, setErrors] = useState({});
+  const [checkId, setCheckId] = useState(null);
   const request = useRef(null);
   const earlierNotes = readStored(`reasoning.${problem.chapter}`, {})[problem.id];
   useEffect(() => () => { request.current?.abort(); request.current = null; }, []);
@@ -26,11 +28,12 @@ export default function ReasoningGate({ problem, children }) {
     if (busy) return;
     const missing = answerErrors(answers); setErrors(missing); setError('');
     if (Object.keys(missing).length) return;
-    const controller = new AbortController(); request.current = controller; setBusy(true);
+    const controller = new AbortController(); request.current = controller; setBusy(true); setCheckId(null);
     const snapshot = reasoningSnapshot(problem.id, answers);
     try {
       const response = await fetch('/api/reasoning/review', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ problemId: problem.id, answers }), signal: controller.signal });
       const data = await response.json();
+      if (request.current === controller && data.checkId) setCheckId(data.checkId);
       if (!response.ok) throw new Error(data.error || 'The review could not finish. Please try again.');
       if (!isReviewComplete(data.review) || data.review.snapshot !== snapshot) throw new Error('The reviewer returned an incomplete assessment. Please try again.');
       if (request.current === controller) setPlan(previous => reasoningSnapshot(problem.id, previous.answers) === snapshot ? { ...previous, review: data.review } : previous);
@@ -50,6 +53,7 @@ export default function ReasoningGate({ problem, children }) {
       </section>;
     })}</div>
     <div aria-live="polite">{error && <p role="alert" className="error-text">{error}</p>}{review && <p className={approved ? 'success-text' : 'reasoning-summary'}>{review.summary}</p>}{busy && <p role="status">Reading your five answers together… Local review can take up to two minutes.</p>}</div>
+    {checkId && <SubmissionId saved={{ id: checkId }} what="reasoning" />}
     <div className="reasoning-actions">{busy ? <button type="button" onClick={cancel}>Cancel review</button> : <button type="submit" className="primary-button">{review ? 'Check revised reasoning' : 'Check my reasoning'}</button>}<small>Local AI review checks meaning and consistency. It can make mistakes; code tests come afterwards.</small></div>
   </form>;
   return <div className="space-y-4">

@@ -88,7 +88,9 @@ Return the bottom-right entry because the route must finish there. The path acro
 ---
 
 <details>
-<summary>More detail and extra examples (optional)</summary>
+<summary>More detail</summary>
+
+> **Words used below:** **fulcrum** = the last move or decision that led here · **door** = one possible last move (a smaller state you could have come from) · **Invariant Lens** = a 3-part check: true at the start (Initialization), stays true each step (Maintenance), gives the answer at the end (Termination) · **termination** (slot 4) = which dp value answers the question.
 
 # Chapter 8 · 02 — Worked Example: Minimum Path Sum
 
@@ -384,12 +386,13 @@ Space  O(R × C) → O(C)     roll to a single row
 ## The Takeaway
 
 ```
-0. FULCRUM      "which tile did I step FROM?"  → reverse the allowed moves
-1. STATE        dp[r][c] = cost to ARRIVE at (r,c)  → no off-by-one, ever
-2. TRANSITION   grid[r][c] + min(up, left)     → mandatory cost OUTSIDE the min
-3. BASE         dp[0][0] = grid[0][0], DERIVED → and missing doors = inf, not 0
-4. TERMINATION  dp[R-1][C-1]                   → the problem names the exit
-5. LENS         check both source cells are already filled under row-major
+0. FULCRUM      Which tile did I come from? (above or left)
+1. STATE        dp[r][c] = cheapest cost to arrive at (r, c), including its own cost
+2. TRANSITION   dp[r][c] = grid[r][c] + min(dp[r-1][c], dp[r][c-1])
+                (grid[r][c] is always paid, so it sits outside the min)
+3. BASE CASE    dp[0][0] = grid[0][0]; a neighbour off the grid counts as inf, not 0
+4. TERMINATION  dp[R-1][C-1]  (the bottom-right exit)
+5. CHECK        fill row by row, so above and left are ready first
 ```
 
 > Your turn: `03 - your challenge.md`. Challenge 4 changes the allowed moves

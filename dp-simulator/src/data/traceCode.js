@@ -1,3 +1,5 @@
+import { displayValue } from './practice.js';
+
 // Executable Python equivalents of the reference recurrences in practice.js.
 // Code markers also drive the intermediate steps between state events.
 const definitions = {
@@ -60,34 +62,37 @@ export function codeStepTrace(problem, trace, memoized = true) {
   const events = [];
   const outer = { state: [], key: '' };
   const push = (event, kind, line, message, extra = {}) => events.push({ ...event, kind, line, message, ...extra });
-  push(outer, 'solve', markers.solve, 'Call solve with the current input.');
-  setupLines.forEach(line => push(outer, 'setup', line, 'Prepare the input used by go.'));
-  if (memoized) push(outer, 'init', markers.init, 'Create the empty memo dictionary.');
-  push(outer, 'define', markers.call, 'Define go; its body runs only when called.');
+  // Messages never include computed values: prediction mode hides those separately.
+  const label = state => `go(${state.map(displayValue).join(', ')})`;
+  push(outer, 'solve', markers.solve, 'Start: solve is called with your input.');
+  setupLines.forEach(line => push(outer, 'setup', line, 'Get the input ready.'));
+  if (memoized) push(outer, 'init', markers.init, 'Make an empty memo: a notebook for answers we have already worked out.');
+  push(outer, 'define', markers.call, 'Define go. Nothing runs yet; go only runs when someone calls it.');
   const driverLine = markers.finish || markers.answer;
-  push(outer, 'invoke', driverLine, 'Start evaluating the outer expression and call go if needed.');
+  push(outer, 'invoke', driverLine, 'Ask go for the answer to the whole problem.');
   const nodes = new Map(trace.nodes.map(node => [node.id, node]));
   for (const event of trace.events) {
+    const name = label(event.state);
     if (event.kind === 'enter' || event.kind === 'cache') {
       const frame = { id: event.id, key: event.key, state: event.state };
-      push(frame, 'call', markers.call, 'Enter go with these arguments.');
+      push(frame, 'call', markers.call, `Ask: what is ${name}?`);
       if (memoized) {
-        push(frame, 'key', markers.key, 'Build the memo key from the arguments.');
-        push(frame, 'lookup', markers.lookup, event.kind === 'cache' ? 'The key is present: take the cached return.' : 'The key is absent: continue to the calculation.');
+        push(frame, 'key', markers.key, `Look up ${name} in the memo.`);
+        push(frame, 'lookup', markers.lookup, event.kind === 'cache' ? `${name} is already in the memo. No need to work it out again.` : `${name} is not in the memo yet, so we must work it out.`);
       }
       if (event.kind === 'enter') {
-        push(event, 'enter', markers.enter, 'Start computing value.');
-        push(frame, 'evaluate', markers.evaluate, 'Evaluate the base condition, then the selected expression from left to right.');
+        push(event, 'enter', markers.enter, `Work out ${name}.`);
+        push(frame, 'evaluate', markers.evaluate, `Is ${name} a base case (answer known right away)? If not, ask the smaller calls it needs.`);
       }
     }
     if (event.kind === 'return' || event.kind === 'cache') {
-      if (memoized && event.kind === 'return') push(event, 'store', markers.store, 'Save the computed value in memo[key].');
-      push(event, event.kind, markers[event.kind], event.kind === 'cache' ? 'Return memo[key] without computing this state again.' : 'Return value to the caller.');
+      if (memoized && event.kind === 'return') push(event, 'store', markers.store, `Write ${name} in the memo, so it is never worked out twice.`);
+      push(event, event.kind, markers[event.kind], event.kind === 'cache' ? `Hand back the saved answer for ${name}.` : `${name} is finished. Hand its answer back to whoever asked.`);
       const parent = nodes.get(nodes.get(event.id)?.parent);
       const caller = parent ? { id: parent.id, key: parent.key, state: parent.state } : outer;
-      push(caller, 'resume', parent ? markers.evaluate : driverLine, 'Resume the caller where this child returned; continue evaluating the expression.', { returnedValue: event.value, returnedKey: event.key });
+      push(caller, 'resume', parent ? markers.evaluate : driverLine, parent ? `Back in ${label(parent.state)}: it now has the answer from ${name}. Continue.` : `The top call ${name} has its answer.`, { returnedValue: event.value, returnedKey: event.key });
     }
-    if (event.kind === 'answer') push(event, 'answer', markers.answer, 'Return the final result from solve.');
+    if (event.kind === 'answer') push(event, 'answer', markers.answer, 'Done. This is the answer to the whole problem.');
   }
   return { ...trace, events };
 }

@@ -61,7 +61,9 @@ For position 6, there are only six distinct position questions, but the function
 ---
 
 <details>
-<summary>More detail and extra examples (optional)</summary>
+<summary>More detail</summary>
+
+> **Words used below:** **fulcrum** = the last move or decision that led here · **door** = one possible last move (a smaller state you could have come from) · **termination** (slot 4) = which dp value answers the question.
 
 # Chapter 1 · 02 — Worked Example: Watching Plain Recursion Explode
 
@@ -169,11 +171,11 @@ def fib(n):              # STATE       = the argument. fib(n) = the n-th Fibonac
 ```
 
 ```
-0. FULCRUM     = "what was my last hop?" → from n-1 or n-2. Two doors.
-1. STATE       = fib(n)  → the n-th Fibonacci number
-2. TRANSITION  = fib(n-1) + fib(n-2)
+0. FULCRUM     = the last hop came from n-1 or from n-2
+1. STATE       = fib(n) is the n-th Fibonacci number
+2. TRANSITION  = fib(n) = fib(n-1) + fib(n-2)
 3. BASE CASE   = if n <= 2: return 1
-4. TERMINATION = the top-level call fib(n) — the value you actually asked for
+4. TERMINATION = call fib(n), the number you asked for
 ```
 
 We keep the blueprint. We just need to stop REDOING work.

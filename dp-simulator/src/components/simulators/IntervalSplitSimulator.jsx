@@ -29,7 +29,7 @@ export default function IntervalSplitSimulator({ input }) {
       k: null,
       val: 0,
       line: 3,
-      desc: 'Base cases: dp[i][i] = 0 for single matrices (no multiplication cost).',
+      desc: 'A single matrix needs no multiplying, so every diagonal cell dp[i][i] = 0. Next we solve short chains first, because every longer chain is built from shorter ones.',
       tableSnapshot: dp.map(row => [...row]),
       splitSnapshot: split.map(row => [...row]),
       activeCandidates: []
@@ -70,7 +70,7 @@ export default function IntervalSplitSimulator({ input }) {
           k: bestK,
           val: minCost,
           line: 7,
-          desc: `Chain [${i}..${j}] (len=${len}): Best split at k=${bestK} gives min scalar ops = ${minCost.toLocaleString()}`,
+          desc: `Chain A${i}..A${j}: try every place to do the LAST multiplication. Cheapest is to split after A${bestK}: cost of A${i}..A${bestK} (${dp[i][bestK].toLocaleString()}) + cost of A${bestK + 1}..A${j} (${dp[bestK + 1][j].toLocaleString()}) + the final multiply ${dims[i - 1]}×${dims[bestK]}×${dims[j]} = ${minCost.toLocaleString()}.${i === 1 && j === n ? ' This is the whole chain, so it is the answer.' : ''}`,
           tableSnapshot: dp.map(row => [...row]),
           splitSnapshot: split.map(row => [...row]),
           activeCandidates: candidates
@@ -156,9 +156,10 @@ export default function IntervalSplitSimulator({ input }) {
         <div className="lg:col-span-7 space-y-4">
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg">
             <div className="flex items-center justify-between text-xs mb-3 font-semibold text-slate-300">
-              <span>Upper-Triangular Cost Table: dp[i][j] (Diagonal Order)</span>
+              <span>Table: dp[i][j] = fewest multiplications to combine A{'{i}'}..A{'{j}'}</span>
               <span className="text-[11px] font-mono text-rose-400">Step {currentStepIndex + 1} / {steps.length}</span>
             </div>
+            <p className="mb-3 text-xs text-slate-200">{activeStep.desc}</p>
 
             {/* 2D Upper-Triangular Table */}
             <div className="overflow-x-auto pb-2">
@@ -224,8 +225,8 @@ export default function IntervalSplitSimulator({ input }) {
             {activeStep.activeCandidates && activeStep.activeCandidates.length > 0 && (
               <div className="mt-3 pt-3 border-t border-slate-800 space-y-2">
                 <div className="text-[11px] font-bold text-slate-300 flex items-center justify-between">
-                  <span>Evaluating Split Points k for range [{activeStep.i}..{activeStep.j}]:</span>
-                  <span className="text-[10px] text-rose-400 font-mono">min_k (dp[i][k] + dp[k+1][j] + cost)</span>
+                  <span>Where to make the last multiplication for A{activeStep.i}..A{activeStep.j}:</span>
+                  <span className="text-[10px] text-rose-400 font-mono">left part + right part + final multiply</span>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
                   {activeStep.activeCandidates.map(c => {
@@ -240,14 +241,14 @@ export default function IntervalSplitSimulator({ input }) {
                         }`}
                       >
                         <div className="flex items-center justify-between font-mono font-bold">
-                          <span>Split k = {c.k}</span>
+                          <span>Split after A{c.k}</span>
                           {isWinner && <span className="text-[9px] bg-rose-500 text-slate-950 px-1.5 py-0.2 rounded font-extrabold">BEST</span>}
                         </div>
                         <div className="text-[10px] text-slate-400 mt-1 font-mono">
                           {c.leftCost} + {c.rightCost} + {c.multCost}
                         </div>
                         <div className="text-sm font-bold text-white mt-0.5">
-                          = {c.total.toLocaleString()} ops
+                          = {c.total.toLocaleString()} multiplications
                         </div>
                       </div>
                     );
@@ -259,15 +260,15 @@ export default function IntervalSplitSimulator({ input }) {
             {/* Optimal Parenthesization Output */}
             <div className="mt-4 p-3 bg-slate-950 rounded-xl border border-slate-800/80 flex items-center justify-between">
               <div>
-                <div className="text-[10px] text-slate-500 uppercase tracking-wider font-mono">Optimal Parenthesization</div>
+                <div className="text-[10px] text-slate-500 uppercase tracking-wider font-mono">Best bracket order (so far)</div>
                 <div className="text-sm font-bold text-emerald-400 font-mono mt-0.5">
                   {getParentheses(1, n, activeStep.splitSnapshot)}
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-[10px] text-slate-500 uppercase tracking-wider font-mono">Total Mult Cost</div>
+                <div className="text-[10px] text-slate-500 uppercase tracking-wider font-mono">Total multiplications</div>
                 <div className="text-base font-extrabold text-rose-300 font-mono">
-                  {n === 1 || activeStep.tableSnapshot[1][n] > 0 ? `${activeStep.tableSnapshot[1][n].toLocaleString()} ops` : 'Computing...'}
+                  {n === 1 || activeStep.tableSnapshot[1][n] > 0 ? activeStep.tableSnapshot[1][n].toLocaleString() : 'Computing...'}
                 </div>
               </div>
             </div>

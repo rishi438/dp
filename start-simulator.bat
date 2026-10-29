@@ -1,5 +1,5 @@
 @echo off
 cd /d "%~dp0dp-simulator"
 echo Starting DP Academy and the Python/Rust runner...
-echo Open http://127.0.0.1:5173
+echo Open http://127.0.0.1:6179
 call npm run dev

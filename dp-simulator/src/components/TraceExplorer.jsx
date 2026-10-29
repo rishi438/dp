@@ -185,6 +185,7 @@ export default function TraceExplorer({ problem, input, initialSize = 'input', c
   const [cacheEnabled, setCacheEnabled] = useState(false);
   const [toolsOpen, setToolsOpen] = useState(false);
   const [cachePosition, setCachePosition] = useState({ x: 12, y: 12 });
+  const expandedState = useState(false);
   const examples = useMemo(() => treeExamples(problem), [problem]);
   const selectedInput = size === 'input' ? input : examples[size];
   const toolbar = <div className="workspace-toolbar">
@@ -197,12 +198,12 @@ export default function TraceExplorer({ problem, input, initialSize = 'input', c
   </div>;
 
   return <div className="space-y-4">
-    <TracePlayback key={`${problem.id}:${size}:${cacheEnabled}:${JSON.stringify(selectedInput)}`} problem={problem} input={selectedInput} memoized={cacheEnabled} smallTree={size === 'small'} codeTarget={codeTarget} codeVisible={codeVisible} active={active} inlineToolbar={toolbar} toolsOpen={toolsOpen} onToggleTools={() => setToolsOpen(value => !value)} cacheControl={<CacheSwitch enabled={cacheEnabled} onToggle={() => setCacheEnabled(value => !value)} position={cachePosition} setPosition={setCachePosition} />} />
+    <TracePlayback key={`${problem.id}:${size}:${cacheEnabled}:${JSON.stringify(selectedInput)}`} problem={problem} input={selectedInput} memoized={cacheEnabled} expandedState={expandedState} smallTree={size === 'small'} codeTarget={codeTarget} codeVisible={codeVisible} active={active} inlineToolbar={toolbar} toolsOpen={toolsOpen} onToggleTools={() => setToolsOpen(value => !value)} cacheControl={<CacheSwitch enabled={cacheEnabled} onToggle={() => setCacheEnabled(value => !value)} position={cachePosition} setPosition={setCachePosition} />} />
   </div>;
 }
 
-function TracePlayback({ problem, input, memoized, smallTree, codeTarget, codeVisible, active, inlineToolbar, cacheControl, toolsOpen, onToggleTools }) {
-  const expansion = useExpandedPanel();
+function TracePlayback({ problem, input, memoized, expandedState, smallTree, codeTarget, codeVisible, active, inlineToolbar, cacheControl, toolsOpen, onToggleTools }) {
+  const expansion = useExpandedPanel(expandedState);
   const trace = useMemo(() => codeStepTrace(problem, runTrace(problem, input, { memoized }), memoized), [problem, input, memoized]);
   const alternate = useMemo(() => runTrace(problem, input, { memoized: !memoized }), [problem, input, memoized]);
   const playback = usePlayback(trace.events.length);
@@ -237,7 +238,7 @@ function TracePlayback({ problem, input, memoized, smallTree, codeTarget, codeVi
     <span>Step {playback.step + 1} / {trace.events.length}</span>
     <button disabled={needsPrediction || playback.step === trace.events.length - 1} onClick={() => { playback.seek(playback.step + 1); setFeedback(''); }} aria-label="Next step"><ChevronRight size={18} /></button>
   </div> : <Playback compact playback={playback} length={trace.events.length} />;
-  const status = <div className="event-banner" aria-live="polite"><strong>{event.message} {event.kind !== 'answer' && event.key}</strong>{event.value !== undefined && <span> → {needsPrediction ? '?' : displayValue(event.value)}</span>}</div>;
+  const status = <div className="event-banner" aria-live="polite"><strong>{event.message}</strong>{event.value !== undefined && <span> → {needsPrediction ? '?' : displayValue(event.value)}</span>}</div>;
 
   const simulationColumns = () => <div className={`walkthrough-columns ${externalCode ? 'simulation-only' : ''}`}><div className="simulation-column">
     {isStaircase && view === 'stairs' ? <FlowVisualizer cacheControl={<>{cacheControl}{tools}</>} playbackControls={controls} expanded={expansion.expanded} onExpand={expansion.toggle} problem={{ id: 'stairs', hops: input.hops }} n={input.n} currentStep={event.state[0] ?? input.n} dpResults={stairCells} computedStates={computedStates} terminationIndex={input.n} onSelectStep={i => { if (predict) return; const index = trace.events.findIndex(e => e.state[0] === i); if (index >= 0) playback.seek(index); }} /> : <CallGraph cacheControl={<>{cacheControl}{tools}</>} playbackControls={controls} trace={trace} event={event} revealed={!needsPrediction} eventIndex={playback.step} smallTree={smallTree} expanded={expansion.expanded} onExpand={expansion.toggle} />}

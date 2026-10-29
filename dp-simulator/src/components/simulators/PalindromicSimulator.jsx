@@ -30,10 +30,10 @@ export default function PalindromicSimulator({ input }) {
       len: 1,
       charI: s[0],
       charJ: s[0],
-      match: true,
+      match: false,
       val: 1,
-      line: 3,
-      desc: 'Base cases: dp[i][i] = 1 for all individual characters (length 1).',
+      line: 4,
+      desc: 'A single letter reads the same both ways, so it is a palindrome of length 1. Every diagonal cell dp[i][i] = 1. Next we grow to longer pieces, shortest first.',
       tableSnapshot: dp.map(row => [...row])
     });
 
@@ -46,15 +46,14 @@ export default function PalindromicSimulator({ input }) {
         const match = charI === charJ;
 
         let val = 0;
-        let line = 6;
+        let line = 11;
         if (match) {
           val = (len === 2 ? 2 : 2 + dp[i + 1][j - 1]);
           dp[i][j] = val;
-          line = 7;
+          line = 9;
         } else {
           val = Math.max(dp[i + 1][j], dp[i][j - 1]);
           dp[i][j] = val;
-          line = 9;
         }
 
         allSteps.push({
@@ -70,9 +69,10 @@ export default function PalindromicSimulator({ input }) {
           prevInner: len > 2 ? dp[i + 1][j - 1] : 0,
           downVal: dp[i + 1][j],
           leftVal: dp[i][j - 1],
-          desc: match
-            ? `Match '${charI}' == '${charJ}' at [${i}, ${j}]: dp[${i}][${j}] = 2 + dp[${i+1}][${j-1}] = ${val}`
-            : `Mismatch '${charI}' ≠ '${charJ}' at [${i}, ${j}]: max(dp[${i+1}][${j}], dp[${i}][${j-1}]) = ${val}`,
+          desc: (match
+            ? `"${s.slice(i, j + 1)}" starts and ends with '${charI}'. Wrap those two letters around the best palindrome inside${len === 2 ? ' (nothing is inside)' : ` "${s.slice(i + 1, j)}"`}: 2 + ${len === 2 ? 0 : dp[i + 1][j - 1]} = ${val}.`
+            : `"${s.slice(i, j + 1)}" starts with '${charI}' but ends with '${charJ}'. They cannot both be used, so drop one end and keep the better: drop '${charI}' → ${dp[i + 1][j]}, drop '${charJ}' → ${dp[i][j - 1]}. Best = ${val}.`)
+            + (i === 0 && j === n - 1 ? ' This is the whole string, so it is the answer.' : ''),
           tableSnapshot: dp.map(row => [...row])
         });
       }
@@ -190,7 +190,7 @@ export default function PalindromicSimulator({ input }) {
           {/* Active String Pointers Ribbon */}
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg">
             <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
-              <span className="font-semibold text-slate-300">String Boundary Inspector s[i..j]</span>
+              <span className="font-semibold text-slate-300">Piece of the string being checked: s[i..j]</span>
               <span className="font-mono text-fuchsia-400">Length = {activeStep.len}</span>
             </div>
 
@@ -229,13 +229,13 @@ export default function PalindromicSimulator({ input }) {
             <div className="mt-3 p-3 bg-slate-950 rounded-xl border border-slate-800/80 text-xs">
               <div className="flex items-center justify-between">
                 <span className="font-semibold text-white">{activeStep.desc}</span>
-                {activeStep.match ? (
+                {activeStep.type === 'base' ? null : activeStep.match ? (
                   <span className="px-2 py-0.5 bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-[10px] font-extrabold rounded-md uppercase tracking-wider">
-                    Match! +2 Outer
+                    Ends match: +2
                   </span>
                 ) : (
                   <span className="px-2 py-0.5 bg-amber-500/20 border border-amber-500/40 text-amber-300 text-[10px] font-extrabold rounded-md uppercase tracking-wider">
-                    Take Max Neighbor
+                    Ends differ: drop one
                   </span>
                 )}
               </div>
@@ -245,8 +245,8 @@ export default function PalindromicSimulator({ input }) {
           {/* 2D DP Table */}
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg">
             <div className="text-xs font-bold text-slate-300 mb-2 flex items-center justify-between">
-              <span>2D Tabulation Table: dp[i][j]</span>
-              <span className="text-[11px] font-mono text-slate-400">LPS Length: <span className="text-fuchsia-400 font-bold">{finalDp[0][n - 1]}</span></span>
+              <span>Table: dp[i][j] = longest palindrome you can pick from s[i..j]</span>
+              <span className="text-[11px] font-mono text-slate-400">Answer (top-right cell): <span className="text-fuchsia-400 font-bold">{currentStepIndex === steps.length - 1 ? finalDp[0][n - 1] : '?'}</span></span>
             </div>
 
             <div className="overflow-x-auto">
@@ -306,15 +306,15 @@ export default function PalindromicSimulator({ input }) {
             {/* Reconstructed Palindrome Banner */}
             <div className="mt-3 p-3 bg-slate-950 border border-slate-800 rounded-xl flex items-center justify-between">
               <div>
-                <div className="text-[10px] text-slate-500 uppercase tracking-wider font-mono">Longest Palindromic Subsequence</div>
+                <div className="text-[10px] text-slate-500 uppercase tracking-wider font-mono">One longest palindrome</div>
                 <div className="text-base font-extrabold text-emerald-400 font-mono tracking-widest mt-0.5">
-                  "{lpsResult}"
+                  {currentStepIndex === steps.length - 1 ? `"${lpsResult}"` : 'Finish the table to see it'}
                 </div>
               </div>
               <div className="text-right">
                 <div className="text-[10px] text-slate-500 uppercase tracking-wider font-mono">Length</div>
                 <div className="text-base font-black text-fuchsia-300 font-mono">
-                  {lpsResult.length} chars
+                  {currentStepIndex === steps.length - 1 ? `${lpsResult.length} chars` : '?'}
                 </div>
               </div>
             </div>

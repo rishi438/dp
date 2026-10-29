@@ -37,7 +37,9 @@ For the complete strings, return `dp[len(a)][len(b)]`. Here it is **3**, for `"a
 ---
 
 <details>
-<summary>More detail and extra examples (optional)</summary>
+<summary>More detail</summary>
+
+> **Words used below:** **fulcrum** = the last move or decision that led here · **door** = one possible last move (a smaller state you could have come from) · **termination** (slot 4) = which dp value answers the question.
 
 # Chapter 7 · 01 — Story: The Twin Scribes
 

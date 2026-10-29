@@ -33,8 +33,8 @@ export default function ProbabilityDPSimulator({ input }) {
       k: 0,
       board: currentBoard.map(row => [...row]),
       totalProb: 1.0,
-      line: 3,
-      desc: `Step 0: Knight starts at (${startRow}, ${startCol}) with 100% probability.`
+      lines: { python: [3], rust: [3, 4] },
+      desc: `Before any move the knight is certainly on square (${startRow}, ${startCol}): that square holds 100%, every other square 0%.`
     });
 
     for (let step = 1; step <= maxK; step++) {
@@ -62,12 +62,13 @@ export default function ProbabilityDPSimulator({ input }) {
         }
       }
 
+      const lost = history[history.length - 1].totalProb - totalProb;
       history.push({
         k: step,
         board: nextBoard.map(row => [...row]),
         totalProb,
-        line: 8,
-        desc: `Move ${step}: Knight makes random jump. Total survival probability = ${(totalProb * 100).toFixed(2)}%. (${((1 - totalProb) * 100).toFixed(2)}% fell off board).`
+        lines: step === maxK ? { python: [12, 14], rust: [14, 22] } : { python: [12], rust: [14] },
+        desc: `Move ${step}: from every square, the knight picks one of its 8 jumps, each with chance 1/8. So each square's chance is split into 8 equal parts and sent to the landing squares; parts that land on the same square are added. Parts that jump off the board are lost (${(lost * 100).toFixed(2)}% this move). Still on the board: ${(totalProb * 100).toFixed(2)}%.${step === maxK ? ' That is the answer: the chance the knight is still on the board after all moves.' : ''}`
       });
 
       currentBoard = nextBoard;
@@ -156,7 +157,7 @@ export default function ProbabilityDPSimulator({ input }) {
         <div className="lg:col-span-7 space-y-4">
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg">
             <div className="flex items-center justify-between text-xs mb-3 text-slate-400">
-              <span className="font-semibold text-slate-300">5×5 Chessboard Probability Heatmap</span>
+              <span className="font-semibold text-slate-300">{boardSize}×{boardSize} board: chance the knight is on each square</span>
               <span className="font-mono text-sky-400">Move {currentK} / {maxK}</span>
             </div>
 
@@ -197,7 +198,7 @@ export default function ProbabilityDPSimulator({ input }) {
               <div className="flex items-center justify-between text-xs">
                 <span className="font-semibold text-slate-300 flex items-center gap-1.5">
                   <Shield className="w-3.5 h-3.5 text-sky-400" />
-                  <span>Survival Probability on Board:</span>
+                  <span>Chance still on the board:</span>
                 </span>
                 <span className="font-mono font-extrabold text-sky-400 text-sm">
                   {(active.totalProb * 100).toFixed(2)}%
@@ -246,7 +247,7 @@ export default function ProbabilityDPSimulator({ input }) {
 
           <div className="p-3 bg-slate-950/90 font-mono text-[11px] leading-relaxed flex-1 overflow-x-auto">
             {(activeLang === 'python' ? pythonCode : rustCode).map((line) => {
-              const isHighlight = line.num === active.line;
+              const isHighlight = active.lines[activeLang].includes(line.num);
               return (
                 <div
                   key={line.num}

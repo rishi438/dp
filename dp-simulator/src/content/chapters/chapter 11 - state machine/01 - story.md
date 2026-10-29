@@ -38,7 +38,11 @@ new rest = max(rest, sold)         # keep waiting or finish cooldown
 
 There is no direct step from yesterday's `sold` to today's `hold`. That enforces the waiting day.
 
-On day 0, `hold = -1`, `rest = 0`, and `sold` is impossible. Mark it with `-inf`, a value smaller than any real cash balance.
+On day 0 there is no yesterday, so set the values directly:
+
+- `hold = -1`: the only way to own a share on day 0 is to buy it at price 1.
+- `rest = 0`: you did nothing, so your cash is 0.
+- `sold` is impossible: you owned nothing before today. Mark it with `-inf`, a value smaller than any real cash balance, so it is never chosen.
 
 At the end, return `max(sold, rest)`: **3**. These are the situations where no share remains unsold.
 
@@ -48,7 +52,9 @@ At the end, return `max(sold, rest)`: **3**. These are the situations where no s
 ---
 
 <details>
-<summary>More detail and extra examples (optional)</summary>
+<summary>More detail</summary>
+
+> **Words used below:** **fulcrum** = the last move or decision that led here · **door** = one possible last move (a smaller state you could have come from) · **termination** (slot 4) = which dp value answers the question.
 
 # Chapter 11 · 01 — Story: Modus, the Mask-Wearer
 
@@ -163,11 +169,11 @@ this time you paid on the left factor.
 ## The Five Slots for this family
 
 ```
-0. FULCRUM      which mask was I wearing yesterday, and what move landed me here?
+0. FULCRUM      Which mask did I wear yesterday, and what move got me here?
 1. STATE        dp[i][m] = best profit on day i while wearing mask m
-2. TRANSITION   one line per mask, copied straight off the diagram
-3. BASE CASE    day 0 for EACH mask, derived separately — three derivations
-4. TERMINATION  max over masks that are legal to END on
+2. TRANSITION   one line per mask, read straight from the diagram
+3. BASE CASE    day 0 for EACH mask, worked out one at a time (three base cases)
+4. TERMINATION  max over the masks you are allowed to finish in
 ```
 
 Slot 3 is where you will bleed. You now have **three base cases, not one**, and

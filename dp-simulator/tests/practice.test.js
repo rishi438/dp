@@ -101,8 +101,8 @@ test('API rejects remote origins, invalid IDs and malformed JSON', async () => {
   try {
     const request = (origin, body) => fetch(url, { method: 'POST', headers: { origin, 'content-type': 'application/json' }, body });
     assert.equal((await request('http://example.com', '{}')).status, 403);
-    assert.equal((await request('http://127.0.0.1:5173', '{')).status, 400);
-    assert.equal((await request('http://127.0.0.1:5173', JSON.stringify({ problemId: 'missing', language: 'python', body: 'pass' }))).status, 400);
-    assert.equal((await request('http://127.0.0.1:5173', 'x'.repeat(70000))).status, 413);
+    assert.equal((await request('http://127.0.0.1:6179', '{')).status, 400);
+    assert.equal((await request('http://127.0.0.1:6179', JSON.stringify({ problemId: 'missing', language: 'python', body: 'pass' }))).status, 400);
+    assert.equal((await request('http://127.0.0.1:6179', 'x'.repeat(70000))).status, 413);
   } finally { server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); }
 });

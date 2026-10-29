@@ -67,6 +67,13 @@ export default function KadaneSimulator({ input }) {
   const playback = useAutoplay({ playing: isPlaying, step: currentIdx, last: nums.length - 1, speed, setSpeed, onStep: setCurrentIdx, onStop: setIsPlaying });
 
   const activeItem = kadaneData.table[currentIdx] || kadaneData.table[0];
+  const prevDp = currentIdx > 0 ? kadaneData.table[currentIdx - 1].dp : null;
+  const isLast = currentIdx === nums.length - 1;
+  const explanation = currentIdx === 0
+    ? `Base case: a run must contain at least one number, so the only run ending at index 0 is [${activeItem.num}]. dp[0] = ${activeItem.num} (not 0, which would be an empty run).`
+    : activeItem.door === 'extend'
+    ? `The run ending at i-1 has sum ${prevDp}${prevDp >= 0 ? ', which is not negative, so adding it helps' : ', but adding it still beats starting alone'}: ${prevDp} + ${activeItem.num} = ${activeItem.extendVal}.`
+    : `The run ending at i-1 has sum ${prevDp}, which is negative. Carrying it would only lower the total, so start a new run at ${activeItem.num}.`;
 
   return (
     <div className="space-y-4">
@@ -143,7 +150,7 @@ export default function KadaneSimulator({ input }) {
                   )}
                 </div>
                 <p className="text-[11px] text-slate-400">
-                  Keep carrying momentum: <code className="font-mono">dp[i-1] + nums[i]</code>
+                  Add this number to the run ending just before: <code className="font-mono">dp[i-1] + nums[i]</code>
                 </p>
                 <div className="font-mono font-bold text-xs pt-1">
                   {currentIdx > 0 ? `${kadaneData.table[currentIdx - 1].dp} + (${activeItem.num}) = ${activeItem.extendVal}` : 'N/A (first)'}
@@ -165,13 +172,17 @@ export default function KadaneSimulator({ input }) {
                   )}
                 </div>
                 <p className="text-[11px] text-slate-400">
-                  Drop dead weight (prev streak was negative): <code className="font-mono">nums[i]</code>
+                  Begin a new run with only this number: <code className="font-mono">nums[i]</code>
                 </p>
                 <div className="font-mono font-bold text-xs pt-1">
                   Value = {activeItem.freshVal}
                 </div>
               </div>
             </div>
+            <p className="text-xs text-slate-200">
+              {explanation}
+              {isLast && <strong className="text-amber-300"> The best run can end anywhere, so the answer is the largest dp value: {activeItem.maxSoFar}.</strong>}
+            </p>
           </div>
 
           {/* Numbers Array with Active Streak Highlight */}
@@ -233,11 +244,11 @@ export default function KadaneSimulator({ input }) {
                 max_sum = nums[0]  # Global peak
               </div>
               <div className="pl-4 text-slate-500">for x in nums[1:]:</div>
-              <div className={`pl-8 py-0.5 rounded ${currentIdx > 0 && currentIdx < nums.length - 1 ? 'bg-orange-950/70 border-l-2 border-orange-400 text-orange-200' : ''}`}>
-                cur_sum = max(x, cur_sum + x)  # 2 DOORS!
+              <div className={`pl-8 py-0.5 rounded ${currentIdx > 0 ? 'bg-orange-950/70 border-l-2 border-orange-400 text-orange-200' : ''}`}>
+                cur_sum = max(x, cur_sum + x)  # extend or start new
               </div>
-              <div className={`pl-8 py-0.5 rounded ${currentIdx > 0 && currentIdx < nums.length - 1 ? 'bg-orange-950/70 border-l-2 border-orange-400 text-orange-200' : ''}`}>
-                max_sum = max(max_sum, cur_sum)  # FREE ENDPOINT!
+              <div className={`pl-8 py-0.5 rounded ${currentIdx > 0 ? 'bg-orange-950/70 border-l-2 border-orange-400 text-orange-200' : ''}`}>
+                max_sum = max(max_sum, cur_sum)  # run may end here
               </div>
               <div className={`pl-4 py-0.5 rounded ${currentIdx === nums.length - 1 ? 'bg-amber-950/70 border-l-2 border-amber-400 text-amber-200' : ''}`}>
                 return max_sum  # Answer is max(dp)
@@ -247,7 +258,7 @@ export default function KadaneSimulator({ input }) {
 
           <div className="mt-4 p-2.5 bg-slate-900 rounded-lg border border-slate-800 font-sans text-xs text-slate-300">
             <strong className="text-orange-400 block mb-1">Kade's Lesson:</strong>
-            "If your previous streak dropped below 0, carrying it only hurts you. Drop it and start fresh! And because the optimal streak can end at ANY index, the answer is always <code className="text-amber-300">max(dp)</code>."
+            If the run before you has a negative sum, it only drags you down, so start fresh. The best run can end at ANY index, so the answer is <code className="text-amber-300">max(dp)</code>, not the last cell.
           </div>
         </div>
       </div>

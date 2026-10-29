@@ -32,7 +32,9 @@ Calculating a larger answer may ask for the same smaller answer several times. S
 ---
 
 <details>
-<summary>More detail and extra examples (optional)</summary>
+<summary>More detail</summary>
+
+> **Words used below:** **fulcrum** = the last move or decision that led here · **door** = one possible last move (a smaller state you could have come from) · **genie** = pretend the smaller answers are already known · **termination** (slot 4) = which dp value answers the question.
 
 # Chapter 0 · 01 — Story: The Ground Rules
 
@@ -104,38 +106,28 @@ Every DP problem — forever — is cracked by the same five slots, **in this
 order**. Each one *produces* the next:
 
 ```
-Forget the formula for a second. Picture standing at the edge of something —
-a cliff, an event horizon, step n of a staircase. You don't need to know the
-whole history of how you got there. You only need to know the ONE thing that
-happened an instant before "now".
+Example: you are on step n of a staircase. Each move is 1 step or 2 steps.
+How many different ways can you reach step n?
 
-0. FULCRUM       Freeze time one tick before you arrived. Ask only:
-                 "What was the last thing that happened?"
-                 That's it. You're not solving the problem — you're just
-                 listing the handful of ways "now" could have just happened.
-                 Standing on step n: you got here by a 1-hop, or a 2-hop.
-                 That's not a clue to the answer — IT IS the answer's shape.
-                        ↓ (you now have a short list — give it a label)
-1. STATE         Whatever sits one tick before "now", give it one short name
-                 so you stop re-describing it in full sentences.
-                 dp[i] = a label, nothing more — "the answer, as it stood
-                 right before this last moment."
-                        ↓ (swap the label back into the moment you froze)
-2. TRANSITION    Take the sentence from slot 0 and replace the words with
-                 the label from slot 1. You're not inventing anything new —
-                 you're just writing the SAME idea in shorthand.
-                 "got here from n-1, or from n-2" → dp[i] = dp[i-1] + dp[i-2]
-                        ↓ (every "before" needs its own "before" — until one doesn't)
-3. BASE CASE     Keep rewinding and eventually you hit a moment so small there's
-                 nothing before it to explain — you just KNOW the answer by
-                 looking at it. That's the floor. Without it, the chain of
-                 "ask the moment before" never stops; it free-falls forever.
-                        ↓ (the whole chain now computes — but WHERE do you look?)
-4. TERMINATION   You've built an answer for every single moment. Only one
-                 question is left: which of those moments is the one the
-                 world actually asked you about?
-                 The last one? The best one anywhere? Don't assume —
-                 the question itself always tells you where to look.
+0. FULCRUM       What was your LAST move?
+                 Either a 1-step (from n-1) or a 2-step (from n-2).
+                 Those are the only choices.
+
+1. STATE         Give the answer a short name.
+                 dp[i] = number of ways to reach step i.
+
+2. TRANSITION    Write slot 0 using that name.
+                 "came from i-1 or from i-2"  →  dp[i] = dp[i-1] + dp[i-2]
+
+3. BASE CASE     The smallest answer you already know.
+                 dp[0] = 1  (standing still at the bottom is one way)
+                 dp[1] = 1  (only one way: a single 1-step)
+                 Without this, the formula keeps going back forever.
+
+4. TERMINATION   Which dp value answers the question?
+                 The question asks about step n, so return dp[n].
+                 (In other problems it may be the max of all dp values —
+                 read the question to decide.)
 ```
 
 **Summary — a "slot" is just one numbered question in this fixed checklist:**

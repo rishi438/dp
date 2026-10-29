@@ -7,10 +7,10 @@ export default defineConfig({
     sourcemap: true
   },
   server: {
-    port: 5173,
+    port: 6179,
     host: '127.0.0.1',
     strictPort: true,
     open: false,
-    proxy: { '/api': 'http://127.0.0.1:4173' }
+    proxy: { '/api': 'http://127.0.0.1:9000' }
   }
 });

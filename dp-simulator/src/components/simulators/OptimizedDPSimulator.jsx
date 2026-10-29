@@ -33,7 +33,7 @@ export default function OptimizedDPSimulator({ input }) {
       evictedFront: null,
       evictedBack: [],
       line: 3,
-      desc: `Base step: dp[0] = nums[0] = ${nums[0]}. Deque initialized with index [0].`,
+      desc: `Start at index 0, so the score there is just nums[0] = ${nums[0]}. The helper list (deque) keeps the indices you could jump from, best score first. It starts with index 0.`,
       tableSnapshot: [...dp]
     });
 
@@ -64,8 +64,15 @@ export default function OptimizedDPSimulator({ input }) {
         frontMaxVal: bestVal,
         evictedFront,
         evictedBack,
-        line: 7,
-        desc: `Step ${i}: Front of deque is max dp[${bestIdx}] = ${bestVal}. dp[${i}] = nums[${i}] (${nums[i]}) + ${bestVal} = ${dp[i]}. Deque maintains decreasing order.`,
+        line: 6,
+        desc: [
+          `Index ${i}: you can arrive from the last ${k} indices (${Math.max(0, i - k)}..${i - 1}).`,
+          evictedFront !== null ? `Index ${evictedFront} is now too far back to jump from, so it leaves the front.` : '',
+          `The front of the list is always the best reachable score: dp[${bestIdx}] = ${bestVal}. So dp[${i}] = ${nums[i]} + ${bestVal} = ${dp[i]}. No need to scan all ${k}.`,
+          evictedBack.length ? `Index ${i} scores at least as much as ${evictedBack.join(', ')} and stays in range longer, so ${evictedBack.length === 1 ? 'that one can' : 'those can'} never be the best again: removed from the back.` : '',
+          `Index ${i} joins at the back.`,
+          i === n - 1 ? `This is the last index, so the answer is dp[${i}] = ${dp[i]}.` : '',
+        ].filter(Boolean).join(' '),
         tableSnapshot: [...dp]
       });
     }
@@ -122,7 +129,7 @@ export default function OptimizedDPSimulator({ input }) {
               <span className="text-xs text-slate-400 font-semibold">Swift the Deque Ronin</span>
             </div>
             <h2 className="text-base font-bold text-white tracking-tight">
-              Monotonic Deque DP · Jump Game VI Optimization
+              Faster DP · Jump Game VI with a "best first" helper list
             </h2>
           </div>
         </div>
@@ -140,11 +147,11 @@ export default function OptimizedDPSimulator({ input }) {
           {/* Array with Window */}
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg">
             <div className="flex items-center justify-between text-xs mb-3 text-slate-400">
-              <span className="font-semibold text-slate-300">Array & Jump Window [i - {k} .. i - 1]</span>
+              <span className="font-semibold text-slate-300">Scores so far. Blue = indices you can jump from (last {k})</span>
               <span className="font-mono text-yellow-400">Step {currentStepIndex + 1} / {steps.length}</span>
             </div>
 
-            <div className="grid grid-cols-6 gap-2">
+            <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${Math.min(n, 8)}, minmax(0, 1fr))` }}>
               {nums.map((num, idx) => {
                 const isCurrent = idx === activeStep.i;
                 const isInWindow = idx >= activeStep.i - k && idx < activeStep.i;
@@ -182,8 +189,8 @@ export default function OptimizedDPSimulator({ input }) {
             {/* Monotonic Deque Tube Visualization */}
             <div className="mt-4 p-4 bg-slate-950 border border-slate-800 rounded-xl">
               <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
-                <span className="font-semibold text-slate-300">Monotonic Decreasing Deque (Front = Maximum)</span>
-                <span className="text-[10px] font-mono text-emerald-400">O(1) lookup: q[0]</span>
+                <span className="font-semibold text-slate-300">Helper list after this step (deque): best score at the front</span>
+                <span className="text-[10px] font-mono text-emerald-400">best = front, read instantly</span>
               </div>
 
               <div className="flex items-center gap-2 p-2 bg-slate-900/80 border border-slate-800 rounded-lg min-h-[56px] overflow-x-auto">
@@ -211,13 +218,13 @@ export default function OptimizedDPSimulator({ input }) {
               <div className="mt-2 text-[11px] text-slate-400 flex items-center justify-between">
                 <span>
                   {activeStep.evictedFront !== null && (
-                    <span className="text-rose-400">Popped front idx {activeStep.evictedFront} (expired). </span>
+                    <span className="text-rose-400">Removed {activeStep.evictedFront} from the front (too far back). </span>
                   )}
                   {activeStep.evictedBack.length > 0 && (
-                    <span className="text-amber-400">Popped back {activeStep.evictedBack.length} smaller item(s).</span>
+                    <span className="text-amber-400">Removed {activeStep.evictedBack.join(', ')} from the back (never best again).</span>
                   )}
                 </span>
-                <span className="font-mono text-yellow-400 text-[10px]">Invariant: dp[q[i]] ≥ dp[q[i+1]]</span>
+                <span className="font-mono text-yellow-400 text-[10px]">Scores go down from front to back</span>
               </div>
             </div>
 
@@ -229,9 +236,9 @@ export default function OptimizedDPSimulator({ input }) {
             {/* Final Answer Banner */}
             <div className="mt-3 p-3 bg-slate-950 border border-slate-800 rounded-xl flex items-center justify-between">
               <div>
-                <div className="text-[10px] text-slate-500 uppercase tracking-wider font-mono">Max Result dp[N-1]</div>
+                <div className="text-[10px] text-slate-500 uppercase tracking-wider font-mono">Answer = score at the last index</div>
                 <div className="text-sm font-bold text-slate-200 font-mono mt-0.5">
-                  Optimal path score to end
+                  Best total landing on the end
                 </div>
               </div>
               <div className="text-right">

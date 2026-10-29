@@ -68,7 +68,9 @@ For a rolled grid or knapsack table, check whether each read needs an **old** or
 ---
 
 <details>
-<summary>More detail and extra examples (optional)</summary>
+<summary>More detail</summary>
+
+> **Words used below:** **Invariant Lens** = a 3-part check: true at the start (Initialization), stays true each step (Maintenance), gives the answer at the end (Termination) · **termination** (slot 4) = which dp value answers the question.
 
 # Chapter 4 · 02 — Worked Example: Rolling the Table Away
 

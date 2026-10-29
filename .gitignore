@@ -26,6 +26,9 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Saved reasoning database
+dp-simulator/data/
+
 # Environment files
 .env
 .env.local

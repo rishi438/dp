@@ -77,7 +77,9 @@ The loop visits each house once: `O(n)` time and `O(n)` table space.
 ---
 
 <details>
-<summary>More detail and extra examples (optional)</summary>
+<summary>More detail</summary>
+
+> **Words used below:** **fulcrum** = the last move or decision that led here · **door** = one possible last move (a smaller state you could have come from) · **Invariant Lens** = a 3-part check: true at the start (Initialization), stays true each step (Maintenance), gives the answer at the end (Termination) · **termination** (slot 4) = which dp value answers the question.
 
 # Chapter 3 · 02 — Worked Example: Flipping Top-Down Into Bottom-Up
 
@@ -178,7 +180,7 @@ the loop ascends, so both reads land on written cells. ✓
 0. FULCRUM     "What did I decide about the LAST house?"
                ROB it   → then house i-1 was forbidden, so I come from i-2
                SKIP it  → then I keep whatever I had at i-1
-               Two doors.
+               Two choices.
 
 1. STATE       dp[i] = the maximum loot considering houses 0..i
                (considering — not necessarily robbing house i)

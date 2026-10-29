@@ -34,7 +34,9 @@ Each position enters once and can be removed only once. We avoid scanning the en
 ---
 
 <details>
-<summary>More detail and extra examples (optional)</summary>
+<summary>More detail</summary>
+
+> **Words used below:** **fulcrum** = the last move or decision that led here · **door** = one possible last move (a smaller state you could have come from) · **Invariant Lens** = a 3-part check: true at the start (Initialization), stays true each step (Maintenance), gives the answer at the end (Termination) · **termination** (slot 4) = which dp value answers the question.
 
 # Chapter 18 · 01 — Story: Swift, the Deque Ronin
 
@@ -353,11 +355,11 @@ Ch 18  optimized DP            Jump Game VI   Swift the Deque Ronin
 **Every one of them asked the same five questions.**
 
 ```
-0. FULCRUM      What was the LAST decision that landed me here?  → the DOORS
-1. STATE        dp[...] = one English sentence
-2. TRANSITION   the fulcrum in symbols   (min/max = choose, + = combine)
-3. BASE CASE    DERIVE from the state sentence — NEVER copy
-4. TERMINATION  WHERE does the answer live?
+0. FULCRUM      What was the last choice that got me here?
+1. STATE        dp[...] = one plain sentence
+2. TRANSITION   build it from smaller answers  (min/max = pick one, + = add up)
+3. BASE CASE    work it out from the state sentence, don't copy it
+4. TERMINATION  which dp value answers the question?
 ```
 
 And every one of them was checked the same way:

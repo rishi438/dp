@@ -81,7 +81,7 @@ export const PRACTICE = [
   task('knapsack', 9, '0/1 Knapsack', [arg('weights', 'ints'), arg('values', 'ints'), arg('capacity', 'int')],
     'Return the maximum value within capacity. Each item can be selected at most once. Taking no items is allowed.',
     [{ weights: [1, 2, 3, 4], values: [2, 4, 7, 10], capacity: 5 }, { weights: [2], values: [7], capacity: 4 }, { weights: [], values: [], capacity: 0 }],
-    'best(i,w): best value using first i items within w', 'best(i,w) = max(skip item i, value[i] + take with reduced capacity)', (a, v) => {
+    'best(i,w): best value using first i items within w', 'best(i,w) = best(i-1,w) if weights[i-1] > w, else max(best(i-1,w), values[i-1] + best(i-1,w-weights[i-1])); best(0,w) = 0', (a, v) => {
       const go = (i, w) => v([i, w], () => !i ? 0 : Math.max(go(i - 1, w), w >= a.weights[i - 1] ? a.values[i - 1] + go(i - 1, w - a.weights[i - 1]) : -Infinity));
       return go(a.weights.length, a.capacity);
     }),
@@ -95,7 +95,7 @@ export const PRACTICE = [
   task('lis', 10, 'Longest increasing subsequence', [arg('nums', 'ints')],
     'Return the length of the longest strictly increasing subsequence. Equal values cannot extend it.',
     [{ nums: [10, 9, 2, 5, 3, 7, 101, 18] }, { nums: [2, 2, 2] }, { nums: [] }, { nums: [3, 2, 1] }],
-    'end(i): LIS length ending exactly at i', 'end(i) = 1 + max(end(j)) for j<i and nums[j]<nums[i]', (a, v) => {
+    'end(i): LIS length ending exactly at i', 'end(i) = 1 + max(0, end(j) for j<i with nums[j]<nums[i])', (a, v) => {
       const go = i => v([i], () => 1 + Math.max(0, ...a.nums.slice(0, i).map((x, j) => x < a.nums[i] ? go(j) : 0)));
       return Math.max(0, ...a.nums.map((_, i) => go(i)));
     }),

@@ -43,7 +43,9 @@ Return the answer for the entire chain: `dp[0][n - 1]`. Here it is **4,500**.
 ---
 
 <details>
-<summary>More detail and extra examples (optional)</summary>
+<summary>More detail</summary>
+
+> **Words used below:** **fulcrum** = the last move or decision that led here · **door** = one possible last move (a smaller state you could have come from) · **Invariant Lens** = a 3-part check: true at the start (Initialization), stays true each step (Maintenance), gives the answer at the end (Termination).
 
 # Chapter 12 · 01 — Story: Vale, the Splitter
 

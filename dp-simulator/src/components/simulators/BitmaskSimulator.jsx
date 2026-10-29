@@ -27,6 +27,7 @@ export default function BitmaskSimulator({ input }) {
     const dp = Array.from({ length: numMasks }, () => Array(n).fill(Infinity));
     const parent = Array.from({ length: numMasks }, () => Array(n).fill(-1));
     const allSteps = [];
+    const visitedList = mask => Array.from({ length: n }, (_, i) => i).filter(i => mask & (1 << i)).join(', ');
 
     // Base case: start at 0, mask = 1 (binary 0001)
     dp[1][0] = 0;
@@ -36,8 +37,8 @@ export default function BitmaskSimulator({ input }) {
       u: 0,
       cost: 0,
       prevCity: null,
-      line: 3,
-      desc: `Base case: dp[${'1'.padStart(n, '0')}][0] = 0. Starting at City 0.`,
+      lines: { python: [3], rust: [4] },
+      desc: `Start in City 0. Each bit says whether that city is visited; only City 0's bit is on (${'1'.padStart(n, '0')}). Distance so far: 0.`,
       tableSnapshot: dp.map(row => [...row])
     });
 
@@ -81,8 +82,8 @@ export default function BitmaskSimulator({ input }) {
               u,
               cost: minVal,
               prevCity: bestPrev,
-              line: 8,
-              desc: `Mask ${mask.toString(2).padStart(n, '0')} (size ${count}), end at City ${u}: min path via City ${bestPrev} = ${minVal} km.`,
+              lines: { python: [11], rust: [12] },
+              desc: `Visited cities {${visitedList(mask)}}, now standing in City ${u}. The city just before could be any other visited city. Cheapest is City ${bestPrev}: ${dp[prevMask][bestPrev]} + trip ${bestPrev}→${u} (${dist[bestPrev][u]}) = ${minVal}. Smaller sets are solved first, so those answers are ready.`,
               tableSnapshot: dp.map(row => [...row])
             });
           }
@@ -103,12 +104,12 @@ export default function BitmaskSimulator({ input }) {
 
     allSteps.push({
       mask: numMasks - 1,
-      maskStr: '1111',
+      maskStr: (numMasks - 1).toString(2),
       u: 0,
       cost: bestTour,
       prevCity: lastCity,
-      line: 11,
-      desc: `Full tour complete! Return to City 0 from City ${lastCity}: Total cost = ${bestTour} km.`,
+      lines: { python: [12], rust: [18] },
+      desc: `All cities visited. We still have to go home, so add the trip back to City 0 from each possible last city and keep the cheapest: from City ${lastCity}, ${dp[numMasks - 1][lastCity]} + ${dist[lastCity][0]} = ${bestTour}. This is the answer.`,
       tableSnapshot: dp.map(row => [...row])
     });
 
@@ -190,7 +191,7 @@ export default function BitmaskSimulator({ input }) {
           {/* Active Bitmask Register HUD */}
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg">
             <div className="text-xs font-bold text-slate-300 mb-3 flex items-center justify-between">
-              <span>Active Bitmask Register: 2^{n} = {1 << n} Subsets</span>
+              <span>Visited cities as bits (1 = visited). {1 << n} possible sets for {n} cities</span>
               <span className="text-[11px] font-mono text-violet-400">Step {currentStepIndex + 1} / {steps.length}</span>
             </div>
 
@@ -239,6 +240,9 @@ export default function BitmaskSimulator({ input }) {
                   const isPathEdge = (activeStep.u === u && activeStep.prevCity === v) ||
                                      (activeStep.u === v && activeStep.prevCity === u);
 
+                  const label = dist[u][v] === dist[v][u] ? String(dist[u][v]) : `${u}→${v} ${dist[u][v]} · ${v}→${u} ${dist[v][u]}`;
+                  const labelWidth = label.length * 6 + 10;
+
                   return (
                     <g key={`${u}-${v}`}>
                       <line
@@ -251,9 +255,9 @@ export default function BitmaskSimulator({ input }) {
                         strokeDasharray={isPathEdge ? 'none' : '4 4'}
                       />
                       <rect
-                        x={midX - 14}
+                        x={midX - labelWidth / 2}
                         y={midY - 8}
-                        width="28"
+                        width={labelWidth}
                         height="16"
                         fill="#090d16"
                         rx="4"
@@ -267,7 +271,7 @@ export default function BitmaskSimulator({ input }) {
                         fontSize="9"
                         fontFamily="monospace"
                       >
-                        {dist[u][v]}
+                        {label}
                       </text>
                     </g>
                   );
@@ -349,7 +353,7 @@ export default function BitmaskSimulator({ input }) {
 
           <div className="p-3 bg-slate-950/90 font-mono text-[11px] leading-relaxed flex-1 overflow-x-auto">
             {(activeLang === 'python' ? pythonCode : rustCode).map((line) => {
-              const isHighlight = line.num === activeStep.line;
+              const isHighlight = activeStep.lines[activeLang].includes(line.num);
               return (
                 <div
                   key={line.num}

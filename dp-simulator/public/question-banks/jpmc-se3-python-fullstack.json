@@ -1,0 +1,746 @@
+{
+  "format": "dp-question-bank/v1",
+  "title": "JPMC SE III · Python Full Stack (practice)",
+  "description": "Representative practice questions for a Software Engineer III Python full-stack loop: Python coding, Python internals, SQL, backend APIs, frontend, security, system design and behavioral. Modeled on commonly reported topics; not official or leaked questions.",
+  "questions": [
+    {
+      "id": "two-sum",
+      "title": "Two Sum",
+      "category": "Python coding",
+      "difficulty": "Easy",
+      "tags": ["hash map", "arrays"],
+      "prompt": "Given a list `nums` and an integer `target`, return the indices `[i, j]` (with `i < j`) of the two numbers that add up to `target`. Exactly one answer exists. Aim for **O(n)** time.",
+      "starter": "def two_sum(nums, target):\n    pass\n",
+      "tests": [
+        { "call": "two_sum([2, 7, 11, 15], 9)", "expected": "[0, 1]" },
+        { "call": "two_sum([3, 2, 4], 6)", "expected": "[1, 2]" },
+        { "call": "two_sum([3, 3], 6)", "expected": "[0, 1]" }
+      ],
+      "answer": "Walk the list once and remember each value's index in a dict. For each `x`, check whether `target - x` was already seen. One pass, **O(n)** time and **O(n)** space. Mention the brute force (O(n²)) first, then optimize.",
+      "solution": "def two_sum(nums, target):\n    seen = {}\n    for i, x in enumerate(nums):\n        if target - x in seen:\n            return [seen[target - x], i]\n        seen[x] = i\n"
+    },
+    {
+      "id": "valid-parentheses",
+      "title": "Valid Parentheses",
+      "category": "Python coding",
+      "difficulty": "Easy",
+      "tags": ["stack", "strings"],
+      "prompt": "Return `True` if the string of `()[]{}` brackets is balanced and correctly nested, else `False`. The empty string is valid.",
+      "starter": "def is_valid(s):\n    pass\n",
+      "tests": [
+        { "call": "is_valid('()[]{}')", "expected": "True" },
+        { "call": "is_valid('(]')", "expected": "False" },
+        { "call": "is_valid('([)]')", "expected": "False" },
+        { "call": "is_valid('{[]}')", "expected": "True" },
+        { "call": "is_valid('')", "expected": "True" },
+        { "call": "is_valid('((')", "expected": "False" }
+      ],
+      "answer": "Push opening brackets on a stack. On a closing bracket the top must be its partner, otherwise it is invalid. At the end the stack must be empty. **O(n)** time.",
+      "solution": "def is_valid(s):\n    pairs = {')': '(', ']': '[', '}': '{'}\n    stack = []\n    for ch in s:\n        if ch in pairs:\n            if not stack or stack.pop() != pairs[ch]:\n                return False\n        else:\n            stack.append(ch)\n    return not stack\n"
+    },
+    {
+      "id": "group-anagrams",
+      "title": "Group Anagrams",
+      "category": "Python coding",
+      "difficulty": "Medium",
+      "tags": ["hash map", "strings"],
+      "prompt": "Group words that are anagrams of each other. Return a list of groups (any order).",
+      "starter": "def group_anagrams(words):\n    pass\n",
+      "tests": [
+        { "call": "sorted(sorted(g) for g in group_anagrams(['eat', 'tea', 'tan', 'ate', 'nat', 'bat']))", "expected": "[['ate', 'eat', 'tea'], ['bat'], ['nat', 'tan']]" },
+        { "call": "group_anagrams([])", "expected": "[]" },
+        { "call": "group_anagrams(['a'])", "expected": "[['a']]" }
+      ],
+      "answer": "Use a key that is the same for all anagrams: the sorted letters (`''.join(sorted(w))`) or a 26-letter count tuple. Collect words in a `defaultdict(list)` by that key. Sorting key: **O(n · k log k)**; count key: **O(n · k)**.",
+      "solution": "from collections import defaultdict\n\ndef group_anagrams(words):\n    groups = defaultdict(list)\n    for w in words:\n        groups[''.join(sorted(w))].append(w)\n    return list(groups.values())\n"
+    },
+    {
+      "id": "merge-intervals",
+      "title": "Merge Intervals",
+      "category": "Python coding",
+      "difficulty": "Medium",
+      "tags": ["sorting", "intervals"],
+      "prompt": "Merge all overlapping intervals `[start, end]` and return them sorted by start. Touching intervals (`[1,4]` and `[4,5]`) merge.",
+      "starter": "def merge(intervals):\n    pass\n",
+      "tests": [
+        { "call": "merge([[1, 3], [2, 6], [8, 10], [15, 18]])", "expected": "[[1, 6], [8, 10], [15, 18]]" },
+        { "call": "merge([[1, 4], [4, 5]])", "expected": "[[1, 5]]" },
+        { "call": "merge([[1, 4], [0, 4]])", "expected": "[[0, 4]]" },
+        { "call": "merge([])", "expected": "[]" }
+      ],
+      "answer": "Sort by start. Keep a result list; if the next interval starts at or before the last end, extend the last end with `max`, otherwise append it. **O(n log n)** for the sort.",
+      "solution": "def merge(intervals):\n    result = []\n    for start, end in sorted(intervals):\n        if result and start <= result[-1][1]:\n            result[-1][1] = max(result[-1][1], end)\n        else:\n            result.append([start, end])\n    return result\n"
+    },
+    {
+      "id": "longest-substring",
+      "title": "Longest Substring Without Repeating Characters",
+      "category": "Python coding",
+      "difficulty": "Medium",
+      "tags": ["sliding window", "strings"],
+      "prompt": "Return the length of the longest substring with all distinct characters.",
+      "starter": "def length_of_longest_substring(s):\n    pass\n",
+      "tests": [
+        { "call": "length_of_longest_substring('abcabcbb')", "expected": "3" },
+        { "call": "length_of_longest_substring('bbbbb')", "expected": "1" },
+        { "call": "length_of_longest_substring('pwwkew')", "expected": "3" },
+        { "call": "length_of_longest_substring('')", "expected": "0" },
+        { "call": "length_of_longest_substring('abba')", "expected": "2" }
+      ],
+      "answer": "Sliding window: remember the last index of each character. When you see a repeat inside the window, move the left edge to one past its previous index (never backwards, see `'abba'`). Track the best window size. **O(n)**.",
+      "solution": "def length_of_longest_substring(s):\n    last = {}\n    left = best = 0\n    for right, ch in enumerate(s):\n        if ch in last and last[ch] >= left:\n            left = last[ch] + 1\n        last[ch] = right\n        best = max(best, right - left + 1)\n    return best\n"
+    },
+    {
+      "id": "top-k-frequent",
+      "title": "Top K Frequent Elements",
+      "category": "Python coding",
+      "difficulty": "Medium",
+      "tags": ["heap", "counter"],
+      "prompt": "Return the `k` most frequent values in `nums` (any order).",
+      "starter": "def top_k_frequent(nums, k):\n    pass\n",
+      "tests": [
+        { "call": "sorted(top_k_frequent([1, 1, 1, 2, 2, 3], 2))", "expected": "[1, 2]" },
+        { "call": "top_k_frequent([1], 1)", "expected": "[1]" },
+        { "call": "sorted(top_k_frequent([4, 4, 5, 5, 5, 6], 1))", "expected": "[5]" }
+      ],
+      "answer": "Count with `collections.Counter`, then take the top k with `most_common(k)` (heap, **O(n log k)**). Bucket sort by frequency gives **O(n)**: index buckets by count, read from the highest bucket down.",
+      "solution": "from collections import Counter\n\ndef top_k_frequent(nums, k):\n    return [value for value, _ in Counter(nums).most_common(k)]\n"
+    },
+    {
+      "id": "lru-cache",
+      "title": "Design an LRU Cache",
+      "category": "Python coding",
+      "difficulty": "Medium",
+      "tags": ["design", "ordered dict", "linked list"],
+      "prompt": "Implement `LRUCache(capacity)` with `get(key)` (return value or `-1`) and `put(key, value)`. Both must be **O(1)**. When full, evict the least recently used key. `get` counts as a use.",
+      "starter": "class LRUCache:\n    def __init__(self, capacity):\n        pass\n\n    def get(self, key):\n        pass\n\n    def put(self, key, value):\n        pass\n",
+      "tests": [
+        { "call": "(lambda c: [c.put(1, 1), c.put(2, 2), c.get(1), c.put(3, 3), c.get(2), c.put(4, 4), c.get(1), c.get(3), c.get(4)])(LRUCache(2))", "expected": "[None, None, 1, None, -1, None, -1, 3, 4]" },
+        { "call": "(lambda c: [c.put(1, 1), c.put(1, 10), c.get(1)])(LRUCache(1))", "expected": "[None, None, 10]" }
+      ],
+      "answer": "Use `collections.OrderedDict`: `move_to_end(key)` on every get/put and `popitem(last=False)` to evict the oldest. Interviewers often then ask for the manual version: a **hash map + doubly linked list** with sentinel head/tail nodes, so both lookup and reorder are O(1). Mention thread safety (a lock) if used across threads.",
+      "solution": "from collections import OrderedDict\n\nclass LRUCache:\n    def __init__(self, capacity):\n        self.capacity = capacity\n        self.data = OrderedDict()\n\n    def get(self, key):\n        if key not in self.data:\n            return -1\n        self.data.move_to_end(key)\n        return self.data[key]\n\n    def put(self, key, value):\n        self.data[key] = value\n        self.data.move_to_end(key)\n        if len(self.data) > self.capacity:\n            self.data.popitem(last=False)\n"
+    },
+    {
+      "id": "rate-limiter",
+      "title": "Sliding-Window Rate Limiter",
+      "category": "Python coding",
+      "difficulty": "Medium",
+      "tags": ["deque", "design", "APIs"],
+      "prompt": "Implement `RateLimiter(limit, window_seconds)` with `allow(timestamp) -> bool`. Allow a request if fewer than `limit` *accepted* requests happened in the last `window_seconds` (the window is `(timestamp - window_seconds, timestamp]`). Rejected requests are not recorded. Timestamps arrive in non-decreasing order.",
+      "starter": "class RateLimiter:\n    def __init__(self, limit, window_seconds):\n        pass\n\n    def allow(self, timestamp):\n        pass\n",
+      "tests": [
+        { "call": "(lambda r: [r.allow(t) for t in [1, 2, 3, 4, 11, 12]])(RateLimiter(3, 10))", "expected": "[True, True, True, False, True, True]" },
+        { "call": "(lambda r: [r.allow(t) for t in [5, 5, 6]])(RateLimiter(1, 1))", "expected": "[True, False, True]" }
+      ],
+      "answer": "Keep accepted timestamps in a `deque`. On each call drop timestamps `<= t - window` from the left, then accept if the deque is shorter than `limit`. Follow-ups: token bucket (smooth bursts, O(1) memory), per-user limits with a dict of deques, and a distributed version with **Redis** (`INCR` + `EXPIRE` for a fixed window, or a sorted set for a sliding window).",
+      "solution": "from collections import deque\n\nclass RateLimiter:\n    def __init__(self, limit, window_seconds):\n        self.limit = limit\n        self.window = window_seconds\n        self.accepted = deque()\n\n    def allow(self, timestamp):\n        while self.accepted and self.accepted[0] <= timestamp - self.window:\n            self.accepted.popleft()\n        if len(self.accepted) < self.limit:\n            self.accepted.append(timestamp)\n            return True\n        return False\n"
+    },
+    {
+      "id": "flatten-dict",
+      "title": "Flatten a Nested Dictionary",
+      "category": "Python coding",
+      "difficulty": "Easy",
+      "tags": ["recursion", "JSON"],
+      "prompt": "Flatten nested dicts into dotted keys: `{'b': {'c': 2}}` becomes `{'b.c': 2}`. An empty nested dict contributes nothing. Common when sending JSON config to a key/value store.",
+      "starter": "def flatten(data, prefix=''):\n    pass\n",
+      "tests": [
+        { "call": "flatten({'a': 1, 'b': {'c': 2, 'd': {'e': 3}}})", "expected": "{'a': 1, 'b.c': 2, 'b.d.e': 3}" },
+        { "call": "flatten({})", "expected": "{}" },
+        { "call": "flatten({'x': {}, 'y': [1, 2]})", "expected": "{'y': [1, 2]}" }
+      ],
+      "answer": "Recurse: for each key build `prefix + key`; if the value is a dict, recurse with that as the new prefix, otherwise store it. Mention recursion depth limits and an iterative stack version for very deep input.",
+      "solution": "def flatten(data, prefix=''):\n    out = {}\n    for key, value in data.items():\n        name = f'{prefix}.{key}' if prefix else str(key)\n        if isinstance(value, dict):\n            out.update(flatten(value, name))\n        else:\n            out[name] = value\n    return out\n"
+    },
+    {
+      "id": "count-calls-decorator",
+      "title": "Write a Decorator",
+      "category": "Python coding",
+      "difficulty": "Easy",
+      "tags": ["decorators", "functools"],
+      "prompt": "Write a decorator `count_calls` that counts how many times a function is called in an attribute `calls`, and keeps the original function's name and docstring.",
+      "starter": "def count_calls(func):\n    pass\n",
+      "tests": [
+        { "call": "(lambda f: (f(2), f(3), f.calls))(count_calls(lambda x: x * x))", "expected": "(4, 9, 2)" },
+        { "call": "count_calls(len).__name__", "expected": "'len'" }
+      ],
+      "answer": "A decorator is a function that takes a function and returns a wrapper. Use `functools.wraps` so `__name__`/`__doc__` are preserved (important for logging, Flask routes and debugging). Store state on the wrapper (`wrapper.calls`) or in a closure with `nonlocal`.",
+      "solution": "import functools\n\ndef count_calls(func):\n    @functools.wraps(func)\n    def wrapper(*args, **kwargs):\n        wrapper.calls += 1\n        return func(*args, **kwargs)\n    wrapper.calls = 0\n    return wrapper\n"
+    },
+    {
+      "id": "chunked-generator",
+      "title": "Generator: Read in Chunks",
+      "category": "Python coding",
+      "difficulty": "Easy",
+      "tags": ["generators", "iterators"],
+      "prompt": "Write a **generator** `chunked(iterable, size)` that yields lists of up to `size` items. It must work on any iterable (including huge files) without loading everything into memory.",
+      "starter": "def chunked(iterable, size):\n    pass\n",
+      "tests": [
+        { "call": "list(chunked(range(7), 3))", "expected": "[[0, 1, 2], [3, 4, 5], [6]]" },
+        { "call": "list(chunked([], 2))", "expected": "[]" },
+        { "call": "hasattr(chunked([1], 1), '__next__')", "expected": "True" }
+      ],
+      "answer": "Use `yield` so values are produced lazily. Build a batch, yield it when full, and yield the last partial batch. Alternative: `itertools.islice` in a loop. In Python 3.12+ `itertools.batched` does this (yields tuples).",
+      "solution": "def chunked(iterable, size):\n    batch = []\n    for item in iterable:\n        batch.append(item)\n        if len(batch) == size:\n            yield batch\n            batch = []\n    if batch:\n        yield batch\n"
+    },
+    {
+      "id": "log-status-counts",
+      "title": "Parse Access Logs",
+      "category": "Python coding",
+      "difficulty": "Easy",
+      "tags": ["parsing", "dict"],
+      "prompt": "Each log line ends with `\"<METHOD> <path> HTTP/1.1\" <status> <bytes>`. Return a dict of status code (as text) to count. Skip malformed lines.",
+      "starter": "def status_counts(lines):\n    pass\n",
+      "tests": [
+        { "call": "status_counts(['1.1.1.1 - - [x] \"GET / HTTP/1.1\" 200 10', '1.1.1.1 - - [x] \"POST /pay HTTP/1.1\" 500 0', 'garbage', '2.2.2.2 - - [x] \"GET /a HTTP/1.1\" 200 5'])", "expected": "{'200': 2, '500': 1}" },
+        { "call": "status_counts([])", "expected": "{}" }
+      ],
+      "answer": "Split from the right (`line.rsplit(' ', 2)`) to get status and size, validate the status is 3 digits, and count with a dict or `Counter`. For large files, stream line by line. A regex is fine too; say how you would handle bad lines (skip and count them, or log them).",
+      "solution": "from collections import Counter\n\ndef status_counts(lines):\n    counts = Counter()\n    for line in lines:\n        parts = line.rsplit(' ', 2)\n        if len(parts) == 3 and len(parts[1]) == 3 and parts[1].isdigit():\n            counts[parts[1]] += 1\n    return dict(counts)\n"
+    },
+    {
+      "id": "account-balances",
+      "title": "Net Balances from Transfers",
+      "category": "Python coding",
+      "difficulty": "Easy",
+      "tags": ["dict", "finance"],
+      "prompt": "Given transfers like `{'from': 'A', 'to': 'B', 'amount': 50}`, return each account's net balance (money in minus money out).",
+      "starter": "def final_balances(transfers):\n    pass\n",
+      "tests": [
+        { "call": "final_balances([{'from': 'A', 'to': 'B', 'amount': 50}, {'from': 'B', 'to': 'C', 'amount': 20}])", "expected": "{'A': -50, 'B': 30, 'C': 20}" },
+        { "call": "final_balances([])", "expected": "{}" }
+      ],
+      "answer": "One pass with `defaultdict(int)`: subtract from sender, add to receiver. Follow-ups they like in finance: use `decimal.Decimal` (never float) for money, validate negative/zero amounts, and make the operation atomic in a database transaction.",
+      "solution": "from collections import defaultdict\n\ndef final_balances(transfers):\n    balance = defaultdict(int)\n    for t in transfers:\n        balance[t['from']] -= t['amount']\n        balance[t['to']] += t['amount']\n    return dict(balance)\n"
+    },
+    {
+      "id": "gil-concurrency",
+      "title": "GIL, threads, processes and asyncio",
+      "category": "Python concepts",
+      "difficulty": "Medium",
+      "tags": ["GIL", "concurrency"],
+      "prompt": "What is the GIL? When would you use `threading`, `multiprocessing` and `asyncio`?",
+      "answer": "- **GIL**: in CPython only one thread executes Python bytecode at a time. Threads still help for **I/O-bound** work because the GIL is released while waiting on network/disk.\n- **threading / ThreadPoolExecutor**: many blocking I/O calls (HTTP, DB) with existing sync libraries.\n- **multiprocessing / ProcessPoolExecutor**: **CPU-bound** work (parsing, number crunching); separate processes each have their own GIL. Cost: process start-up and pickling data.\n- **asyncio**: thousands of concurrent I/O tasks on one thread with `async`/`await` (FastAPI, aiohttp). Never call blocking code inside a coroutine; offload it with `asyncio.to_thread`.\n- Note: Python 3.13 has an optional free-threaded (no-GIL) build, still experimental."
+    },
+    {
+      "id": "python-gotchas",
+      "title": "Mutable defaults, is vs ==, copy vs deepcopy",
+      "category": "Python concepts",
+      "difficulty": "Easy",
+      "tags": ["language"],
+      "prompt": "What does `def add(item, items=[])` do wrong? What is the difference between `is` and `==`, and between `copy` and `deepcopy`?",
+      "answer": "- Default values are evaluated **once** at definition time, so the same list is shared across calls. Use `items=None` then `items = [] if items is None else items`.\n- `==` compares values (`__eq__`); `is` compares identity (same object). Use `is` only for singletons like `None`.\n- `copy.copy` makes a new outer container that still points at the same inner objects; `copy.deepcopy` recursively copies everything."
+    },
+    {
+      "id": "python-oop-dunder",
+      "title": "Classes, dataclasses and dunder methods",
+      "category": "Python concepts",
+      "difficulty": "Medium",
+      "tags": ["OOP"],
+      "prompt": "Explain `@classmethod` vs `@staticmethod`, what `@dataclass` gives you, and what `__repr__`, `__eq__`, `__hash__` and `__enter__/__exit__` are for.",
+      "answer": "- `@classmethod` receives the class (`cls`); good for alternative constructors (`from_json`). `@staticmethod` receives nothing; a plain function grouped in the class.\n- `@dataclass` generates `__init__`, `__repr__`, `__eq__` (and ordering/frozen/hash options). Use `frozen=True` for immutable value objects.\n- `__repr__`: developer-readable text. `__eq__`/`__hash__`: equal objects must have equal hashes to work in sets/dict keys.\n- `__enter__`/`__exit__`: context managers (`with open(...)`, DB transactions, locks) that always clean up, even on exceptions. `contextlib.contextmanager` builds one from a generator."
+    },
+    {
+      "id": "sql-second-highest",
+      "title": "SQL: second-highest salary and top earners per department",
+      "category": "SQL",
+      "difficulty": "Medium",
+      "tags": ["window functions", "joins"],
+      "prompt": "Tables: `employee(id, name, salary, department_id)` and `department(id, name)`.\n1. Return the second-highest distinct salary (NULL if none).\n2. Return the top 2 earners in each department.",
+      "answer": "```sql\n-- 1\nSELECT MAX(salary) AS second_highest\nFROM employee\nWHERE salary < (SELECT MAX(salary) FROM employee);\n\n-- 2\nSELECT department, name, salary\nFROM (\n  SELECT d.name AS department, e.name, e.salary,\n         DENSE_RANK() OVER (PARTITION BY e.department_id ORDER BY e.salary DESC) AS rnk\n  FROM employee e\n  JOIN department d ON d.id = e.department_id\n) ranked\nWHERE rnk <= 2;\n```\nExplain `ROW_NUMBER` (no ties) vs `RANK` (gaps) vs `DENSE_RANK` (no gaps), and `INNER` vs `LEFT JOIN`."
+    },
+    {
+      "id": "db-transactions-indexes",
+      "title": "Indexes, ACID and isolation levels",
+      "category": "SQL",
+      "difficulty": "Medium",
+      "tags": ["databases"],
+      "prompt": "When does an index help or hurt? Explain ACID and transaction isolation levels with a banking example.",
+      "answer": "- **Index**: B-tree that speeds up `WHERE`, `JOIN` and `ORDER BY` on its columns; composite indexes follow the left-most prefix rule. Costs: slower writes and more storage; low-selectivity columns rarely benefit. Check with `EXPLAIN`.\n- **ACID**: Atomic (all or nothing transfer), Consistent (constraints hold), Isolated (concurrent transfers do not see half-done work), Durable (committed survives a crash).\n- **Isolation**: Read Uncommitted (dirty reads) < Read Committed (default in Postgres) < Repeatable Read < Serializable. For a balance update use `SELECT ... FOR UPDATE` or an atomic `UPDATE account SET balance = balance - :amt WHERE id = :id AND balance >= :amt` to avoid lost updates."
+    },
+    {
+      "id": "orm-n-plus-one",
+      "title": "ORM N+1 queries",
+      "category": "Backend",
+      "difficulty": "Medium",
+      "tags": ["Django", "SQLAlchemy", "performance"],
+      "prompt": "An endpoint listing 100 orders with their customer names makes 101 queries. Why, and how do you fix it in Django and SQLAlchemy?",
+      "answer": "Lazy loading fetches each order's customer in a separate query (1 + N). Fix by loading related rows up front:\n- Django: `Order.objects.select_related('customer')` (JOIN for FK/one-to-one), `prefetch_related('items')` (second query for many-to-many / reverse FK).\n- SQLAlchemy: `select(Order).options(joinedload(Order.customer))` or `selectinload(Order.items)`.\nDetect it with query logging, django-debug-toolbar, or a test asserting the query count."
+    },
+    {
+      "id": "rest-api-design",
+      "title": "Design a REST endpoint for payments",
+      "category": "Backend",
+      "difficulty": "Hard",
+      "tags": ["FastAPI", "REST", "idempotency"],
+      "prompt": "Design `POST /payments` and `GET /payments` (with pagination) in FastAPI or Flask. Cover validation, status codes, idempotency, and error handling.",
+      "answer": "```python\nfrom decimal import Decimal\nfrom fastapi import FastAPI, Header, HTTPException, Query\nfrom pydantic import BaseModel, Field\n\napp = FastAPI()\n\nclass PaymentIn(BaseModel):\n    from_account: str\n    to_account: str\n    amount: Decimal = Field(gt=0, max_digits=12, decimal_places=2)\n    currency: str = Field(pattern='^[A-Z]{3}$')\n\n@app.post('/payments', status_code=201)\ndef create_payment(body: PaymentIn, idempotency_key: str = Header(...)):\n    existing = repo.find_by_key(idempotency_key)\n    if existing:\n        return existing            # same request retried: same result, no double charge\n    if body.from_account == body.to_account:\n        raise HTTPException(422, 'Accounts must differ')\n    return service.transfer(body, idempotency_key)   # one DB transaction\n\n@app.get('/payments')\ndef list_payments(cursor: str | None = None, limit: int = Query(20, le=100)):\n    return repo.page(cursor, limit)  # {'items': [...], 'next_cursor': '...'}\n```\nPoints to say: `201` created, `400/422` validation, `401/403` auth, `404`, `409` conflict, `429` rate limit; **Idempotency-Key** for safe retries; cursor pagination over offset for large tables; `Decimal` for money; audit logging; never leak stack traces."
+    },
+    {
+      "id": "auth-security",
+      "title": "Authentication and web security",
+      "category": "Security",
+      "difficulty": "Medium",
+      "tags": ["JWT", "OAuth2", "OWASP"],
+      "prompt": "Compare session cookies and JWTs. How do OAuth2/OIDC fit in? How do you prevent XSS, CSRF and SQL injection?",
+      "answer": "- **Session cookie**: server stores the session; easy to revoke. **JWT**: signed, stateless token; scales well but is hard to revoke, so keep it short-lived with a refresh token.\n- **OAuth2** is for delegated authorization (access tokens); **OIDC** adds identity (ID token) for login/SSO, e.g. via an identity provider.\n- Store tokens in `HttpOnly`, `Secure`, `SameSite` cookies rather than `localStorage` to limit XSS theft.\n- **XSS**: escape output (React does by default; avoid `dangerouslySetInnerHTML`), Content-Security-Policy. **CSRF**: SameSite cookies plus CSRF tokens for cookie auth. **SQL injection**: parameterized queries / ORM, never string-format SQL.\n- Also: least privilege, secrets in a vault (not code), input validation at boundaries, dependency scanning."
+    },
+    {
+      "id": "react-hooks",
+      "title": "React hooks and rendering",
+      "category": "Frontend",
+      "difficulty": "Medium",
+      "tags": ["React"],
+      "prompt": "Explain `useState`, `useEffect` (including cleanup and the dependency array), `useMemo`/`useCallback`, and why list items need a `key`.",
+      "answer": "- `useState` holds component state; updates schedule a re-render. Use the function form (`setCount(c => c + 1)`) when the next value depends on the previous.\n- `useEffect` runs after render for side effects (fetching, subscriptions). Deps array controls when it re-runs; return a **cleanup** function to unsubscribe or `abort()` a fetch, preventing leaks and race conditions.\n- `useMemo` caches a computed value, `useCallback` caches a function identity; use them for expensive work or to keep props stable for `React.memo` children, not everywhere.\n- `key` lets React match list items between renders; use a stable id, not the array index, when items can be reordered or removed."
+    },
+    {
+      "id": "js-event-loop-debounce",
+      "title": "JavaScript event loop and debounce",
+      "category": "Frontend",
+      "difficulty": "Medium",
+      "tags": ["JavaScript", "async"],
+      "prompt": "What order does this print, and why? Then write `debounce(fn, ms)` for a search box.\n```js\nconsole.log('A');\nsetTimeout(() => console.log('B'), 0);\nPromise.resolve().then(() => console.log('C'));\nconsole.log('D');\n```",
+      "answer": "Prints **A D C B**. Synchronous code runs first; then the **microtask** queue (promise callbacks) is drained; then the next **macrotask** (timers).\n```js\nfunction debounce(fn, ms) {\n  let timer;\n  return (...args) => {\n    clearTimeout(timer);\n    timer = setTimeout(() => fn(...args), ms);\n  };\n}\n```\nDebounce waits until typing stops (search box); throttle runs at most once per interval (scroll handlers)."
+    },
+    {
+      "id": "caching-redis",
+      "title": "Caching with Redis",
+      "category": "Backend",
+      "difficulty": "Medium",
+      "tags": ["Redis", "performance"],
+      "prompt": "An account-summary endpoint is slow. How would you add caching, and what can go wrong?",
+      "answer": "- **Cache-aside**: read from Redis; on miss load from DB, store with a TTL. On writes, update the DB then delete the key.\n- Choose TTLs per data freshness; never cache data whose staleness breaks correctness (balances used for debits must come from the DB).\n- Problems: stale data, **cache stampede** (many misses at once; use a lock or early refresh), memory eviction policy, and cache keys per user to avoid leaking data across users.\n- Measure first: profile the query and add indexes before adding a cache."
+    },
+    {
+      "id": "testing-pytest",
+      "title": "Testing with pytest",
+      "category": "Testing",
+      "difficulty": "Medium",
+      "tags": ["pytest", "mocking"],
+      "prompt": "How do you unit-test a function that calls an external payment API? Mention fixtures, mocking and what you would cover.",
+      "answer": "```python\nimport pytest\nfrom unittest.mock import Mock\n\n@pytest.fixture\ndef gateway():\n    return Mock()\n\ndef test_refund_calls_gateway_once(gateway):\n    gateway.refund.return_value = {'status': 'ok'}\n    assert refund_order(order_id=7, gateway=gateway) == 'ok'\n    gateway.refund.assert_called_once_with(7)\n\ndef test_refund_raises_on_timeout(gateway):\n    gateway.refund.side_effect = TimeoutError\n    with pytest.raises(RefundFailed):\n        refund_order(order_id=7, gateway=gateway)\n```\nInject dependencies so they can be mocked; test success, failures, timeouts and retries; `@pytest.mark.parametrize` for edge cases; integration tests against a test DB; aim for meaningful coverage, not 100%."
+    },
+    {
+      "id": "devops-cloud",
+      "title": "Docker, CI/CD and cloud basics",
+      "category": "DevOps",
+      "difficulty": "Medium",
+      "tags": ["Docker", "Kubernetes", "AWS"],
+      "prompt": "How would you containerize and deploy a FastAPI + React app? What does your CI/CD pipeline do?",
+      "answer": "- Multi-stage Dockerfile: build React assets, serve them via Nginx or a CDN (S3 + CloudFront); a slim Python image running `uvicorn`/`gunicorn` as a non-root user.\n- Config and secrets from environment / secrets manager, not baked into the image.\n- **CI**: lint, type-check, unit tests, security/dependency scans, build image, push to a registry. **CD**: deploy to Kubernetes/ECS with rolling or blue-green deploys, health checks, and automatic rollback.\n- Observability: structured logs, metrics, tracing, alerts."
+    },
+    {
+      "id": "system-design-notifications",
+      "title": "System design: real-time transaction alerts",
+      "category": "System design",
+      "difficulty": "Hard",
+      "tags": ["Kafka", "scalability"],
+      "prompt": "Design a service that sends customers a push/SMS/email alert within seconds of a card transaction. Millions of transactions per day; alerts must not be lost or duplicated.",
+      "answer": "1. **Requirements**: latency (< 5 s), throughput, per-user preferences, at-least-once delivery with de-duplication, audit trail.\n2. **Flow**: transaction service publishes `TransactionPosted` to **Kafka** (partitioned by account id for ordering) → alert service consumes, loads preferences (cached), applies rules (amount threshold, foreign merchant) → writes an `alert` row with a unique `(transaction_id, channel)` key → channel workers call SMS/email/push providers.\n3. **Reliability**: idempotent consumers (unique key), retries with exponential backoff, dead-letter topic, outbox pattern so DB writes and events stay consistent.\n4. **Scale**: add partitions and consumers, rate limit per provider, horizontal autoscaling.\n5. **Ops**: metrics (lag, latency, failures), PII masking in logs, encryption in transit and at rest."
+    },
+    {
+      "id": "behavioral-star",
+      "title": "Behavioral: ownership under pressure",
+      "category": "Behavioral",
+      "difficulty": "Medium",
+      "tags": ["STAR"],
+      "prompt": "Tell me about a time you handled a production issue or a tight deadline. What did you do, and what did you learn?",
+      "answer": "Use **STAR**, about 2 minutes:\n- **Situation**: one sentence of context and impact (who was affected, how badly).\n- **Task**: your responsibility.\n- **Action**: what *you* did, specifically: how you triaged, communicated with stakeholders, fixed, and verified. Say \"I\", not only \"we\".\n- **Result**: measurable outcome (downtime reduced, defects avoided, deadline met) and the follow-up (post-mortem, monitoring, tests added).\nPrepare 5 or 6 stories that cover ownership, conflict, failure, mentoring, and improving a process; JPMC interviewers often probe controls, risk, and doing the right thing for customers."
+    },
+    {
+      "id": "best-time-stock",
+      "title": "Best Time to Buy and Sell Stock",
+      "category": "Python coding",
+      "difficulty": "Easy",
+      "tags": ["arrays", "greedy", "finance"],
+      "prompt": "`prices[i]` is a stock price on day `i`. Buy once and sell once later. Return the maximum profit, or `0` if no profit is possible.",
+      "starter": "def max_profit(prices):\n    pass\n",
+      "tests": [
+        { "call": "max_profit([7, 1, 5, 3, 6, 4])", "expected": "5" },
+        { "call": "max_profit([7, 6, 4, 3, 1])", "expected": "0" },
+        { "call": "max_profit([])", "expected": "0" }
+      ],
+      "answer": "Track the lowest price seen so far; at each day the best sale is `price - lowest`. Keep the maximum. One pass, **O(n)** time, **O(1)** space.",
+      "solution": "def max_profit(prices):\n    best, low = 0, float('inf')\n    for p in prices:\n        low = min(low, p)\n        best = max(best, p - low)\n    return best\n"
+    },
+    {
+      "id": "product-except-self",
+      "title": "Product of Array Except Self",
+      "category": "Python coding",
+      "difficulty": "Medium",
+      "tags": ["arrays", "prefix"],
+      "prompt": "Return a list where item `i` is the product of every number except `nums[i]`. Do it in **O(n)** without division.",
+      "starter": "def product_except_self(nums):\n    pass\n",
+      "tests": [
+        { "call": "product_except_self([1, 2, 3, 4])", "expected": "[24, 12, 8, 6]" },
+        { "call": "product_except_self([-1, 1, 0, -3, 3])", "expected": "[0, 0, 9, 0, 0]" }
+      ],
+      "answer": "Two passes. Left to right, store the product of everything before `i`. Right to left, multiply in the product of everything after `i`. No division, so zeros are handled naturally.",
+      "solution": "def product_except_self(nums):\n    n = len(nums)\n    out = [1] * n\n    left = 1\n    for i in range(n):\n        out[i] = left\n        left *= nums[i]\n    right = 1\n    for i in range(n - 1, -1, -1):\n        out[i] *= right\n        right *= nums[i]\n    return out\n"
+    },
+    {
+      "id": "number-of-islands",
+      "title": "Number of Islands",
+      "category": "Python coding",
+      "difficulty": "Medium",
+      "tags": ["graph", "DFS", "BFS"],
+      "prompt": "Grid cells are `'1'` (land) or `'0'` (water). Count islands: groups of land connected up, down, left or right.",
+      "starter": "def num_islands(grid):\n    pass\n",
+      "tests": [
+        { "call": "num_islands([['1', '1', '0'], ['1', '0', '0'], ['0', '0', '1']])", "expected": "2" },
+        { "call": "num_islands([['1', '1', '0', '0', '0'], ['1', '1', '0', '0', '0'], ['0', '0', '1', '0', '0'], ['0', '0', '0', '1', '1']])", "expected": "3" },
+        { "call": "num_islands([])", "expected": "0" },
+        { "call": "num_islands([['0']])", "expected": "0" }
+      ],
+      "answer": "Scan every cell. When you find unvisited land, count a new island and flood-fill all connected land (DFS with a stack, or BFS with a queue) so it is not counted again. **O(rows × cols)**. Prefer an explicit stack over recursion to avoid Python's recursion limit on big grids.",
+      "solution": "def num_islands(grid):\n    if not grid:\n        return 0\n    rows, cols = len(grid), len(grid[0])\n    seen = set()\n    count = 0\n    for r in range(rows):\n        for c in range(cols):\n            if grid[r][c] == '1' and (r, c) not in seen:\n                count += 1\n                seen.add((r, c))\n                stack = [(r, c)]\n                while stack:\n                    i, j = stack.pop()\n                    for x, y in ((i + 1, j), (i - 1, j), (i, j + 1), (i, j - 1)):\n                        if 0 <= x < rows and 0 <= y < cols and grid[x][y] == '1' and (x, y) not in seen:\n                            seen.add((x, y))\n                            stack.append((x, y))\n    return count\n"
+    },
+    {
+      "id": "kth-largest",
+      "title": "Kth Largest Element",
+      "category": "Python coding",
+      "difficulty": "Medium",
+      "tags": ["heap"],
+      "prompt": "Return the `k`-th largest value in `nums` (by sorted position, so duplicates count).",
+      "starter": "def find_kth_largest(nums, k):\n    pass\n",
+      "tests": [
+        { "call": "find_kth_largest([3, 2, 1, 5, 6, 4], 2)", "expected": "5" },
+        { "call": "find_kth_largest([3, 2, 3, 1, 2, 4, 5, 5, 6], 4)", "expected": "4" },
+        { "call": "find_kth_largest([1], 1)", "expected": "1" }
+      ],
+      "answer": "Keep a **min-heap of size k**: push each value and pop when the heap grows past k; the heap top is the answer. **O(n log k)**. `heapq.nlargest(k, nums)[-1]` does the same. Quickselect averages **O(n)**.",
+      "solution": "import heapq\n\ndef find_kth_largest(nums, k):\n    heap = []\n    for x in nums:\n        heapq.heappush(heap, x)\n        if len(heap) > k:\n            heapq.heappop(heap)\n    return heap[0]\n"
+    },
+    {
+      "id": "min-stack",
+      "title": "Min Stack",
+      "category": "Python coding",
+      "difficulty": "Medium",
+      "tags": ["stack", "design"],
+      "prompt": "Implement `MinStack` with `push(x)`, `pop()` (returns the removed value), `top()` and `get_min()`, all in **O(1)**.",
+      "starter": "class MinStack:\n    def __init__(self):\n        pass\n\n    def push(self, x):\n        pass\n\n    def pop(self):\n        pass\n\n    def top(self):\n        pass\n\n    def get_min(self):\n        pass\n",
+      "tests": [
+        { "call": "(lambda s: [s.push(-2), s.push(0), s.push(-3), s.get_min(), s.pop(), s.top(), s.get_min()])(MinStack())", "expected": "[None, None, None, -3, -3, 0, -2]" }
+      ],
+      "answer": "Store pairs `(value, minimum so far)` on one stack. Each push records `min(x, previous minimum)`, so the minimum is always at the top, even after pops.",
+      "solution": "class MinStack:\n    def __init__(self):\n        self.items = []\n\n    def push(self, x):\n        low = min(x, self.items[-1][1]) if self.items else x\n        self.items.append((x, low))\n\n    def pop(self):\n        return self.items.pop()[0]\n\n    def top(self):\n        return self.items[-1][0]\n\n    def get_min(self):\n        return self.items[-1][1]\n"
+    },
+    {
+      "id": "reverse-linked-list",
+      "title": "Reverse a Linked List",
+      "category": "Python coding",
+      "difficulty": "Easy",
+      "tags": ["linked list"],
+      "prompt": "Reverse a singly linked list and return the new head. `ListNode`, `from_list` and `to_list` are provided for testing; only write `reverse_list`.",
+      "starter": "class ListNode:\n    def __init__(self, val=0, next=None):\n        self.val = val\n        self.next = next\n\ndef from_list(values):\n    head = None\n    for v in reversed(values):\n        head = ListNode(v, head)\n    return head\n\ndef to_list(head):\n    out = []\n    while head:\n        out.append(head.val)\n        head = head.next\n    return out\n\ndef reverse_list(head):\n    pass\n",
+      "tests": [
+        { "call": "to_list(reverse_list(from_list([1, 2, 3, 4])))", "expected": "[4, 3, 2, 1]" },
+        { "call": "to_list(reverse_list(from_list([7])))", "expected": "[7]" },
+        { "call": "to_list(reverse_list(from_list([])))", "expected": "[]" }
+      ],
+      "answer": "Walk the list with `prev = None`. For each node: save `next`, point the node back at `prev`, then move `prev` and `head` forward. Return `prev`. **O(n)** time, **O(1)** space. Be ready to do it recursively too.",
+      "solution": "class ListNode:\n    def __init__(self, val=0, next=None):\n        self.val = val\n        self.next = next\n\ndef from_list(values):\n    head = None\n    for v in reversed(values):\n        head = ListNode(v, head)\n    return head\n\ndef to_list(head):\n    out = []\n    while head:\n        out.append(head.val)\n        head = head.next\n    return out\n\ndef reverse_list(head):\n    prev = None\n    while head:\n        nxt = head.next\n        head.next = prev\n        prev = head\n        head = nxt\n    return prev\n"
+    },
+    {
+      "id": "merge-k-sorted",
+      "title": "Merge K Sorted Lists",
+      "category": "Python coding",
+      "difficulty": "Hard",
+      "tags": ["heap", "merge"],
+      "prompt": "Merge `k` sorted lists of numbers into one sorted list.",
+      "starter": "def merge_k_sorted(lists):\n    pass\n",
+      "tests": [
+        { "call": "merge_k_sorted([[1, 4, 5], [1, 3, 4], [2, 6]])", "expected": "[1, 1, 2, 3, 4, 4, 5, 6]" },
+        { "call": "merge_k_sorted([])", "expected": "[]" },
+        { "call": "merge_k_sorted([[], [1]])", "expected": "[1]" }
+      ],
+      "answer": "Put the first item of each list in a min-heap as `(value, list_index, item_index)`. Pop the smallest, append it, push the next item from the same list. **O(N log k)** for N total items. `heapq.merge(*lists)` does exactly this lazily.",
+      "solution": "import heapq\n\ndef merge_k_sorted(lists):\n    heap = [(lst[0], i, 0) for i, lst in enumerate(lists) if lst]\n    heapq.heapify(heap)\n    out = []\n    while heap:\n        value, i, j = heapq.heappop(heap)\n        out.append(value)\n        if j + 1 < len(lists[i]):\n            heapq.heappush(heap, (lists[i][j + 1], i, j + 1))\n    return out\n"
+    },
+    {
+      "id": "string-compression",
+      "title": "String Compression",
+      "category": "Python coding",
+      "difficulty": "Easy",
+      "tags": ["strings"],
+      "prompt": "Compress runs of repeated characters: `'aabcccccaaa'` becomes `'a2b1c5a3'`. If the result is not shorter than the input, return the input unchanged.",
+      "starter": "def compress(s):\n    pass\n",
+      "tests": [
+        { "call": "compress('aabcccccaaa')", "expected": "'a2b1c5a3'" },
+        { "call": "compress('abc')", "expected": "'abc'" },
+        { "call": "compress('')", "expected": "''" }
+      ],
+      "answer": "Walk the string counting the current run; when the character changes (or the string ends) append `char + count`. Build pieces in a list and `''.join` them; repeated `+=` on strings can be slow.",
+      "solution": "def compress(s):\n    if not s:\n        return s\n    parts = []\n    count = 1\n    for i in range(1, len(s) + 1):\n        if i < len(s) and s[i] == s[i - 1]:\n            count += 1\n        else:\n            parts.append(f'{s[i - 1]}{count}')\n            count = 1\n    out = ''.join(parts)\n    return out if len(out) < len(s) else s\n"
+    },
+    {
+      "id": "roman-to-int",
+      "title": "Roman Numeral to Integer",
+      "category": "Python coding",
+      "difficulty": "Easy",
+      "tags": ["strings", "hash map"],
+      "prompt": "Convert a valid Roman numeral (`I V X L C D M`) to an integer. A smaller symbol before a larger one is subtracted (`IV` = 4).",
+      "starter": "def roman_to_int(s):\n    pass\n",
+      "tests": [
+        { "call": "roman_to_int('III')", "expected": "3" },
+        { "call": "roman_to_int('LVIII')", "expected": "58" },
+        { "call": "roman_to_int('MCMXCIV')", "expected": "1994" }
+      ],
+      "answer": "Map symbols to values. Walk left to right: if the next symbol is larger, subtract the current value; otherwise add it. **O(n)**.",
+      "solution": "def roman_to_int(s):\n    values = {'I': 1, 'V': 5, 'X': 10, 'L': 50, 'C': 100, 'D': 500, 'M': 1000}\n    total = 0\n    for i, ch in enumerate(s):\n        v = values[ch]\n        if i + 1 < len(s) and values[s[i + 1]] > v:\n            total -= v\n        else:\n            total += v\n    return total\n"
+    },
+    {
+      "id": "missing-number",
+      "title": "Missing Number",
+      "category": "Python coding",
+      "difficulty": "Easy",
+      "tags": ["math"],
+      "prompt": "`nums` holds `n` distinct numbers from `0..n` with exactly one missing. Return the missing number in **O(n)** time and **O(1)** extra space.",
+      "starter": "def missing_number(nums):\n    pass\n",
+      "tests": [
+        { "call": "missing_number([3, 0, 1])", "expected": "2" },
+        { "call": "missing_number([0, 1])", "expected": "2" },
+        { "call": "missing_number([9, 6, 4, 2, 3, 5, 7, 0, 1])", "expected": "8" }
+      ],
+      "answer": "The sum of `0..n` is `n(n+1)/2`; subtract the actual sum. XOR of all indices and values also works and avoids overflow in fixed-width languages.",
+      "solution": "def missing_number(nums):\n    n = len(nums)\n    return n * (n + 1) // 2 - sum(nums)\n"
+    },
+    {
+      "id": "top-words",
+      "title": "Most Frequent Words",
+      "category": "Python coding",
+      "difficulty": "Medium",
+      "tags": ["counter", "sorting", "regex"],
+      "prompt": "Return the `k` most frequent words as `(word, count)` pairs. Ignore case and punctuation. Sort by count (high to low), then alphabetically for ties.",
+      "starter": "def top_words(text, k):\n    pass\n",
+      "tests": [
+        { "call": "top_words('the cat and the hat and the bat', 2)", "expected": "[('the', 3), ('and', 2)]" },
+        { "call": "top_words('Hi, hi! Bye.', 1)", "expected": "[('hi', 2)]" },
+        { "call": "top_words('b a c', 2)", "expected": "[('a', 1), ('b', 1)]" }
+      ],
+      "answer": "Lower-case, extract words with a regex, count with `Counter`, then sort with key `(-count, word)`. For a huge stream use `heapq.nsmallest(k, items, key=...)` instead of a full sort.",
+      "solution": "import re\nfrom collections import Counter\n\ndef top_words(text, k):\n    counts = Counter(re.findall(r\"[a-z']+\", text.lower()))\n    return sorted(counts.items(), key=lambda kv: (-kv[1], kv[0]))[:k]\n"
+    },
+    {
+      "id": "meeting-rooms",
+      "title": "Meeting Rooms II",
+      "category": "Python coding",
+      "difficulty": "Medium",
+      "tags": ["heap", "intervals"],
+      "prompt": "Given meetings `[start, end]`, return the minimum number of rooms needed. A meeting ending at time `t` frees its room for one starting at `t`.",
+      "starter": "def min_meeting_rooms(intervals):\n    pass\n",
+      "tests": [
+        { "call": "min_meeting_rooms([[0, 30], [5, 10], [15, 20]])", "expected": "2" },
+        { "call": "min_meeting_rooms([[7, 10], [2, 4]])", "expected": "1" },
+        { "call": "min_meeting_rooms([])", "expected": "0" }
+      ],
+      "answer": "Sort by start. Keep a min-heap of end times of rooms in use. If the earliest-ending room is free by this start, reuse it (`heapreplace`); otherwise open a new room. The heap size is the answer. **O(n log n)**.",
+      "solution": "import heapq\n\ndef min_meeting_rooms(intervals):\n    ends = []\n    for start, end in sorted(intervals):\n        if ends and ends[0] <= start:\n            heapq.heapreplace(ends, end)\n        else:\n            heapq.heappush(ends, end)\n    return len(ends)\n"
+    },
+    {
+      "id": "binary-search",
+      "title": "Binary Search",
+      "category": "Python coding",
+      "difficulty": "Easy",
+      "tags": ["binary search"],
+      "prompt": "Return the index of `target` in the sorted list `nums`, or `-1` if absent. **O(log n)**.",
+      "starter": "def search(nums, target):\n    pass\n",
+      "tests": [
+        { "call": "search([-1, 0, 3, 5, 9, 12], 9)", "expected": "4" },
+        { "call": "search([-1, 0, 3, 5, 9, 12], 2)", "expected": "-1" },
+        { "call": "search([], 1)", "expected": "-1" }
+      ],
+      "answer": "Keep `lo..hi`; check the middle and discard the half that cannot contain the target. Watch the loop condition (`lo <= hi`) and the updates (`mid + 1`, `mid - 1`) to avoid infinite loops. In Python, `bisect` gives the same result.",
+      "solution": "def search(nums, target):\n    lo, hi = 0, len(nums) - 1\n    while lo <= hi:\n        mid = (lo + hi) // 2\n        if nums[mid] == target:\n            return mid\n        if nums[mid] < target:\n            lo = mid + 1\n        else:\n            hi = mid - 1\n    return -1\n"
+    },
+    {
+      "id": "coin-change",
+      "title": "Coin Change (fewest coins)",
+      "category": "Python coding",
+      "difficulty": "Medium",
+      "tags": ["dynamic programming"],
+      "prompt": "Return the fewest coins (unlimited supply) that make `amount`, or `-1` if impossible. See Chapter 5 of this app for a walkthrough.",
+      "starter": "def coin_change(coins, amount):\n    pass\n",
+      "tests": [
+        { "call": "coin_change([1, 2, 5], 11)", "expected": "3" },
+        { "call": "coin_change([2], 3)", "expected": "-1" },
+        { "call": "coin_change([1], 0)", "expected": "0" }
+      ],
+      "answer": "`dp[x]` = fewest coins for `x`. `dp[0] = 0`; `dp[x] = 1 + min(dp[x - c])` over coins `c <= x`. Unreachable stays infinity, returned as `-1`. **O(amount × coins)**. Greedy (largest coin first) is wrong for sets like `[1, 3, 4]` and 6.",
+      "solution": "def coin_change(coins, amount):\n    best = [0] + [float('inf')] * amount\n    for x in range(1, amount + 1):\n        for c in coins:\n            if c <= x and best[x - c] + 1 < best[x]:\n                best[x] = best[x - c] + 1\n    return best[amount] if best[amount] != float('inf') else -1\n"
+    },
+    {
+      "id": "max-subarray",
+      "title": "Maximum Subarray (Kadane)",
+      "category": "Python coding",
+      "difficulty": "Medium",
+      "tags": ["dynamic programming", "arrays"],
+      "prompt": "Return the largest sum of a non-empty contiguous subarray. See Chapter 6 of this app for a walkthrough.",
+      "starter": "def max_subarray(nums):\n    pass\n",
+      "tests": [
+        { "call": "max_subarray([-2, 1, -3, 4, -1, 2, 1, -5, 4])", "expected": "6" },
+        { "call": "max_subarray([-3, -1, -2])", "expected": "-1" },
+        { "call": "max_subarray([5])", "expected": "5" }
+      ],
+      "answer": "At each number, either extend the best run ending just before it or start fresh: `cur = max(x, cur + x)`. Track the best `cur`. Start from `nums[0]`, not 0, so all-negative input works. **O(n)**.",
+      "solution": "def max_subarray(nums):\n    best = cur = nums[0]\n    for x in nums[1:]:\n        cur = max(x, cur + x)\n        best = max(best, cur)\n    return best\n"
+    },
+    {
+      "id": "valid-anagram",
+      "title": "Valid Anagram",
+      "category": "Python coding",
+      "difficulty": "Easy",
+      "tags": ["strings", "counter"],
+      "prompt": "Return `True` if `t` is an anagram of `s`.",
+      "starter": "def is_anagram(s, t):\n    pass\n",
+      "tests": [
+        { "call": "is_anagram('anagram', 'nagaram')", "expected": "True" },
+        { "call": "is_anagram('rat', 'car')", "expected": "False" },
+        { "call": "is_anagram('a', 'ab')", "expected": "False" }
+      ],
+      "answer": "`Counter(s) == Counter(t)` in **O(n)**, or compare sorted strings in **O(n log n)**. Mention Unicode/case handling if asked.",
+      "solution": "from collections import Counter\n\ndef is_anagram(s, t):\n    return Counter(s) == Counter(t)\n"
+    },
+    {
+      "id": "latest-by-id",
+      "title": "Deduplicate Transactions",
+      "category": "Python coding",
+      "difficulty": "Easy",
+      "tags": ["dict", "finance"],
+      "prompt": "A feed may send the same transaction `id` more than once. Keep only the record with the highest `ts` for each `id`, and return them sorted by `id`.",
+      "starter": "def latest_by_id(transactions):\n    pass\n",
+      "tests": [
+        { "call": "latest_by_id([{'id': 1, 'ts': 5, 'amt': 10}, {'id': 1, 'ts': 7, 'amt': 12}, {'id': 2, 'ts': 1, 'amt': 3}])", "expected": "[{'id': 1, 'ts': 7, 'amt': 12}, {'id': 2, 'ts': 1, 'amt': 3}]" },
+        { "call": "latest_by_id([])", "expected": "[]" }
+      ],
+      "answer": "One pass with a dict keyed by `id`, replacing the stored record when a newer `ts` arrives. In production this is an **idempotent consumer**: store processed ids (unique constraint) so redelivered events are ignored.",
+      "solution": "def latest_by_id(transactions):\n    latest = {}\n    for t in transactions:\n        if t['id'] not in latest or t['ts'] > latest[t['id']]['ts']:\n            latest[t['id']] = t\n    return [latest[i] for i in sorted(latest)]\n"
+    },
+    {
+      "id": "python-memory-gc",
+      "title": "Python memory management",
+      "category": "Python concepts",
+      "difficulty": "Medium",
+      "tags": ["internals"],
+      "prompt": "How does Python free memory? What are reference cycles, `__slots__` and `weakref` for?",
+      "answer": "- CPython uses **reference counting**: an object is freed as soon as its count hits zero.\n- A **cyclic garbage collector** (`gc` module) finds groups of objects that only reference each other.\n- `__slots__` removes the per-instance `__dict__`, saving memory when you create millions of small objects.\n- `weakref` lets you refer to an object without keeping it alive (caches, observers).\n- Find leaks with `tracemalloc`; common causes are growing global caches and lingering references in closures."
+    },
+    {
+      "id": "python-async-fastapi",
+      "title": "async/await in a FastAPI service",
+      "category": "Backend",
+      "difficulty": "Medium",
+      "tags": ["FastAPI", "asyncio"],
+      "prompt": "When should a FastAPI endpoint be `async def` vs `def`? How do you call three downstream services concurrently?",
+      "answer": "- `async def` when everything inside awaits (async DB driver, `httpx.AsyncClient`). Plain `def` endpoints run in a thread pool, which is safer for blocking libraries.\n- Never call blocking code (requests, time.sleep, sync DB) inside `async def`; it freezes the event loop.\n```python\nasync def summary(user_id: str):\n    async with httpx.AsyncClient(timeout=2.0) as client:\n        acct, cards, alerts = await asyncio.gather(\n            client.get(f'{ACCOUNTS}/{user_id}'),\n            client.get(f'{CARDS}/{user_id}'),\n            client.get(f'{ALERTS}/{user_id}'),\n            return_exceptions=True,\n        )\n```\nSay how you handle partial failure (timeouts, fallbacks, circuit breaker) and how FastAPI's `Depends` injects DB sessions and auth."
+    },
+    {
+      "id": "framework-choice",
+      "title": "Flask vs Django vs FastAPI",
+      "category": "Backend",
+      "difficulty": "Easy",
+      "tags": ["frameworks"],
+      "prompt": "When would you pick Flask, Django or FastAPI?",
+      "answer": "- **Django**: batteries included (ORM, admin, auth, migrations); good for data-heavy apps and teams that want conventions.\n- **Flask**: minimal and flexible; add only the pieces you need; good for small services.\n- **FastAPI**: async, type hints with Pydantic validation, automatic OpenAPI docs; great for high-throughput JSON APIs and microservices.\nThe best answer ties the choice to the team, the existing stack and the requirements."
+    },
+    {
+      "id": "http-methods-status",
+      "title": "HTTP methods, idempotency and status codes",
+      "category": "Backend",
+      "difficulty": "Easy",
+      "tags": ["REST", "HTTP"],
+      "prompt": "Which HTTP methods are idempotent? What is the difference between PUT and PATCH, and 401 vs 403?",
+      "answer": "- **Idempotent** (same effect when repeated): GET, PUT, DELETE, HEAD, OPTIONS. **POST** is not, so use an Idempotency-Key for payments.\n- **PUT** replaces the whole resource; **PATCH** applies a partial update.\n- **401** Unauthorized = not authenticated (missing or invalid token). **403** Forbidden = authenticated but not allowed.\n- Others: 200 OK, 201 Created, 204 No Content, 400 Bad Request, 404 Not Found, 409 Conflict, 422 Unprocessable, 429 Too Many Requests, 500/503 server errors."
+    },
+    {
+      "id": "sql-self-join-duplicates",
+      "title": "SQL: self join and duplicates",
+      "category": "SQL",
+      "difficulty": "Medium",
+      "tags": ["joins", "group by"],
+      "prompt": "1. `employee(id, name, salary, manager_id)`: list employees who earn more than their manager.\n2. `person(id, email)`: find duplicate emails, then delete duplicates keeping the lowest id.",
+      "answer": "```sql\n-- 1\nSELECT e.name\nFROM employee e\nJOIN employee m ON e.manager_id = m.id\nWHERE e.salary > m.salary;\n\n-- 2a\nSELECT email FROM person GROUP BY email HAVING COUNT(*) > 1;\n\n-- 2b\nDELETE FROM person\nWHERE id NOT IN (SELECT MIN(id) FROM person GROUP BY email);\n```\nExplain `WHERE` (filters rows) vs `HAVING` (filters groups), and run deletes inside a transaction after checking the count."
+    },
+    {
+      "id": "sql-vs-nosql-cap",
+      "title": "SQL vs NoSQL and the CAP theorem",
+      "category": "System design",
+      "difficulty": "Medium",
+      "tags": ["databases"],
+      "prompt": "When would you choose a relational database vs a NoSQL store? Explain CAP.",
+      "answer": "- **Relational** (Postgres, Oracle): strong consistency, joins, transactions; the default for money and ledgers.\n- **NoSQL**: document (MongoDB) for flexible schemas, key-value (Redis, DynamoDB) for fast lookups, wide-column (Cassandra) for huge write volumes, search (Elasticsearch).\n- **CAP**: during a network partition a distributed system must choose **Consistency** or **Availability**. Banking ledgers choose consistency; a product catalog or activity feed can accept eventual consistency."
+    },
+    {
+      "id": "kafka-microservices",
+      "title": "Microservices and Kafka",
+      "category": "System design",
+      "difficulty": "Medium",
+      "tags": ["Kafka", "microservices"],
+      "prompt": "Monolith vs microservices? How does Kafka work, and how do you keep data consistent across services?",
+      "answer": "- **Microservices**: independent deploys and scaling per team, at the cost of network calls, distributed failures and observability work. Start with a modular monolith when the team is small.\n- **Kafka**: a durable log split into **topics** and **partitions**; order is guaranteed only within a partition (choose the key, e.g. account id). **Consumer groups** share partitions; offsets track progress.\n- Delivery is usually **at-least-once**, so make consumers **idempotent**.\n- Consistency across services: the **outbox pattern** (write the event in the same DB transaction, then publish) and **sagas** with compensating actions instead of distributed transactions."
+    },
+    {
+      "id": "url-shortener",
+      "title": "System design: URL shortener",
+      "category": "System design",
+      "difficulty": "Medium",
+      "tags": ["design", "scalability"],
+      "prompt": "Design a service like bit.ly: create short links and redirect quickly at high read volume.",
+      "answer": "1. **API**: `POST /links {url}` returns a code; `GET /{code}` responds with a 301/302 redirect.\n2. **Codes**: base62 of an auto-increment or Snowflake-style id (no collisions), 7 characters gives about 3.5 trillion codes. Hashing needs collision handling.\n3. **Storage**: key-value table `code -> url, owner, created, expiry`.\n4. **Reads dominate**: cache hot codes in Redis or at the CDN; replicas for reads.\n5. **Extras**: rate limiting, malicious-URL checks, analytics through an async queue, custom aliases, expiry cleanup."
+    },
+    {
+      "id": "ood-parking-lot",
+      "title": "Object-oriented design: parking lot",
+      "category": "System design",
+      "difficulty": "Medium",
+      "tags": ["OOD", "classes"],
+      "prompt": "Design classes for a parking lot with several floors and spot sizes (small, medium, large). Vehicles park in the smallest spot that fits and get a ticket; fees are charged on exit.",
+      "answer": "```python\nfrom dataclasses import dataclass\nfrom enum import IntEnum\n\nclass Size(IntEnum):\n    SMALL = 1\n    MEDIUM = 2\n    LARGE = 3\n\n@dataclass\nclass Spot:\n    id: str\n    size: Size\n    vehicle: 'Vehicle | None' = None\n\nclass ParkingLot:\n    def __init__(self, floors, pricing):\n        self.floors, self.pricing, self.tickets = floors, pricing, {}\n\n    def park(self, vehicle, now):\n        spot = min((s for f in self.floors for s in f.free_spots() if s.size >= vehicle.size), key=lambda s: s.size, default=None)\n        if spot is None:\n            raise LotFull()\n        spot.vehicle = vehicle\n        ticket = Ticket(new_id(), spot, now)\n        self.tickets[ticket.id] = ticket\n        return ticket\n\n    def leave(self, ticket_id, now):\n        ticket = self.tickets.pop(ticket_id)\n        ticket.spot.vehicle = None\n        return self.pricing.fee(ticket.start, now)\n```\nTalk through: single responsibility per class, a **strategy** object for pricing, thread safety when two cars take the same spot (a lock or DB row lock), and how it would persist."
+    },
+    {
+      "id": "react-state-performance",
+      "title": "React state management and performance",
+      "category": "Frontend",
+      "difficulty": "Medium",
+      "tags": ["React", "Redux"],
+      "prompt": "Context vs Redux vs React Query? How would you speed up a slow list of 10,000 transactions?",
+      "answer": "- Local state first; **Context** for rarely-changing globals (theme, user); **Redux Toolkit / Zustand** for complex shared client state; **React Query / SWR** for server data (caching, retries, refetching).\n- Slow list: **virtualize** it (react-window) so only visible rows render; paginate or infinite-scroll from the API; stable `key`s; `React.memo` rows; debounce filters; move heavy work off render with `useMemo` or a web worker. Measure with the React Profiler first."
+    },
+    {
+      "id": "aws-basics",
+      "title": "Cloud basics (AWS)",
+      "category": "DevOps",
+      "difficulty": "Easy",
+      "tags": ["AWS"],
+      "prompt": "Which AWS services would you use for a Python API with a React frontend? SQS vs SNS?",
+      "answer": "- Frontend: **S3 + CloudFront**. API: **ECS/EKS** (containers) or **Lambda + API Gateway** (serverless). Data: **RDS/Aurora**, **DynamoDB**, **ElastiCache** (Redis). Secrets: **Secrets Manager**. Monitoring: **CloudWatch**.\n- **SQS** is a queue: each message is processed by one consumer (work distribution, retries, dead-letter queue). **SNS** is pub/sub: one message fans out to many subscribers. Common pattern: SNS fan-out to several SQS queues.\n- Use IAM roles with least privilege; no access keys in code."
+    },
+    {
+      "id": "code-review-agile",
+      "title": "Code review, Agile and production support",
+      "category": "Behavioral",
+      "difficulty": "Easy",
+      "tags": ["teamwork"],
+      "prompt": "What do you look for in a code review? How does your team run sprints and handle production incidents?",
+      "answer": "- **Review**: correctness and edge cases, tests, readability, security (input validation, secrets), performance hot spots, and consistency with team conventions. Be specific and kind; separate blocking issues from nits.\n- **Agile**: sprint planning, daily stand-up, refinement, review and retro; small PRs with CI gates.\n- **Incidents**: acknowledge, mitigate first (rollback or feature flag), communicate status, find the root cause, then a blameless post-mortem with action items."
+    },
+    {
+      "id": "behavioral-conflict",
+      "title": "Behavioral: disagreement with a teammate",
+      "category": "Behavioral",
+      "difficulty": "Medium",
+      "tags": ["STAR", "conflict"],
+      "prompt": "Tell me about a time you disagreed with a teammate or manager on a technical decision.",
+      "answer": "Pick a real, professional disagreement (design choice, deadline versus quality). In STAR form: show that you **listened**, used **data** (a prototype, benchmarks, a risk list), escalated respectfully if needed, and **committed** to the final decision even if it was not yours. Finish with the outcome and what you would do the same or differently. Avoid stories that blame others."
+    },
+    {
+      "id": "behavioral-why-jpmc",
+      "title": "Behavioral: why JPMorgan Chase?",
+      "category": "Behavioral",
+      "difficulty": "Easy",
+      "tags": ["motivation"],
+      "prompt": "Why do you want to join JPMorgan Chase, and why this team?",
+      "answer": "Make it specific and honest: scale and impact of the technology (systems that move money for millions of customers), interest in the line of business (Consumer & Community Banking, Corporate & Investment Bank, Asset & Wealth Management), the engineering culture (cloud modernization, reliability, security), and how your experience fits the role. Connect it to one or two things you researched about the team. Keep it under a minute."
+    }
+  ]
+}
